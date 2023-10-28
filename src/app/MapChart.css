@@ -14,15 +14,15 @@
 
 .info-box {
     position: absolute;
-    top: 55.5%;
-    left: 61%;
+    top: 58.5%;
+    left: 62%;
     padding: 5px;
     background-color: rgba(7, 27, 78, 0.8);
     border: 1px solid #ccc;
     border-radius: 5px;
     z-index: 1000;
     color: white;
-    font-size: 15px;
+    font-size: 12px;
 }
 
 .view-options {
