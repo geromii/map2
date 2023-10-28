@@ -13,6 +13,8 @@ export default function MapChart() {
   const [selectedCountries, setSelectedCountries] = useState([]);
   const [rotation, setRotation] = useState([-10, 0, 0]);
   const [scale, setScale] = useState(180) // Step 1: introduce a state for rotation6
+  const [projectionType, setProj] = useState("geoEqualEarth");
+
 
   const [searchValue, setSearchValue] = useState('');
   const [allCountries, setAllCountries] = useState([]);
@@ -32,11 +34,11 @@ export default function MapChart() {
       const country = prevCountries.find(c => c.name === countryName);
   
       if (!country) {
-        return [...prevCountries, { name: countryName, side: "A" }];
+        return [...prevCountries, { name: countryName, side: "Red" }];
       }
   
       const updatedSide = getNextSide(country.side);
-      if (updatedSide === "A" && country.side === "dedicated neutral") { // Add this condition
+      if (updatedSide === "Red" && country.side === "dedicated neutral") { // Add this condition
         return prevCountries.filter(c => c.name !== countryName);
       }
   
@@ -48,10 +50,10 @@ export default function MapChart() {
 
   const getNextSide = (currentSide) => {
     switch (currentSide) {
-      case "A": return "B";
-      case "B": return "dedicated neutral";
-      case "dedicated neutral": return "A"; // Or, if you want to remove it from the list when clicking after "dedicated neutral", handle it in `handleCountryClick`.
-      default: return "A";
+      case "Red": return "Blue";
+      case "Blue": return "dedicated neutral";
+      case "dedicated neutral": return "Red"; // Or, if you want to remove it from the list when clicking after "dedicated neutral", handle it in `handleCountryClick`.
+      default: return "Red";
     }
   };
   
@@ -60,8 +62,8 @@ export default function MapChart() {
     const country = selectedCountries.find(c => c.name === countryName);
     if (!country) return "#b0b0b0";
     switch (country.side) {
-      case "A": return "red";
-      case "B": return "#4af";
+      case "Red": return "red";
+      case "Blue": return "#4af";
       case "dedicated neutral": return "#646464"; // Color for dedicated neutral
       default: return "#b0b0b0";
     }
@@ -71,22 +73,26 @@ export default function MapChart() {
   return (
     <div className="map-container">
       <div className="view-options">
-        <button onClick={() => { setRotation([-10, 0, 0]); setScale(180); }}>Default </button>
-        <button onClick={() => { setRotation([-10, -40, 0]); setScale(180); }}> North Pole </button>
-        <button onClick={() => { setRotation([-147, 0, 0]); setScale(155); }}>Pacific </button> {/* Step 2 */}
+        <button onClick={() => { setRotation([-10, 0, 0]); setScale(180); setProj("geoEqualEarth")}}>Default </button>
+        <button onClick={() => { setRotation([-10, -40, 0]); setScale(180); setProj("geoEqualEarth")}}> North Pole </button>
+        <button onClick={() => { setRotation([-147, 0, 0]); setScale(155); setProj("geoEqualEarth")}}>Pacific </button> 
+        <button 
+    onClick={() => { 
+        setRotation([-60, -20, 0]); setScale(240); setProj("geoOrthographic");}}> Globe-Eurasia 
+        </button>
       </div>
 
 
   
       <ComposableMap 
           viewBox = "25 55 800 500"
-          projection="geoEqualEarth"
+          projection= {projectionType}
           projectionConfig={{
             rotate: rotation,
             scale: scale,
           }}>
-        <Sphere stroke="#E4E5E6" strokeWidth={0} />
-        <Graticule stroke="#E4E5E6" strokeWidth={0} />
+        <Sphere stroke="#E4E5E6" strokeWidth={0.5} />
+        <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
         <Geographies geography="/features.json">
          {({ geographies }) => {
              // If allCountries is empty, populate it with the country names from geographies
@@ -122,23 +128,28 @@ export default function MapChart() {
             </Geographies>
       </ComposableMap>
       <div className="country-search">
-        <input
-          value={searchValue}
-          onChange={e => setSearchValue(e.target.value)}
-          placeholder="Search for a country..."
-        />
-        <div className="filtered-list">
-          {filteredCountries.map(country => (
-            <div 
-              key={country} 
-              onClick={() => handleCountryClick(country)}
-              className="country-item"
-            >
-              {country}
-            </div>
-          ))}
-        </div>
+  <input
+    value={searchValue}
+    onChange={e => setSearchValue(e.target.value)}
+    placeholder="Search for a country..."
+  />
+  <div className="filtered-list">
+    {filteredCountries.map(country => (
+      <div 
+        key={country} 
+        onClick={() => handleCountryClick(country)}
+        className="country-item"
+        style={{
+          fontWeight: 'bold',
+          color: getCountryColor(country)
+        }}
+      >
+        {country}
       </div>
+    ))}
+  </div>
+</div>
+
   
       <CountryInfo countries={selectedCountries} />
     </div>
@@ -154,12 +165,13 @@ function CountryInfo({ countries }) {
     <div className="info-box">
       {smallSelectedCountries.length > 0 ? (
         <ul>
+          <li>Small countries list</li>
           {smallSelectedCountries.map((country, index) => (
             <li key={index}>{country.name} - {country.side}</li>
           ))}
         </ul>
       ) : (
-        <p>No small country selected</p>
+        <p>Small countries list</p>
       )}
     </div>
   );
