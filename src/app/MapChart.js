@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ComposableMap, Geographies, Geography, Sphere,
   Graticule } from "react-simple-maps";
+import { useCountries } from './useCountries';
 import './MapChart.css';
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -12,22 +13,24 @@ import './MapChart.css';
 export default function MapChart() {
   const [selectedCountries, setSelectedCountries] = useState([]);
   const [rotation, setRotation] = useState([-10, 0, 0]);
-  const [scale, setScale] = useState(180) // Step 1: introduce a state for rotation6
+  const [scale, setScale] = useState(180);
   const [projectionType, setProj] = useState("geoEqualEarth");
-
-
+  const [geographiesData, setGeographiesData] = useState([]);
   const [searchValue, setSearchValue] = useState('');
-  const [allCountries, setAllCountries] = useState([]);
-  const [filteredCountries, setFilteredCountries] = useState([]);
 
+  // First useEffect: Retain this for fetching geographies data
   useEffect(() => {
-    setFilteredCountries(
-      allCountries.filter(country => 
-        country.toLowerCase().includes(searchValue.toLowerCase())
-      )
-    );
-  }, [searchValue, allCountries]);
+    fetch("/features.json")
+      .then(response => response.json())
+      .then(data => {
+        const geometries = data.objects.world.geometries;
+        console.log(geometries);
+        setGeographiesData(data);
+      });
+  }, []);
 
+  // Using custom hook for countries data
+  const { filteredCountries } = useCountries(searchValue);
 
   const handleCountryClick = (countryName) => {
     setSelectedCountries((prevCountries) => {
@@ -69,88 +72,22 @@ export default function MapChart() {
     }
   };
   
+  
 
   return (
+    <div>
     <div className="map-container">
-      <div className="view-options">
-        <button onClick={() => { setRotation([-10, 0, 0]); setScale(180); setProj("geoEqualEarth")}}>Default </button>
-        <button onClick={() => { setRotation([-10, -40, 0]); setScale(180); setProj("geoEqualEarth")}}> North Pole </button>
-        <button onClick={() => { setRotation([-147, 0, 0]); setScale(155); setProj("geoEqualEarth")}}>Pacific </button> 
-        <button 
-    onClick={() => { 
-        setRotation([-60, -20, 0]); setScale(240); setProj("geoOrthographic");}}> Globe-Eurasia 
-        </button>
-      </div>
-
-
-  
-      <ComposableMap 
-          viewBox = "25 55 800 500"
-          projection= {projectionType}
-          projectionConfig={{
-            rotate: rotation,
-            scale: scale,
-          }}>
-        <Sphere stroke="#E4E5E6" strokeWidth={0.5} />
-        <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
-        <Geographies geography="/features.json">
-         {({ geographies }) => {
-             // If allCountries is empty, populate it with the country names from geographies
-             if (allCountries.length === 0) {
-             setAllCountries(geographies.map(geo => geo.properties.name).sort());
-              }
-    
-              // Render each country on the map
-             return geographies.map((geo) => (
-             <Geography
-               key={geo.rsmKey}
-               geography={geo}
-                onClick={() => handleCountryClick(geo.properties.name)}
-                stroke="white"
-                strokeWidth={0.3}
-                style={{
-               default: {
-                 fill: getCountryColor(geo.properties.name),
-                 outline: "none"
-               },
-               hover: {
-                 fill: getCountryColor(geo.properties.name),
-                 outline: "none"
-               },
-               pressed: {
-                 fill: getCountryColor(geo.properties.name),
-                 outline: "none"
-              }
-                }}
-             />
-               ));
-             }}
-            </Geographies>
-      </ComposableMap>
-      <div className="country-search">
-  <input
-    value={searchValue}
-    onChange={e => setSearchValue(e.target.value)}
-    placeholder="Search for a country..."
-  />
-  <div className="filtered-list">
-    {filteredCountries.map(country => (
-      <div 
-        key={country} 
-        onClick={() => handleCountryClick(country)}
-        className="country-item"
-        style={{
-          fontWeight: 'bold',
-          color: getCountryColor(country)
-        }}
-      >
-        {country}
-      </div>
-    ))}
-  </div>
-</div>
-
-  
+      <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} />
+      <Map
+        rotation={rotation}
+        scale={scale}
+        projectionType={projectionType}
+        geographiesData={geographiesData}
+        handleCountryClick={handleCountryClick}
+        getCountryColor={getCountryColor}
+      />
+    </div>
+      <CountrySearch handleCountryClick={handleCountryClick} getCountryColor={getCountryColor} />
       <CountryInfo countries={selectedCountries} />
     </div>
   );
@@ -205,4 +142,92 @@ const SMALL_COUNTRIES = [
   "Tuvalu",
   "Vatican City"
 ];
+function CountrySearch({ handleCountryClick, getCountryColor }) {
+  const [searchValue, setSearchValue] = useState('');
+  const { allCountries, filteredCountries } = useCountries(searchValue);
 
+  return (
+    <div className="country-search">
+      <input
+        value={searchValue}
+        onChange={e => setSearchValue(e.target.value)}
+        placeholder="Search for a country..."
+      />
+      <div className="filtered-list">
+        {filteredCountries.map(country => (
+          <div 
+            key={country} 
+            onClick={() => handleCountryClick(country)}
+            className="country-item"
+            style={{
+              fontWeight: 'bold',
+              color: getCountryColor(country)
+            }}
+          >
+            {country}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const MapControls = ({ setRotation, setScale, setProj }) => {
+  return (
+    <div className="view-options">
+      <div className="view-options">
+        <button onClick={() => { setRotation([-10, 0, 0]); setScale(180); setProj("geoEqualEarth")}}>Default </button>
+        <button onClick={() => { setRotation([-10, -40, 0]); setScale(180); setProj("geoEqualEarth")}}> North Pole </button>
+        <button onClick={() => { setRotation([-147, 0, 0]); setScale(155); setProj("geoEqualEarth")}}>Pacific </button> 
+        <button 
+    onClick={() => { 
+        setRotation([-60, -20, 0]); setScale(240); setProj("geoOrthographic");}}> Globe-Eurasia 
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+const Map = ({ rotation, scale, projectionType, geographiesData, handleCountryClick, getCountryColor }) => {
+  return (
+    <ComposableMap 
+          viewBox = "25 55 800 500"
+          projection= {projectionType}
+          projectionConfig={{
+            rotate: rotation,
+            scale: scale,
+          }}>
+        <Sphere stroke="#E4E5E6" strokeWidth={0.5} />
+        <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
+        <Geographies geography={geographiesData}>
+         {({ geographies }) => {
+           
+             return geographies.map((geo) => (
+             <Geography
+               key={geo.rsmKey}
+               geography={geo}
+                onClick={() => handleCountryClick(geo.properties.name)}
+                stroke="white"
+                strokeWidth={0.3}
+                style={{
+               default: {
+                 fill: getCountryColor(geo.properties.name),
+                 outline: "none"
+               },
+               hover: {
+                 fill: getCountryColor(geo.properties.name),
+                 outline: "none"
+               },
+               pressed: {
+                 fill: getCountryColor(geo.properties.name),
+                 outline: "none"
+              }
+                }}
+             />
+               ));
+             }}
+            </Geographies>
+      </ComposableMap>
+  );
+};

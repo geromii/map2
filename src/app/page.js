@@ -1,5 +1,10 @@
 import React from 'react';
-import MapChart from './MapChart';  // Make sure the path is correct
+import dynamic from 'next/dynamic'
+
+const MapChart = dynamic(
+  () => import('./MapChart'),
+  { ssr: false }
+)
 
 export default function Home() {
   return (

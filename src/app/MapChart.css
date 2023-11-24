@@ -1,7 +1,8 @@
 .map-container {
-    position: absolute;
+    position: relative;
     top: 10px;
     left: 2px;
+    bottom: 10px;
     width: 99%;
     max-width: 147vh;
     max-height: 95vh;
@@ -9,14 +10,16 @@
     border: 1px solid black;
     overflow: visible;
     background-color: white;
-}
+    padding-bottom: 0px;
+  }
 
 
 
 .info-box {
-    position: absolute;
-    top: 75vw;
+  position: absolute;
+    display: inline-block;
     left: 275px;
+    width: 120px;
     padding: 5px;
     background-color: rgba(7, 27, 78, 0.8);
     border: 1px solid #ccc;
@@ -24,15 +27,15 @@
     z-index: 1000;
     color: white;
     font-size: 12px;
+    margin-top: 11px; 
 }
 
 .view-options {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-  
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
   .view-options button {
     padding: 5px 10px;
     cursor: pointer;
@@ -46,21 +49,30 @@
     background-color: #bbb;
   }
 
-  .country-item {
-    padding: 10px 15px;
-    margin: 5px 0;
-    width: 275px; /* Set width */
-    background-color: white; /* Set background to white */
-    border: 1px solid #d3d3d3;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    display: block;
-    text-align: left;
-    overflow: hidden; /* In case country names are too long */
-    text-overflow: ellipsis; /* This will add '...' for names that are too long */
-    white-space: nowrap; /* Prevents the text from wrapping to the next line */
-  }
+.country-search{
+  display: inline-block;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  margin-top: 11px; 
+}
+
+.country-item {
+  display: inline-block;
+  padding: 10px 15px;
+  margin: 5px 0;
+  width: 275px; /* Set width */
+  background-color: white; /* Set background to white */
+  border: 1px solid #d3d3d3;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  display: block;
+  text-align: left;
+  overflow: hidden; /* In case country names are too long */
+  text-overflow: ellipsis; /* This will add '...' for names that are too long */
+  white-space: nowrap; /* Prevents the text from wrapping to the next line */
+}
   
   .country-item:hover {
     background-color: #f5f5f5;
