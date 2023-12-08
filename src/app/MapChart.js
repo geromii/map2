@@ -5,7 +5,8 @@ import { ComposableMap, Geographies, Geography, Sphere,
   Graticule } from "react-simple-maps";
 import { useCountries } from './useCountries';
 import './MapChart.css';
-import { countriesReducer, initialState, getCountryColor } from './countriesReducer';
+import { countriesReducer, initialState } from './countriesReducer';
+import { multiplyWithScoresMatrix } from './matrixOperations';
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -27,10 +28,6 @@ export default function MapChart() {
   const [projectionType, setProj] = useState("geoEqualEarth");
   const [geographiesData, setGeographiesData] = useState([]);
   const [state, dispatch] = useReducer(countriesReducer, initialState);
-
-  useEffect(() => {
-    console.log("Current state:", state);
-  }, [state]);
   
 
   // First useEffect: Retain this for fetching geographies data
@@ -39,14 +36,29 @@ export default function MapChart() {
       .then(response => response.json())
       .then(data => {
         const geometries = data.objects.world.geometries;
-        console.log(geometries);
         setGeographiesData(data);
       });
   }, []);
 
-  const handleCountryClick = (countryName) => {
-    dispatch({ type: 'INCREMENT_COUNTRY', payload: countryName });
-  };
+
+ 
+let dispatchTimeoutId; // Variable to store the timeout ID
+
+const handleCountryClick = (countryName) => {
+    console.log(countryName);
+    dispatch({ type: 'INCREMENT_COUNTRY_STATE', payload: countryName });
+
+    // Clear any existing timeout to reset the delay
+    clearTimeout(dispatchTimeoutId);
+
+    // Set a new timeout
+    dispatchTimeoutId = setTimeout(async () => {
+        const resultArray = await multiplyWithScoresMatrix(state);
+        console.log(resultArray);
+        dispatch({ type: 'SET_PROBABILITIES', payload: { probabilities: resultArray } });
+    }, 2000); // 1 second delay
+};
+
 
 
 // Example of how to use the reducer function
@@ -66,19 +78,36 @@ export default function MapChart() {
         geographiesData={geographiesData}
         state={state}
         handleCountryClick={handleCountryClick}
-        getCountryColor={getCountryColor}
       />
     </div>
-      <CountrySearch handleCountryClick={handleCountryClick} getCountryColor={getCountryColor} state={state}/>
-      <CountryInfo countries={selectedCountries} />
+      <CountrySearch handleCountryClick={handleCountryClick} state={state}/>
+      <SmallCountries state={state} />
     </div>
   );
 }
 
-function CountryInfo({ countries }) {
-  const smallSelectedCountries = countries.filter(country => 
-    SMALL_COUNTRIES.includes(country.name)
+function SmallCountries({ state }) {
+  // Convert the state object to an array of countries with their states
+  const countryStates = Object.entries(state).map(([name, stateObj]) => ({
+    name,
+    state: stateObj.state, // Now accessing state property of the object
+    color: stateObj.color  // You can also use the color here if needed
+  }));
+
+  // Filter out small countries and exclude those in the initial state
+  const smallSelectedCountries = countryStates.filter(country => 
+    SMALL_COUNTRIES.includes(country.name) && country.state !== 0
   );
+
+  // Function to convert state value to a readable string
+  const stateToString = (stateValue) => {
+    switch(stateValue) {
+      case 1: return 'Red';
+      case 2: return 'Blue';
+      case 3: return 'Neutral';
+      default: return ''; // We don't expect this to be used given the filter
+    }
+  };
 
   return (
     <div className="info-box">
@@ -86,15 +115,17 @@ function CountryInfo({ countries }) {
         <ul>
           <li>Small countries list</li>
           {smallSelectedCountries.map((country) => (
-            <li key={country.name}>{country.name} - {country.side}</li>
+            <li key={country.name}>{country.name} - {stateToString(country.state)}</li>
           ))}
         </ul>
       ) : (
-        <p>Small countries list</p>
+        <p>No small countries selected</p>
       )}
     </div>
   );
 }
+
+
 
 const SMALL_COUNTRIES = [
   "Andorra",
@@ -126,7 +157,7 @@ const SMALL_COUNTRIES = [
   "Vatican City"
 ];
 
-function CountrySearch({ handleCountryClick, getCountryColor, state }) {
+function CountrySearch({ handleCountryClick, state }) {
   const [searchValue, setSearchValue] = useState('');
   const { allCountries, filteredCountries } = useCountries(searchValue);
 
@@ -145,7 +176,7 @@ function CountrySearch({ handleCountryClick, getCountryColor, state }) {
             className="country-item"
             style={{
               fontWeight: 'bold',
-              color: getCountryColor(state[country])
+              color: state[country].color
             }}
           >
             {country}
@@ -205,15 +236,15 @@ const Map = ({
               strokeWidth={0.3}
               style={{
                 default: {
-                  fill: getCountryColor(countryState), // Use the state to get the color
+                  fill: countryState.color, // Use the state to get the color
                   outline: "none"
                 },
                 hover: {
-                  fill: getCountryColor(countryState), // Use the state to get the color for hover as well
+                  fill: countryState.color, // Use the state to get the color for hover as well
                   outline: "none"
                 },
                 pressed: {
-                  fill: getCountryColor(countryState), // Use the state to get the color for pressed state too
+                  fill: countryState.color, // Use the state to get the color for pressed state too
                   outline: "none"
                 }
               }}
