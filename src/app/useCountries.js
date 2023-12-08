@@ -5,11 +5,11 @@ export function useCountries(searchValue) {
   const [filteredCountries, setFilteredCountries] = useState([]);
 
   useEffect(() => {
-    fetch("/features.json")
+    fetch("/countries.json") // Change the URL to point to your "countries.json" file
       .then(response => response.json())
       .then(data => {
-        const geometries = data.objects.world.geometries;
-        setAllCountries(geometries.map(geo => geo.properties.name).sort());
+        // Assuming data is an array of country names in "countries.json"
+        setAllCountries(data.sort());
       });
   }, []);
 

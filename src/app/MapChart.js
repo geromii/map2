@@ -1,12 +1,22 @@
 'use client'
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useReducer } from "react";
 import { ComposableMap, Geographies, Geography, Sphere,
   Graticule } from "react-simple-maps";
 import { useCountries } from './useCountries';
 import './MapChart.css';
+import { countriesReducer, initialState, getCountryColor } from './countriesReducer';
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
+/*
+Future goals for this project:
+1. Build a data model such that the predicted side of a country can be presented on the map
+2. Build an info panel that shows the population, land, wealth and military sizes of the two sides
+3. Build a way to show the predicted side of a country on the map
+4. Grant an ability for custom labels of the two sides?
+
+*/
 
 
 
@@ -16,7 +26,12 @@ export default function MapChart() {
   const [scale, setScale] = useState(180);
   const [projectionType, setProj] = useState("geoEqualEarth");
   const [geographiesData, setGeographiesData] = useState([]);
-  const [searchValue, setSearchValue] = useState('');
+  const [state, dispatch] = useReducer(countriesReducer, initialState);
+
+  useEffect(() => {
+    console.log("Current state:", state);
+  }, [state]);
+  
 
   // First useEffect: Retain this for fetching geographies data
   useEffect(() => {
@@ -29,48 +44,14 @@ export default function MapChart() {
       });
   }, []);
 
-  // Using custom hook for countries data
-  const { filteredCountries } = useCountries(searchValue);
-
   const handleCountryClick = (countryName) => {
-    setSelectedCountries((prevCountries) => {
-      const country = prevCountries.find(c => c.name === countryName);
-  
-      if (!country) {
-        return [...prevCountries, { name: countryName, side: "Red" }];
-      }
-  
-      const updatedSide = getNextSide(country.side);
-      if (updatedSide === "Red" && country.side === "dedicated neutral") { // Add this condition
-        return prevCountries.filter(c => c.name !== countryName);
-      }
-  
-      const updatedCountry = { ...country, side: updatedSide };
-      return prevCountries.map(c => c.name === countryName ? updatedCountry : c);
-    });
+    dispatch({ type: 'INCREMENT_COUNTRY', payload: countryName });
   };
-  
 
-  const getNextSide = (currentSide) => {
-    switch (currentSide) {
-      case "Red": return "Blue";
-      case "Blue": return "dedicated neutral";
-      case "dedicated neutral": return "Red"; // Or, if you want to remove it from the list when clicking after "dedicated neutral", handle it in `handleCountryClick`.
-      default: return "Red";
-    }
-  };
-  
 
-  const getCountryColor = (countryName) => {
-    const country = selectedCountries.find(c => c.name === countryName);
-    if (!country) return "#b0b0b0";
-    switch (country.side) {
-      case "Red": return "red";
-      case "Blue": return "#4af";
-      case "dedicated neutral": return "#646464"; // Color for dedicated neutral
-      default: return "#b0b0b0";
-    }
-  };
+// Example of how to use the reducer function
+// let newState = countriesReducer(currentState, { type: 'INCREMENT_COUNTRY', payload: 'Country1' });
+// let color = getCountryColor(newState['Country1']);
   
   
 
@@ -83,11 +64,12 @@ export default function MapChart() {
         scale={scale}
         projectionType={projectionType}
         geographiesData={geographiesData}
+        state={state}
         handleCountryClick={handleCountryClick}
         getCountryColor={getCountryColor}
       />
     </div>
-      <CountrySearch handleCountryClick={handleCountryClick} getCountryColor={getCountryColor} />
+      <CountrySearch handleCountryClick={handleCountryClick} getCountryColor={getCountryColor} state={state}/>
       <CountryInfo countries={selectedCountries} />
     </div>
   );
@@ -103,8 +85,8 @@ function CountryInfo({ countries }) {
       {smallSelectedCountries.length > 0 ? (
         <ul>
           <li>Small countries list</li>
-          {smallSelectedCountries.map((country, index) => (
-            <li key={index}>{country.name} - {country.side}</li>
+          {smallSelectedCountries.map((country) => (
+            <li key={country.name}>{country.name} - {country.side}</li>
           ))}
         </ul>
       ) : (
@@ -113,6 +95,7 @@ function CountryInfo({ countries }) {
     </div>
   );
 }
+
 const SMALL_COUNTRIES = [
   "Andorra",
   "Antigua and Barbuda",
@@ -123,11 +106,11 @@ const SMALL_COUNTRIES = [
   "Grenada",
   "Kiribati",
   "Liechtenstein",
-  "Luxembourg", // Added
+  "Luxembourg", 
   "Maldives",
   "Malta",
   "Marshall Islands",
-  "Mauritius", // Added
+  "Mauritius", 
   "Micronesia",
   "Monaco",
   "Nauru",
@@ -142,7 +125,8 @@ const SMALL_COUNTRIES = [
   "Tuvalu",
   "Vatican City"
 ];
-function CountrySearch({ handleCountryClick, getCountryColor }) {
+
+function CountrySearch({ handleCountryClick, getCountryColor, state }) {
   const [searchValue, setSearchValue] = useState('');
   const { allCountries, filteredCountries } = useCountries(searchValue);
 
@@ -161,7 +145,7 @@ function CountrySearch({ handleCountryClick, getCountryColor }) {
             className="country-item"
             style={{
               fontWeight: 'bold',
-              color: getCountryColor(country)
+              color: getCountryColor(state[country])
             }}
           >
             {country}
@@ -171,6 +155,7 @@ function CountrySearch({ handleCountryClick, getCountryColor }) {
     </div>
   );
 }
+
 
 const MapControls = ({ setRotation, setScale, setProj }) => {
   return (
@@ -189,45 +174,53 @@ const MapControls = ({ setRotation, setScale, setProj }) => {
 };
 
 
-const Map = ({ rotation, scale, projectionType, geographiesData, handleCountryClick, getCountryColor }) => {
+const Map = ({ 
+  rotation, 
+  scale, 
+  projectionType, 
+  geographiesData, 
+  state, 
+  handleCountryClick, 
+  getCountryColor 
+}) => {
   return (
     <ComposableMap 
-          viewBox = "25 55 800 500"
-          projection= {projectionType}
-          projectionConfig={{
-            rotate: rotation,
-            scale: scale,
-          }}>
-        <Sphere stroke="#E4E5E6" strokeWidth={0.5} />
-        <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
-        <Geographies geography={geographiesData}>
-         {({ geographies }) => {
-           
-             return geographies.map((geo) => (
-             <Geography
-               key={geo.rsmKey}
-               geography={geo}
-                onClick={() => handleCountryClick(geo.properties.name)}
-                stroke="white"
-                strokeWidth={0.3}
-                style={{
-               default: {
-                 fill: getCountryColor(geo.properties.name),
-                 outline: "none"
-               },
-               hover: {
-                 fill: getCountryColor(geo.properties.name),
-                 outline: "none"
-               },
-               pressed: {
-                 fill: getCountryColor(geo.properties.name),
-                 outline: "none"
-              }
-                }}
-             />
-               ));
-             }}
-            </Geographies>
-      </ComposableMap>
+      viewBox="25 60 800 458"
+      projection={projectionType}
+      projectionConfig={{
+        rotate: rotation,
+        scale: scale,
+      }}>
+      <Sphere stroke="#E4E5E6" strokeWidth={0.5} />
+      <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
+      <Geographies geography={geographiesData}>
+        {({ geographies }) => geographies.map((geo) => {
+          const countryState = state[geo.properties.name]; // Access the state for each country
+          return (
+            <Geography
+              key={geo.rsmKey}
+              geography={geo}
+              onClick={() => handleCountryClick(geo.properties.name)}
+              stroke="white"
+              strokeWidth={0.3}
+              style={{
+                default: {
+                  fill: getCountryColor(countryState), // Use the state to get the color
+                  outline: "none"
+                },
+                hover: {
+                  fill: getCountryColor(countryState), // Use the state to get the color for hover as well
+                  outline: "none"
+                },
+                pressed: {
+                  fill: getCountryColor(countryState), // Use the state to get the color for pressed state too
+                  outline: "none"
+                }
+              }}
+            />
+          );
+        })}
+      </Geographies>
+    </ComposableMap>
   );
 };
