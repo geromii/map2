@@ -14,19 +14,26 @@ export const SET_PROBABILITIES = 'SET_PROBABILITIES';
 
 // Color Map based on states
 export const COLOR_MAP = {
-  [STATES.INITIAL]: "#b0b0b0",
+  [STATES.INITIAL]: "#c8c8c8",
   [STATES.RED]: "#b8060b",
-  [STATES.BLUE]: "#110d8c",
+  [STATES.BLUE]: "#0616c9",
   [STATES.NEUTRAL]: "#646464",
 };
 
 
 // Function to compute color based on probability
-function getColorFromProbability(probability) {
+
+function getColorFromProbability(number) {
   // Define color values at probabilities -1, 0, and 1
   const colorAtNeg1 = {r: 20, g: 20, b: 255}; // RGB for #00ff00 (Example color for -1)
-  const colorAt0 = {r: 176, g: 176, b: 176}; // RGB for #b0b0b0
+  const colorAt0 = {r: 200, g: 200, b: 200}; // RGB for #b0b0b0
   const colorAt1 = {r: 252, g: 27, b: 23}; // RGB for #fc0703
+
+  let probability = null
+
+  if (number > 0) {probability = number ** 1.8}
+  else {probability = -1*((-1 * number) ** 1.8)}
+
 
   function interpolateColor(color1, color2, fraction) {
       // Linear interpolation between two colors
@@ -51,6 +58,8 @@ function getColorFromProbability(probability) {
   // Convert RGB to hexadecimal
   return `#${interpolatedColor.r.toString(16).padStart(2, '0')}${interpolatedColor.g.toString(16).padStart(2, '0')}${interpolatedColor.b.toString(16).padStart(2, '0')}`;
 }
+
+
 
 
 // Test the function with different probabilities
@@ -100,4 +109,3 @@ export const initialState = countries.reduce((acc, country) => {
   };
   return acc;
 }, {});
-

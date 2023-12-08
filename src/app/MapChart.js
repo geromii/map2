@@ -45,18 +45,31 @@ export default function MapChart() {
 let dispatchTimeoutId; // Variable to store the timeout ID
 
 const handleCountryClick = (countryName) => {
-    console.log(countryName);
-    dispatch({ type: 'INCREMENT_COUNTRY_STATE', payload: countryName });
+  console.log(countryName);
+  dispatch({ type: 'INCREMENT_COUNTRY_STATE', payload: countryName });
 
-    // Clear any existing timeout to reset the delay
-    clearTimeout(dispatchTimeoutId);
+  // Clear any existing timeout to reset the delay
+  clearTimeout(dispatchTimeoutId);
 
-    // Set a new timeout
-    dispatchTimeoutId = setTimeout(async () => {
-        const resultArray = await multiplyWithScoresMatrix(state);
-        console.log(resultArray);
-        dispatch({ type: 'SET_PROBABILITIES', payload: { probabilities: resultArray } });
-    }, 2000); // 1 second delay
+  // Set a new timeout
+  dispatchTimeoutId = setTimeout(async () => {
+      // Step 1: Clone the state
+      const clonedState = JSON.parse(JSON.stringify(state));
+
+      // Step 2: Update the cloned state
+      const currentState = clonedState[countryName].state;
+      const nextState = (currentState + 1) % 4;
+      clonedState[countryName] = {
+          ...clonedState[countryName],
+          state: nextState,
+      };
+
+      // Step 3: Pass the cloned state to the function
+      const resultArray = await multiplyWithScoresMatrix(clonedState);
+      console.log(resultArray);
+
+      dispatch({ type: 'SET_PROBABILITIES', payload: { probabilities: resultArray } });
+  }, 75); 
 };
 
 
