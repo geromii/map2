@@ -31,8 +31,11 @@ function getColorFromProbability(number) {
 
   let probability = null
 
+  if (number > 1) {number = 1}
+  else if (number < -1) {number = -1}
   if (number > 0) {probability = number ** 1.8}
   else {probability = -1*((-1 * number) ** 1.8)}
+
 
 
   function interpolateColor(color1, color2, fraction) {
