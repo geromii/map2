@@ -1,91 +1,188 @@
-.map-container {
-    position: relative;
-    top: 10px;
-    left: 2px;
-    bottom: 10px;
-    width: 99%;
-    max-width: 147vh;
-    max-height: 95vh;
-    height: 90%;
-    border: 1px solid black;
-    overflow: hidden;
-    background-color: white;
-    padding-bottom: 0px;
-    webkit-user-select: none;  /* Safari 3.1+ */
-    -moz-user-select: none;     /* Firefox 2+ */
-    -ms-user-select: none;      /* IE 10+ */
-    user-select: none;          /* Standard syntax */
-  }
-
-
-
-.info-box {
-  position: absolute;
-    display: inline-block;
-    left: 275px;
-    width: 120px;
-    padding: 5px;
-    background-color: rgba(7, 27, 78, 0.8);
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    z-index: 1000;
-    color: white;
-    font-size: 12px;
-    margin-top: 11px; 
+/* Reset CSS to nullify browser defaults */
+* {
+  margin: 0; /* Removes margin from all elements */
+  padding: 0; /* Removes padding from all elements */
+  box-sizing: border-box; /* Changes the box-model to include padding and border in element's width/height */
+  border: none; /* Removes borders from all elements */
+  outline: none; /* Removes outlines from all elements */
+  background: transparent; /* Sets a transparent background for all elements */
+  font-size: 100%; /* Sets font size to default for all elements */
+  font: inherit; /* Inherits font properties from parent elements */
+  vertical-align: baseline; /* Aligns elements to the baseline */
+  text-decoration: none; /* Removes text decoration (like underlines for links) */
+  color: inherit; /* Inherits color from parent elements */
 }
 
+/* Flex container for map and search */
+.whole-container {
+  display: flex; /* Enables flexbox layout */
+  justify-content: space-between; /* Spaces children with equal space between them */
+  flex-wrap: wrap; /* Allows flex items to wrap onto multiple lines */
+  align-items: stretch; /* Stretches flex items to fill the container */
+  align-content: stretch; /* Aligns content lines when there's extra space in the cross-axis */
+  width: 100%; /* Sets width to fill the parent container */
+}
+
+/* Container for the map */
+.map-container {
+  position: relative; /* Positioning relative to its normal position */
+  top: 10px; /* 10 pixels from the top of its normal position */
+  left: 2px; /* 2 pixels from the left of its normal position */
+  bottom: 10px; /* 10 pixels from the bottom */
+  width: 99%; /* Width set to 99% of parent container */
+  max-width: 147vh; /* Maximum width of 147% of viewport height */
+  max-height: 95vh; /* Maximum height of 95% of viewport height */
+  height: 90%; /* Height set to 90% of parent container */
+  border: 1px solid black; /* 1 pixel solid black border */
+  overflow: hidden; /* Hides content that overflows container's box */
+  background-color: white; /* White background color */
+  padding-bottom: 0px; /* No padding at the bottom */
+  /* User select properties to prevent text selection */
+  -webkit-user-select: none;  /* For Safari */
+  -moz-user-select: none;     /* For Firefox */
+  -ms-user-select: none;      /* For IE 10+ */
+  user-select: none;          /* Standard syntax */
+}
+
+/* Style for the info box */
+.info-box {
+  position: absolute; /* Positions the element absolutely to its relative parent */
+  display: inline-block; /* Displays element as an inline-level block container */
+  left: 275px; /* 275 pixels from the left of its containing block */
+  width: 120px; /* Width set to 120 pixels */
+  padding: 5px; /* Padding of 5 pixels on all sides */
+  background-color: rgba(7, 27, 78, 0.8); /* Background color with opacity */
+  border: 1px solid #ccc; /* 1 pixel solid grey border */
+  border-radius: 5px; /* Rounded corners of 5 pixels radius */
+  z-index: 1000; /* Stacking order, higher than sibling elements */
+  color: white; /* Text color set to white */
+  font-size: 12px; /* Font size set to 12 pixels */
+  margin-top: 11px; /* Margin of 11 pixels from the top */
+}
+
+/* Flex container for view options */
 .view-options {
+  display: flex; /* Enables flexbox layout */
+  justify-content: center; /* Centers children horizontally */
+  gap: 10px; /* Gap of 10 pixels between each flex item */
+  margin-bottom: 10px; /* Margin of 10 pixels at the bottom */
+  flex-wrap: wrap; /* Allows flex items to wrap onto multiple lines */
+  align-items: center; /* Centers flex items along the cross-axis */
+}
+
+/* Style for buttons in view options */
+.view-options button {
+  padding: 5px 10px; /* Padding of 5 pixels top/bottom and 10 pixels left/right */
+  cursor: pointer; /* Changes cursor to pointer when hovering over the button */
+  background-color: #ddd; /* Background color of buttons */
+  transition: background-color 0.3s; /* Transition effect for background color */
+  border-radius: 2px; /* Rounded corners of 2 pixels radius */
+  font-family: inherit; /* Inherits font family from parent element */
+  font-size: 100%; /* Sets font size to default (100%) */
+}
+
+/* Hover style for buttons */
+.view-options button:hover {
+  background-color: #bbb; /* Darker background color when hovered */
+}
+
+/* Style for country search section */
+.country-search {
+  top: 50px;
+  display: inline-block; /* Displays as inline block */
+  justify-content: center; /* Centers children horizontally */
+  gap: 10px; /* Gap of 10 pixels between each item */
+  margin-bottom: 10px; /* Margin of 10 pixels at the bottom */
+  margin-top: 11px; /* Margin of 11 pixels at the top */
+}
+
+/* Style for each country item */
+.country-item {
+  top: 10px;
+  display: inline-block; /* Displays as inline block */
+  padding: 10px 15px; /* Padding of 10 pixels top/bottom and 15 pixels left/right */
+  margin: 5px 0; /* Margin of 5 pixels top/bottom */
+  width: 275px; /* Width set to 275 pixels */
+  background-color: white; /* Background color set to white */
+  border: 1px solid #d3d3d3; /* 1 pixel solid grey border */
+  border-radius: 5px; /* Rounded corners of 5 pixels radius */
+  cursor: pointer; /* Changes cursor to pointer when hovering over the item */
+  transition: background-color 0.2s, transform 0.1s; /* Transition effects for background color and transform */
+  text-align: left; /* Text aligned to the left */
+  overflow: hidden; /* Hides content that overflows the box */
+  text-overflow: ellipsis; /* Adds an ellipsis (...) to truncated text */
+  white-space: nowrap; /* Prevents text from wrapping to the next line */
+}
+
+/* Hover style for country items */
+.country-item:hover {
+  background-color: #f5f5f5; /* Lighter background color when hovered */
+  transform: scale(1.02); /* Slightly scales up the item */
+}
+
+/* Active state style for country items */
+.country-item:active {
+  background-color: #ececec; /* Even lighter background color when active */
+  transform: scale(0.98); /* Slightly scales down the item */
+}
+
+.toggle-search-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  position: absolute; /* Position it in the top right corner */
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+}
+
+.hamburger-icon {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background-color: black;
+  position: relative;
+}
+
+.hamburger-icon::before,
+.hamburger-icon::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background-color: black;
+  left: 0;
+}
+
+.hamburger-icon::before {
+  top: -8px;
+}
+
+.hamburger-icon::after {
+  top: 8px;
+}
+
+.map-container.overlay-active {
+  position: relative;
+}
+
+.country-search-overlay {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+  z-index: 10; /* Ensure it's above other content */
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-  .view-options button {
-    padding: 5px 10px;
-    cursor: pointer;
-    border: none;
-    background-color: #ddd;
-    transition: background-color 0.3s;
-    border-radius: 2px;
-  }
-  
-  .view-options button:hover {
-    background-color: #bbb;
-  }
-
-.country-search{
-  display: inline-block;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  margin-top: 11px; 
+  align-items: center;
+  z-index: 10;
 }
 
-.country-item {
-  display: inline-block;
-  padding: 10px 15px;
-  margin: 5px 0;
-  width: 275px; /* Set width */
-  background-color: white; /* Set background to white */
-  border: 1px solid #d3d3d3;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  display: block;
-  text-align: left;
-  overflow: hidden; /* In case country names are too long */
-  text-overflow: ellipsis; /* This will add '...' for names that are too long */
-  white-space: nowrap; /* Prevents the text from wrapping to the next line */
+.map-container.overlay-active .map {
+  filter: grayscale(100%); /* Gray out the map */
 }
-  
-  .country-item:hover {
-    background-color: #f5f5f5;
-    transform: scale(1.02);
-  }
-  
-  .country-item:active {
-    background-color: #ececec;
-    transform: scale(0.98);
-  }
-  
-  
+
+

@@ -25,9 +25,9 @@ export const COLOR_MAP = {
 
 function getColorFromProbability(number) {
   // Define color values at probabilities -1, 0, and 1
-  const colorAtNeg1 = {r: 20, g: 20, b: 255}; // RGB for #00ff00 (Example color for -1)
+  const colorAtNeg1 = {r: 0, g: 0, b: 255}; // RGB for #00ff00 (Example color for -1)
   const colorAt0 = {r: 200, g: 200, b: 200}; // RGB for #b0b0b0
-  const colorAt1 = {r: 252, g: 27, b: 23}; // RGB for #fc0703
+  const colorAt1 = {r: 255, g: 0, b: 0}; // RGB for #fc0703
 
   let probability = null
 
