@@ -68,6 +68,7 @@
   margin-bottom: 10px; /* Margin of 10 pixels at the bottom */
   flex-wrap: wrap; /* Allows flex items to wrap onto multiple lines */
   align-items: center; /* Centers flex items along the cross-axis */
+  font-family: Arial, sans-serif;
 }
 
 /* Style for buttons in view options */
@@ -86,9 +87,15 @@
   background-color: #bbb; /* Darker background color when hovered */
 }
 
+.view-options-container {
+  display: flex;
+}
+
 /* Style for country search section */
 .country-search {
-  top: 50px;
+  position: absolute;
+  top: 20px;
+  padding-top: 20px; /* 20 pixels from the top of its normal position */
   display: inline-block; /* Displays as inline block */
   justify-content: center; /* Centers children horizontally */
   gap: 10px; /* Gap of 10 pixels between each item */
@@ -98,8 +105,7 @@
 
 /* Style for each country item */
 .country-item {
-  top: 10px;
-  display: inline-block; /* Displays as inline block */
+  display: block; /* Displays as inline block */
   padding: 10px 15px; /* Padding of 10 pixels top/bottom and 15 pixels left/right */
   margin: 5px 0; /* Margin of 5 pixels top/bottom */
   width: 275px; /* Width set to 275 pixels */
@@ -112,6 +118,7 @@
   overflow: hidden; /* Hides content that overflows the box */
   text-overflow: ellipsis; /* Adds an ellipsis (...) to truncated text */
   white-space: nowrap; /* Prevents text from wrapping to the next line */
+  font-family: Arial, sans-serif; /* Font family set to Arial */
 }
 
 /* Hover style for country items */
@@ -176,7 +183,7 @@
   background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
   z-index: 10; /* Ensure it's above other content */
   display: flex;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
   z-index: 10;
 }
@@ -185,4 +192,116 @@
   filter: grayscale(100%); /* Gray out the map */
 }
 
+
+.filtered-list {
+  background: transparent; 
+  max-height: 400px; /* Adjust the height as needed */
+  overflow-y: auto; /* Enables vertical scrolling */
+  overflow-x: hidden; /* Hides horizontal scrollbar */
+}
+
+.search-input {position: relative;
+  top: -2px;
+  background: white;
+  width: 200px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 100%;
+  box-sizing: border-box;
+}
+
+.toggle-switch {
+  position: relative;
+  top: 4px;
+  display: inline-block;
+  width: 45px;
+  height: 24px;
+  margin: 0px 0px 0px 3px;  /* Adjust spacing */
+}
+
+.toggle-label {
+  position: relative;
+  top: 4px;
+  right: 8px;
+  margin: 0px 3px 0px 2px;  /* Adjust spacing */
+  font-size: 16px; /* Adjust font size */
+  font-weight: bold; /* Make labels bold */
+  color: #555; /* Set a color for the labels */
+  transition: color 0.3s; /* Smooth transition for color change */
+  cursor: pointer; /* Change cursor to indicate interactiveness */
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.switch:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 3px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .switch {
+  background-color: #2196F3;
+}
+
+input:focus + .switch {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .switch:before {
+  -webkit-transform: translateX(19.5px);
+  -ms-transform: translateX(19.5px);
+  transform: translateX(19.5px);
+}
+
+.second-order-toggle-btn {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+
+
+
+.middle-wrapper {
+  display: flex;
+  border: 2px dashed black; /* Creates the square border */
+  padding: 1px; /* Spacing between the border and inner boxes */
+  position: relative;
+  top: 0px; /* 10 pixels from the top of its normal position */
+  border-radius: 5px;
+  padding-left: 4px;
+}
 

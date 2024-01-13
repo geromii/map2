@@ -15,8 +15,8 @@ export const SET_PROBABILITIES = 'SET_PROBABILITIES';
 // Color Map based on states
 export const COLOR_MAP = {
   [STATES.INITIAL]: "#c8c8c8",
-  [STATES.RED]: "#b8060b",
-  [STATES.BLUE]: "#0616c9",
+  [STATES.RED]: "#850000",
+  [STATES.BLUE]: "#000085",
   [STATES.NEUTRAL]: "#646464",
 };
 
@@ -24,51 +24,28 @@ export const COLOR_MAP = {
 // Function to compute color based on probability
 
 function getColorFromProbability(number) {
-  // Define color values at probabilities -1, 0, and 1
-  const colorAtNeg1 = {r: 0, g: 0, b: 255}; // RGB for #00ff00 (Example color for -1)
-  const colorAt0 = {r: 200, g: 200, b: 200}; // RGB for #b0b0b0
-  const colorAt1 = {r: 255, g: 0, b: 0}; // RGB for #fc0703
+  // Restrict number to range [-1, 1]
+  number = Math.max(-1, Math.min(number, 1));
 
-  let probability = null
+  // Adjust number using power function on its absolute value
+  let probability = Math.abs(number) ** 1.8;
 
-  if (number > 1) {number = 1}
-  else if (number < -1) {number = -1}
-  if (number > 0) {probability = number ** 1.8}
-  else {probability = -1*((-1 * number) ** 1.8)}
+  // Determine hue based on sign of the number
+  let hue = number >= 0 ? 0 : 240;
 
+  // Define saturation and lightness
+  let saturation = 100 * probability; // Scale from 0 to 100%
+  let lightness = 78 - (30 * probability); 
 
-
-  function interpolateColor(color1, color2, fraction) {
-      // Linear interpolation between two colors
-      return {
-          r: Math.round(color1.r + (color2.r - color1.r) * fraction),
-          g: Math.round(color1.g + (color2.g - color1.g) * fraction),
-          b: Math.round(color1.b + (color2.b - color1.b) * fraction)
-      };
-  }
-
-  let interpolatedColor;
-  if (probability < 0) {
-      // Interpolate between colorAtNeg1 and colorAt0
-      const fraction = (probability + 1) / 1; // Normalize -1 to 0 range to 0 to 1
-      interpolatedColor = interpolateColor(colorAtNeg1, colorAt0, fraction);
-  } else {
-      // Interpolate between colorAt0 and colorAt1
-      const fraction = probability; // Probability already in 0 to 1 range
-      interpolatedColor = interpolateColor(colorAt0, colorAt1, fraction);
-  }
-
-  // Convert RGB to hexadecimal
-  return `#${interpolatedColor.r.toString(16).padStart(2, '0')}${interpolatedColor.g.toString(16).padStart(2, '0')}${interpolatedColor.b.toString(16).padStart(2, '0')}`;
+  // Convert HSL to RGB (or use a library function for this)
+  // return hslToRgb(hue, saturation, lightness);
+  // For the purpose of this example, let's just return the HSL value
+  return `hsl(${hue}, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
 }
 
 
 
 
-// Test the function with different probabilities
-console.log(getColorFromProbability(0));    // Should return #0349fc
-console.log(getColorFromProbability(0.5));  // Should return #b0b0b0
-console.log(getColorFromProbability(1));    // Should return #fc0703
 
 
 // Reducer Function

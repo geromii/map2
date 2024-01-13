@@ -8,14 +8,15 @@ import './MapChart.css';
 import { countriesReducer, initialState } from './countriesReducer';
 import { multiplyWithScoresMatrix } from './matrixOperations';
 
+
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 /*
 Future goals for this project:
-1. Build a data model such that the predicted side of a country can be presented on the map
-2. Build an info panel that shows the population, land, wealth and military sizes of the two sides
-3. Build a way to show the predicted side of a country on the map
-4. Grant an ability for custom labels of the two sides?
+1. Toggle between predictions on or off
+2. Toggle between second order predictions on or off
+3 . Toggle between: different projections? different color schemes? different data?
+
 
 */
 
@@ -29,6 +30,8 @@ export default function MapChart() {
   const [geographiesData, setGeographiesData] = useState([]);
   const [state, dispatch] = useReducer(countriesReducer, initialState);
   const [isCountrySearchVisible, setIsCountrySearchVisible] = useState(false);
+  const [isProjectionActive, setIsProjectionActive] = useState(true);
+  const [isSecondOrderActive, setIsSecondOrderActive] = useState(false);
 
   const toggleCountrySearch = () => {
     setIsCountrySearchVisible(!isCountrySearchVisible);
@@ -47,10 +50,9 @@ export default function MapChart() {
 
 
  
-let dispatchTimeoutId; // Variable to store the timeout ID
+  let dispatchTimeoutId; // Variable to store the timeout ID
 
-const handleCountryClick = (countryName) => {
-  console.log(countryName);
+  const handleCountryClick = (countryName) => {
   dispatch({ type: 'INCREMENT_COUNTRY_STATE', payload: countryName });
 
   // Clear any existing timeout to reset the delay
@@ -71,7 +73,6 @@ const handleCountryClick = (countryName) => {
 
       // Step 3: Pass the cloned state to the function
       const resultArray = await multiplyWithScoresMatrix(clonedState);
-      console.log(resultArray);
 
       dispatch({ type: 'SET_PROBABILITIES', payload: { probabilities: resultArray } });
   }, 75); 
@@ -79,9 +80,9 @@ const handleCountryClick = (countryName) => {
 
 
 
-// Example of how to use the reducer function
-// let newState = countriesReducer(currentState, { type: 'INCREMENT_COUNTRY', payload: 'Country1' });
-// let color = getCountryColor(newState['Country1']);
+  // Example of how to use the reducer function
+  // let newState = countriesReducer(currentState, { type: 'INCREMENT_COUNTRY', payload: 'Country1' });
+  // let color = getCountryColor(newState['Country1']);
   
   
 
@@ -91,7 +92,7 @@ const handleCountryClick = (countryName) => {
       <button className="toggle-search-btn" onClick={toggleCountrySearch}>
         <span className="hamburger-icon"></span>
       </button>
-      <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} />
+      <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} setIsSecondOrderActive={setIsSecondOrderActive}/>
       <Map
         rotation={rotation}
         scale={scale}
@@ -117,9 +118,14 @@ function CountrySearch({ handleCountryClick, state }) {
   const [searchValue, setSearchValue] = useState('');
   const { allCountries, filteredCountries } = useCountries(searchValue);
 
+  const selectedCountries = Object.keys(state).filter(country => state[country].state !== 0);
+  console.log(selectedCountries);
+  console.log(state);
+  
+
   return (
     <div className="country-search">
-      <input
+      <input className="search-input"
         value={searchValue}
         onChange={e => setSearchValue(e.target.value)}
         placeholder="Search for a country..."
@@ -144,21 +150,66 @@ function CountrySearch({ handleCountryClick, state }) {
 }
 
 
-const MapControls = ({ setRotation, setScale, setProj }) => {
+const MapControls = ({ setRotation, setScale, setProj, isProjectionActive, 
+  setIsProjectionActive, isSecondOrderActive, setIsSecondOrderActive}) => {
+  const [isPacific, setIsPacific] = useState(false);
+
+  const handleToggle = () => {
+    setIsPacific(!isPacific);
+    if (!isPacific) {
+      setRotation([-147, 0, 0]);
+      setScale(155);
+      setProj("geoEqualEarth");
+    } else {
+      setRotation([-10, 0, 0]);
+      setScale(180);
+      setProj("geoEqualEarth");
+    }
+  };
+
+  const handleProjectionToggle = () => {
+    if (isProjectionActive) {
+      setIsSecondOrderActive(false)
+    }
+    setIsProjectionActive(!isProjectionActive);
+  }
+
+  const handleSecondOrderToggle = () => {
+    setIsSecondOrderActive(!isSecondOrderActive);
+  };
+
+
   return (
-    <div className="view-options">
+    <div className = "view-options-container">
       <div className="view-options">
-        <button onClick={() => { setRotation([-10, 0, 0]); setScale(180); setProj("geoEqualEarth")}}>Default </button>
-        <button onClick={() => { setRotation([-10, -40, 0]); setScale(180); setProj("geoEqualEarth")}}> North Pole </button>
-        <button onClick={() => { setRotation([-147, 0, 0]); setScale(155); setProj("geoEqualEarth")}}>Pacific </button> 
-        <button 
-    onClick={() => { 
-        setRotation([-60, -20, 0]); setScale(240); setProj("geoOrthographic");}}> Globe-Eurasia 
-        </button>
+        <label className="toggle-switch">
+          <input type="checkbox" checked={isPacific} onChange={handleToggle} />
+          <span className="switch" />
+        </label>
+        <label className="toggle-label" onClick = {handleToggle} >Pacific</label>
       </div>
+      <div className = "middle-wrapper">
+        <div className="view-options">
+        <label className="toggle-switch">
+          <input type="checkbox" checked={isProjectionActive} onChange={handleProjectionToggle} />
+          <span className="switch" />
+        </label>
+        <label className="toggle-label" onClick={handleProjectionToggle}> Projections</label>
+        </div>
+        <div className="view-options">
+        <label className="toggle-switch">
+          <input type="checkbox" checked={isSecondOrderActive} onChange={handleSecondOrderToggle} />
+          <span className="switch" />
+        </label>
+        <label className="toggle-label" onClick={handleSecondOrderToggle}> 2nd Order</label>
+        </div>
+      </div>
+
     </div>
   );
 };
+
+
 
 
 const Map = ({ 
