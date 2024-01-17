@@ -135,7 +135,6 @@ const Second_Order_Info = (state) => {
     }, 0);
 
     const roundedSum = Number(sum.toFixed(1));
-
     console.log('Total sum of probabilities (rounded):', roundedSum);
     return roundedSum;
 
@@ -148,7 +147,7 @@ let severity_score = sumProbabilities(state);
   return (
     <div className="second-order-info-box"> 
       <br></br>
-      Severity score is {severity_score}
+      Global Severity score is {severity_score}
     </div>
   );
 };

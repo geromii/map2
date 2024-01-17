@@ -85,7 +85,7 @@ export const initialState = countries.reduce((acc, country) => {
   acc[country] = { 
     state: STATES.INITIAL, 
     color: COLOR_MAP[STATES.INITIAL],
-    probability: 0.5 // Default probability
+    probability: 0 // Default probability
   };
   return acc;
 }, {});
