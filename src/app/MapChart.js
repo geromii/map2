@@ -23,7 +23,6 @@ Future goals for this project:
 
 
 export default function MapChart() {
-  const [selectedCountries, setSelectedCountries] = useState([]);
   const [rotation, setRotation] = useState([-10, 0, 0]);
   const [scale, setScale] = useState(180);
   const [projectionType, setProj] = useState("geoEqualEarth");
@@ -32,6 +31,7 @@ export default function MapChart() {
   const [isCountrySearchVisible, setIsCountrySearchVisible] = useState(false);
   const [isProjectionActive, setIsProjectionActive] = useState(true);
   const [isSecondOrderActive, setIsSecondOrderActive] = useState(false);
+
 
   const toggleCountrySearch = () => {
     setIsCountrySearchVisible(!isCountrySearchVisible);
@@ -72,7 +72,7 @@ export default function MapChart() {
       };
 
       // Step 3: Pass the cloned state to the function
-      const resultArray = await multiplyWithScoresMatrix(clonedState);
+      const resultArray = await multiplyWithScoresMatrix(clonedState, isProjectionActive, isSecondOrderActive);
 
       dispatch({ type: 'SET_PROBABILITIES', payload: { probabilities: resultArray } });
   }, 75); 
@@ -83,8 +83,9 @@ export default function MapChart() {
   // Example of how to use the reducer function
   // let newState = countriesReducer(currentState, { type: 'INCREMENT_COUNTRY', payload: 'Country1' });
   // let color = getCountryColor(newState['Country1']);
-  
-  
+
+
+
 
   return (
     <div className="whole-container">
@@ -92,7 +93,9 @@ export default function MapChart() {
       <button className="toggle-search-btn" onClick={toggleCountrySearch}>
         <span className="hamburger-icon"></span>
       </button>
-      <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} setIsSecondOrderActive={setIsSecondOrderActive}/>
+      <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} 
+      setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} 
+      setIsSecondOrderActive={setIsSecondOrderActive} dispatch={dispatch} state={state}/>
       <Map
         rotation={rotation}
         scale={scale}
@@ -151,7 +154,7 @@ function CountrySearch({ handleCountryClick, state }) {
 
 
 const MapControls = ({ setRotation, setScale, setProj, isProjectionActive, 
-  setIsProjectionActive, isSecondOrderActive, setIsSecondOrderActive}) => {
+  setIsProjectionActive, isSecondOrderActive, setIsSecondOrderActive, dispatch, state}) => {
   const [isPacific, setIsPacific] = useState(false);
 
   const handleToggle = () => {
@@ -167,17 +170,42 @@ const MapControls = ({ setRotation, setScale, setProj, isProjectionActive,
     }
   };
 
-  const handleProjectionToggle = () => {
-    if (isProjectionActive) {
-      setIsSecondOrderActive(false)
-    }
-    setIsProjectionActive(!isProjectionActive);
-  }
+  const handleProjectionToggle = async () => {
+    setIsProjectionActive(current => {
+      const newState = !current;
+      if (!newState) {
+        setIsSecondOrderActive(false);
+      }
+      updateProbabilities(newState, newState ? isSecondOrderActive : false); // Pass the new state directly and ensure second order is turned off if projection is off
+      return newState;
+    });
+};
 
-  const handleSecondOrderToggle = () => {
-    setIsSecondOrderActive(!isSecondOrderActive);
-  };
+const handleSecondOrderToggle = async () => {
+    setIsSecondOrderActive(current => {
+      const newState = !current;
+      if (newState) {
+        setIsProjectionActive(true);
+      }
+      updateProbabilities(true, newState); // Ensure projection is on when second order is toggled on
+      return newState;
+    });
+};
 
+const updateProbabilities = async (newIsProjectionActive, newIsSecondOrderActive) => {
+    // Update state with scores matrix
+    const resultArray = await multiplyWithScoresMatrix(state, newIsProjectionActive, newIsSecondOrderActive);
+    dispatch({
+      type: 'SET_PROBABILITIES',
+      payload: {
+        probabilities: resultArray,
+        isProjectionActive: newIsProjectionActive,
+        isSecondOrderActive: newIsSecondOrderActive
+      }
+    });
+};
+
+  
 
   return (
     <div className = "view-options-container">
@@ -194,14 +222,14 @@ const MapControls = ({ setRotation, setScale, setProj, isProjectionActive,
           <input type="checkbox" checked={isProjectionActive} onChange={handleProjectionToggle} />
           <span className="switch" />
         </label>
-        <label className="toggle-label" onClick={handleProjectionToggle}> Projections</label>
+        <label className="toggle-label" onClick={handleProjectionToggle}> Geopolitics</label>
         </div>
         <div className="view-options">
         <label className="toggle-switch">
           <input type="checkbox" checked={isSecondOrderActive} onChange={handleSecondOrderToggle} />
           <span className="switch" />
         </label>
-        <label className="toggle-label" onClick={handleSecondOrderToggle}> 2nd Order</label>
+        <label className="toggle-label" onClick={handleSecondOrderToggle}> War Outbreak</label>
         </div>
       </div>
 

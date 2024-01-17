@@ -41,14 +41,19 @@ async function fetchScoresMatrix() {
 }
 
 
-export async function multiplyWithScoresMatrix(state) {
+export async function multiplyWithScoresMatrix(state, isProjectionActive, isSecondOrderActive) {
+    if (!isProjectionActive) return new Array(200).fill(0); // If projections are off, return an array of zeros
+  
     const scoresMatrix = await fetchScoresMatrix();
-
-    // Transform the state object to a numeric array
     const stateArray = transformStateToNumericArray(state);
-
-    // Perform the multiplication
-    const result = math.multiply(scoresMatrix, stateArray);
-
+    let result = math.multiply(scoresMatrix, stateArray);
+  
+    if (isSecondOrderActive) {
+        const modifiedScoresMatrix = math.map(scoresMatrix, value => Math.abs(value) * Math.abs(value) * value);
+        const secondOrderResult = math.multiply(modifiedScoresMatrix, result);
+        result = math.divide(math.add(result, secondOrderResult), 2); // Averaging the result with the second order result
+    }
+  
     return result;
 }
+
