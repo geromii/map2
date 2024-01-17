@@ -27,7 +27,7 @@ export default function MapChart() {
   const [scale, setScale] = useState(180);
   const [projectionType, setProj] = useState("geoEqualEarth");
   const [geographiesData, setGeographiesData] = useState([]);
-  const [state, dispatch] = useReducer(countriesReducer, initialState);
+  const [stateWrapper, dispatch] = useReducer(countriesReducer, initialState);
   const [isCountrySearchVisible, setIsCountrySearchVisible] = useState(false);
   const [isProjectionActive, setIsProjectionActive] = useState(true);
   const [isSecondOrderActive, setIsSecondOrderActive] = useState(false);
@@ -61,7 +61,7 @@ export default function MapChart() {
   // Set a new timeout
   dispatchTimeoutId = setTimeout(async () => {
       // Step 1: Clone the state
-      const clonedState = JSON.parse(JSON.stringify(state));
+      const clonedState = JSON.parse(JSON.stringify(stateWrapper));
 
       // Step 2: Update the cloned state
       const currentState = clonedState[countryName].state;
@@ -95,26 +95,65 @@ export default function MapChart() {
       </button>
       <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} 
       setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} 
-      setIsSecondOrderActive={setIsSecondOrderActive} dispatch={dispatch} state={state}/>
+      setIsSecondOrderActive={setIsSecondOrderActive} dispatch={dispatch} state={stateWrapper}/>
       <Map
         rotation={rotation}
         scale={scale}
         projectionType={projectionType}
         geographiesData={geographiesData}
-        state={state}
+        state={stateWrapper}
         handleCountryClick={handleCountryClick}
       />
 
       {/* Overlay for CountrySearch */}
       {isCountrySearchVisible && (
         <div className="country-search-overlay">
-          <CountrySearch handleCountryClick={handleCountryClick} state={state} />
+          <CountrySearch handleCountryClick={handleCountryClick} state={stateWrapper} />
         </div>
       )}
     </div>
+    
+      <div className="second-order-info-box">
+        <Second_Order_Info state={stateWrapper} />
+      </div>
+    
   </div>
   );
 }
+
+const Second_Order_Info = (state) => {
+  function sumProbabilities(stateWrapper) {
+    const state = stateWrapper.state;
+
+    const sum = Object.entries(state).reduce((acc, [countryName, countryData], index) => { 
+        if (typeof countryData.probability === 'number') {
+            return acc + Math.abs(countryData.probability);
+        } else {
+            console.warn(`Invalid probability value for ${countryName} at index ${index}:`, countryData);
+            return acc;
+        }
+    }, 0);
+
+    const roundedSum = Number(sum.toFixed(1));
+
+    console.log('Total sum of probabilities (rounded):', roundedSum);
+    return roundedSum;
+
+}
+
+
+
+
+let severity_score = sumProbabilities(state);
+  return (
+    <div className="second-order-info-box"> 
+      <br></br>
+      Severity score is {severity_score}
+    </div>
+  );
+};
+
+
 
 
 function CountrySearch({ handleCountryClick, state }) {
