@@ -212,7 +212,7 @@ return (
       <div className="inline md:block ml-2 md:ml-0 mt-2 md:mt-2">
           <Switch
               checked={isPacific}
-              onChange={handleToggle}
+              onCheckedChange={handleToggle}
               // Add additional Shadcn Switch props as needed
           />
           <label className="toggle-label relative -top-0.5" onClick={handleToggle}> Pacific</label>
@@ -220,7 +220,7 @@ return (
           <div className="inline md:block ml-2 md:ml-0 mt-2 md:mt-2">
               <Switch
                   checked={isProjectionActive}
-                  onChange={handleProjectionToggle}
+                  onCheckedChange={handleProjectionToggle}
                   // Add additional Shadcn Switch props as needed
               />
               <label className="toggle-label relative -top-0.5" onClick={handleProjectionToggle}> Geopolitics</label>
@@ -228,7 +228,7 @@ return (
           <div className="inline md:block ml-2 md:ml-0 mt-2 md:mt-2">
               <Switch
                   checked={isSecondOrderActive}
-                  onChange={handleSecondOrderToggle}
+                  onCheckedChange={handleSecondOrderToggle}
                   // Add additional Shadcn Switch props as needed
               />
               <label className="toggle-label relative -top-0.5" onClick={handleSecondOrderToggle}> War Outbreak</label>
