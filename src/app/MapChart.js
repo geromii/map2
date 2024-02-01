@@ -9,6 +9,10 @@ import { countriesReducer, initialState } from './countriesReducer';
 import { multiplyWithScoresMatrix } from './matrixOperations';
 import {Tooltip} from 'react-tooltip';
 import { useStore } from './store';
+import { Button } from "@/components/ui/button"
+import { SearchCountry } from "@/components/ui/SearchCountry";
+import { ComboboxDemo } from "@/components/ui/combobox"
+import { Switch } from '@/components/ui/switch';
 
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -89,7 +93,7 @@ export default function MapChart() {
 
   return (
     <div className="whole-container h-screen w-screen" >
-      <div className='map-container absolute top-0 right-0 bottom-0 left-0 z-0 overflow-hidden'>
+      <div className='map-container border-4 md:border-none z-11 md:absolute top-0 right-0 bottom-0 left-0 md:z-0 md:overflow-hidden sm:overflow-auto'>
         <Map
           rotation={rotation}
           scale={scale}
@@ -99,13 +103,13 @@ export default function MapChart() {
           handleCountryClick={handleCountryClick}
         />
       </div>
-      <div className="map-controls absolute top-0 left-0 z-10 bg-slate-100 pb-7 pr-7 rounded-br-full overflow-hidden" >
+      <div className="map-controls md:absolute md:top-0 md:left-0 z-10 bg-slate-100 md:pb-5 md:pr-5 md:rounded-br-3xl md:overflow-hidden" >
          <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} 
         setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} 
         setIsSecondOrderActive={setIsSecondOrderActive} dispatch={dispatch} state={stateWrapper}/>
       </div>
-      <div className="border-4 country-search absolute top-0 right-0 z-10 bg-slate-100 h-1/4 w-1/6  overflow-x-hidden overflow-y-auto border-black rounded-bl-full pl-10">
-          <CountrySearch handleCountryClick={handleCountryClick} state={stateWrapper} />
+      <div className="country-search p-2 md:absolute md:top-0 md:right-0 z-10 bg-slate-100 md:h-1/6 md:w-1/6  md:overflow-x-hidden md:overflow-y-auto md:border-black border-4 md:rounded-bl-3xl md:pl-2">
+          <SearchCountry handleCountryClick={handleCountryClick} state={stateWrapper} useCountries={useCountries}/>
         </div>
       <div className="Score-Info absolute bottom-0 left-0 z-10">
         <ScoreInfo state={stateWrapper} />
@@ -148,41 +152,6 @@ let severity_score = sumProbabilities(state);
 
 
 
-function CountrySearch({ handleCountryClick, state }) {
-  const [searchValue, setSearchValue] = useState('');
-  const { allCountries, filteredCountries } = useCountries(searchValue);
-
-  const selectedCountries = Object.keys(state).filter(country => state[country].state !== 0);
-  console.log(selectedCountries);
-  console.log(state);
-  
-
-  return (
-    <div className="country-search relative">
-      <input className="search-input sticky top-0 bg-slate-100"
-        value={searchValue}
-        onChange={e => setSearchValue(e.target.value)}
-        placeholder="Search for a country..."
-      />
-      <div className="filtered-list">
-        {filteredCountries.map(country => (
-          <div 
-            key={country} 
-            onClick={() => handleCountryClick(country)}
-            className="country-item"
-            style={{
-              fontWeight: 'bold',
-              color: state[country].color
-            }}
-          >
-            {country}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 
 const MapControls = ({ setRotation, setScale, setProj, isProjectionActive, 
   setIsProjectionActive, isSecondOrderActive, setIsSecondOrderActive, dispatch, state}) => {
@@ -191,8 +160,8 @@ const MapControls = ({ setRotation, setScale, setProj, isProjectionActive,
   const handleToggle = () => {
     setIsPacific(!isPacific);
     if (!isPacific) {
-      setRotation([-147, 0, 0]);
-      setScale(155);
+      setRotation([-150, 0, 0]);
+      setScale(160);
       setProj("geoEqualEarth");
     } else {
       setRotation([-10, 0, 0]);
@@ -238,34 +207,34 @@ const updateProbabilities = async (newIsProjectionActive, newIsSecondOrderActive
 
   
 
-  return (
-    <div className = "view-options-container">
-      <div className="view-options">
-        <label className="toggle-switch">
-          <input type="checkbox" checked={isPacific} onChange={handleToggle} />
-          <span className="switch" />
-        </label>
-        <label className="toggle-label" onClick = {handleToggle} >Pacific</label>
+return (
+  <div className="view-options-container flex md:block justify-center items-center h-full md:justify-start md:items-start md:h-auto">
+      <div className="inline md:block ml-2 md:ml-0 mt-2 md:mt-2">
+          <Switch
+              checked={isPacific}
+              onChange={handleToggle}
+              // Add additional Shadcn Switch props as needed
+          />
+          <label className="toggle-label relative -top-0.5" onClick={handleToggle}> Pacific</label>
       </div>
-      <div className = "middle-wrapper">
-        <div className="view-options">
-        <label className="toggle-switch">
-          <input type="checkbox" checked={isProjectionActive} onChange={handleProjectionToggle} />
-          <span className="switch" />
-        </label>
-        <label className="toggle-label" onClick={handleProjectionToggle}> Geopolitics</label>
-        </div>
-        <div className="view-options">
-        <label className="toggle-switch">
-          <input type="checkbox" checked={isSecondOrderActive} onChange={handleSecondOrderToggle} />
-          <span className="switch" />
-        </label>
-        <label className="toggle-label" onClick={handleSecondOrderToggle}> War Outbreak</label>
-        </div>
-      </div>
-
-    </div>
-  );
+          <div className="inline md:block ml-2 md:ml-0 mt-2 md:mt-2">
+              <Switch
+                  checked={isProjectionActive}
+                  onChange={handleProjectionToggle}
+                  // Add additional Shadcn Switch props as needed
+              />
+              <label className="toggle-label relative -top-0.5" onClick={handleProjectionToggle}> Geopolitics</label>
+          </div>
+          <div className="inline md:block ml-2 md:ml-0 mt-2 md:mt-2">
+              <Switch
+                  checked={isSecondOrderActive}
+                  onChange={handleSecondOrderToggle}
+                  // Add additional Shadcn Switch props as needed
+              />
+              <label className="toggle-label relative -top-0.5" onClick={handleSecondOrderToggle}> War Outbreak</label>
+          </div>
+  </div>
+);
 };
 
 
