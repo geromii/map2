@@ -14,6 +14,12 @@ import { SearchCountry } from "@/components/ui/SearchCountry";
 import { ComboboxDemo } from "@/components/ui/combobox"
 import { Switch } from '@/components/ui/switch';
 import { CardExample } from "@/components/ui/CardExample";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -104,16 +110,23 @@ export default function MapChart() {
           handleCountryClick={handleCountryClick}
         />
       </div>
-      <div className="map-controls md:absolute md:top-0 md:left-0 z-10 bg-slate-100 md:pb-5 md:pr-5 md:rounded-br-3xl md:overflow-hidden" >
+      <div className="map-controls pt-2 pb-2 border-x-4 border-y-2 md:absolute md:top-0 md:left-0 z-10 bg-slate-100 md:pb-5 md:pr-5 md:rounded-br-3xl md:overflow-hidden" >
          <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} 
         setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} 
         setIsSecondOrderActive={setIsSecondOrderActive} dispatch={dispatch} state={stateWrapper}/>
       </div>
-      <div className="country-search p-2 md:absolute md:top-0 md:right-0 z-10 bg-slate-100 md:h-1/6 md:w-1/6  md:overflow-x-hidden md:overflow-y-auto md:border-black border-4 md:rounded-bl-3xl md:pl-2">
+      <div className="country-search border-x-4 border-y-2 pl-2 pr-2 pt-2 pb-2 md:absolute md:top-0 md:right-0 z-10 bg-slate-100 md:h-1/6 md:w-1/6  md:overflow-x-hidden md:overflow-y-auto md:border-black md:rounded-bl-3xl md:pl-2">
           <SearchCountry handleCountryClick={handleCountryClick} state={stateWrapper} useCountries={useCountries}/>
         </div>
       <div className="Card-Info z-10 h-12">
+      <Accordion type="single" collapsible>
+  <AccordionItem value="item-1">
+       <AccordionTrigger className="pr-20 pl-20 border-x-4 border-y-2 bg-slate-100" >Custom Prompt</AccordionTrigger>
+        <AccordionContent>
         <CardExample/>
+       </AccordionContent>
+      </AccordionItem>
+    </Accordion>
       </div>
     
   </div>

@@ -24,7 +24,7 @@ export function CardExample() {
     <Card className="w-full opacity-50">
       <CardHeader>
         <CardTitle>Create Modifier</CardTitle>
-        <CardDescription>Write a custom prompt describing a situation.</CardDescription>
+        <CardDescription>Write a custom ChatGPT prompt describing a situation.</CardDescription>
       </CardHeader>
       <CardContent>
         <form>
