@@ -1,21 +1,25 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useReducer } from "react";
+import React, { useState, useEffect, useCallback, useReducer, memo } from "react";
 import { ComposableMap, Geographies, Geography, Sphere,
   Graticule } from "react-simple-maps";
 import { useCountries } from './useCountries';
 import './MapChart.css';
 import { countriesReducer, initialState } from './countriesReducer';
 import { multiplyWithScoresMatrix } from './matrixOperations';
+import {Tooltip} from 'react-tooltip';
+import { useStore } from './store';
 
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 /*
 Future goals for this project:
-1. Toggle between predictions on or off
-2. Toggle between second order predictions on or off
-3 . Toggle between: different projections? different color schemes? different data?
+1. fix the data. perhaps square all values?
+2. change the color scheme multiplier from 0.5 to 1
+3. decide to delete or fix the second order setting
+4 . Toggle between: different projections? different color schemes? different data?
+5. Option to bolden when the projections are small
 
 
 */
@@ -23,7 +27,7 @@ Future goals for this project:
 
 
 export default function MapChart() {
-  const [rotation, setRotation] = useState([-10, 0, 0]);
+  const { rotation, setRotation } = useStore(state => ({ rotation: state.rotation, setRotation: state.setRotation }));
   const [scale, setScale] = useState(180);
   const [projectionType, setProj] = useState("geoEqualEarth");
   const [geographiesData, setGeographiesData] = useState([]);
@@ -32,10 +36,6 @@ export default function MapChart() {
   const [isProjectionActive, setIsProjectionActive] = useState(true);
   const [isSecondOrderActive, setIsSecondOrderActive] = useState(false);
 
-
-  const toggleCountrySearch = () => {
-    setIsCountrySearchVisible(!isCountrySearchVisible);
-  };
 
 
   // First useEffect: Retain this for fetching geographies data
@@ -88,40 +88,34 @@ export default function MapChart() {
 
 
   return (
-    <div className="whole-container">
-    <div className={`map-container ${isCountrySearchVisible ? 'overlay-active' : ''}`}>
-      <button className="toggle-search-btn" onClick={toggleCountrySearch}>
-        <span className="hamburger-icon"></span>
-      </button>
-      <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} 
-      setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} 
-      setIsSecondOrderActive={setIsSecondOrderActive} dispatch={dispatch} state={stateWrapper}/>
-      <Map
-        rotation={rotation}
-        scale={scale}
-        projectionType={projectionType}
-        geographiesData={geographiesData}
-        state={stateWrapper}
-        handleCountryClick={handleCountryClick}
-      />
-
-      {/* Overlay for CountrySearch */}
-      {isCountrySearchVisible && (
-        <div className="country-search-overlay">
+    <div className="whole-container h-screen w-screen" >
+      <div className='map-container absolute top-0 right-0 bottom-0 left-0 z-0 overflow-hidden'>
+        <Map
+          rotation={rotation}
+          scale={scale}
+          projectionType={projectionType}
+          geographiesData={geographiesData}
+          state={stateWrapper}
+          handleCountryClick={handleCountryClick}
+        />
+      </div>
+      <div className="map-controls absolute top-0 left-0 z-10 bg-slate-100 pb-7 pr-7 rounded-br-full overflow-hidden" >
+         <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} 
+        setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} 
+        setIsSecondOrderActive={setIsSecondOrderActive} dispatch={dispatch} state={stateWrapper}/>
+      </div>
+      <div className="border-4 country-search absolute top-0 right-0 z-10 bg-slate-100 h-1/4 w-1/6  overflow-x-hidden overflow-y-auto border-black rounded-bl-full pl-10">
           <CountrySearch handleCountryClick={handleCountryClick} state={stateWrapper} />
         </div>
-      )}
-    </div>
-    
-      <div className="second-order-info-box">
-        <Second_Order_Info state={stateWrapper} />
+      <div className="Score-Info absolute bottom-0 left-0 z-10">
+        <ScoreInfo state={stateWrapper} />
       </div>
     
   </div>
   );
 }
 
-const Second_Order_Info = (state) => {
+const ScoreInfo = (state) => {
   function sumProbabilities(stateWrapper) {
     const state = stateWrapper.state;
 
@@ -135,7 +129,6 @@ const Second_Order_Info = (state) => {
     }, 0);
 
     const roundedSum = Number(sum.toFixed(1));
-    console.log('Total sum of probabilities (rounded):', roundedSum);
     return roundedSum;
 
 }
@@ -145,7 +138,7 @@ const Second_Order_Info = (state) => {
 
 let severity_score = sumProbabilities(state);
   return (
-    <div className="second-order-info-box"> 
+    <div className="second-order-info-box font-bold"> 
       <br></br>
       Global Severity score is {severity_score}
     </div>
@@ -165,8 +158,8 @@ function CountrySearch({ handleCountryClick, state }) {
   
 
   return (
-    <div className="country-search">
-      <input className="search-input"
+    <div className="country-search relative">
+      <input className="search-input sticky top-0 bg-slate-100"
         value={searchValue}
         onChange={e => setSearchValue(e.target.value)}
         placeholder="Search for a country..."
@@ -288,15 +281,16 @@ const Map = ({
   getCountryColor 
 }) => {
   return (
+    <div className="bg-slate-400">
     <ComposableMap 
-      viewBox="25 60 800 458"
+      viewBox="0 55 800 468"
       projection={projectionType}
       projectionConfig={{
         rotate: rotation,
         scale: scale,
       }}>
       <Sphere stroke="#E4E5E6" strokeWidth={0.5} />
-      <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
+      <Graticule stroke="#E4E5E6" strokeWidth={0.3} />
       <Geographies geography={geographiesData}>
         {({ geographies }) => geographies.map((geo) => {
           const countryState = state[geo.properties.name]; // Access the state for each country
@@ -305,8 +299,8 @@ const Map = ({
               key={geo.rsmKey}
               geography={geo}
               onClick={() => handleCountryClick(geo.properties.name)}
-              stroke="white"
-              strokeWidth={0.3}
+              stroke="black"
+              strokeWidth={0.25}
               style={{
                 default: {
                   fill: countryState.color, // Use the state to get the color
@@ -321,10 +315,15 @@ const Map = ({
                   outline: "none"
                 }
               }}
+              className="country"
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content={geo.properties.name}
             />
           );
         })}
       </Geographies>
     </ComposableMap>
+    <Tooltip id="my-tooltip" float="true" delayShow = "800"/>
+    </div>
   );
 };

@@ -14,7 +14,8 @@
     "react": "^18",
     "react-dom": "^18",
     "react-simple-maps": "^3.0.0",
-    "react-tooltip": "^5.25.0"
+    "react-tooltip": "^5.25.0",
+    "zustand": "^4.5.0"
   },
   "devDependencies": {
     "autoprefixer": "^10",
