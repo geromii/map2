@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { SearchCountry } from "@/components/ui/SearchCountry";
 import { ComboboxDemo } from "@/components/ui/combobox"
 import { Switch } from '@/components/ui/switch';
+import { CardExample } from "@/components/ui/CardExample";
 
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -111,15 +112,15 @@ export default function MapChart() {
       <div className="country-search p-2 md:absolute md:top-0 md:right-0 z-10 bg-slate-100 md:h-1/6 md:w-1/6  md:overflow-x-hidden md:overflow-y-auto md:border-black border-4 md:rounded-bl-3xl md:pl-2">
           <SearchCountry handleCountryClick={handleCountryClick} state={stateWrapper} useCountries={useCountries}/>
         </div>
-      <div className="Score-Info absolute bottom-0 left-0 z-10">
-        <ScoreInfo state={stateWrapper} />
+      <div className="Card-Info z-10 h-12">
+        <CardExample/>
       </div>
     
   </div>
   );
 }
 
-const ScoreInfo = (state) => {
+const ScoreInfo = (stateWrapper) => {
   function sumProbabilities(stateWrapper) {
     const state = stateWrapper.state;
 
@@ -140,7 +141,7 @@ const ScoreInfo = (state) => {
 
 
 
-let severity_score = sumProbabilities(state);
+let severity_score = sumProbabilities(stateWrapper);
   return (
     <div className="second-order-info-box font-bold"> 
       <br></br>
@@ -252,7 +253,7 @@ const Map = ({
   return (
     <div className="bg-slate-400">
     <ComposableMap 
-      viewBox="70 35 740 520" // 0 0 800 450
+      viewBox="20 50 800 450" // 0 0 800 450
       projection={projectionType}
       projectionConfig={{
         rotate: rotation,
