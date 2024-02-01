@@ -93,7 +93,7 @@ export default function MapChart() {
 
   return (
     <div className="whole-container h-screen w-screen" >
-      <div className='map-container border-4 md:border-none z-11 md:absolute top-0 right-0 bottom-0 left-0 md:z-0 md:overflow-hidden sm:overflow-auto'>
+      <div className='map-container sticky border-4 md:border-none z-11 md:absolute top-0 right-0 bottom-0 left-0 md:z-0 md:overflow-hidden sm:overflow-auto'>
         <Map
           rotation={rotation}
           scale={scale}
@@ -252,7 +252,7 @@ const Map = ({
   return (
     <div className="bg-slate-400">
     <ComposableMap 
-      viewBox="0 55 800 468"
+      viewBox="70 35 740 520" // 0 0 800 450
       projection={projectionType}
       projectionConfig={{
         rotate: rotation,
