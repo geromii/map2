@@ -9,28 +9,25 @@ import { countriesReducer, initialState } from './countriesReducer';
 import { multiplyWithScoresMatrix } from './matrixOperations';
 import {Tooltip} from 'react-tooltip';
 import { useStore } from './store';
-import { Button } from "@/components/ui/button"
 import { SearchCountry } from "@/components/ui/SearchCountry";
-import { ComboboxDemo } from "@/components/ui/combobox"
 import { Switch } from '@/components/ui/switch';
-import { CardExample } from "@/components/ui/CardExample";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
+import { geoRobinson } from "d3-geo-projection";
 
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 /*
 Future goals for this project:
-1. fix the data. perhaps square all values?
-2. change the color scheme multiplier from 0.5 to 1
-3. decide to delete or fix the second order setting
-4 . Toggle between: different projections? different color schemes? different data?
-5. Option to bolden when the projections are small
+1. Demographic information of each side
+2. fix the data. perhaps square all values?
+3. change the color scheme multiplier from 0.5 to 1
+4. decide to delete or fix the second order setting
+5 . Toggle between: different projections? different color schemes? different data?
+6. Option to amplify/bolden when the projections are small
+7. Text based summary
+
+
+Possible in the backened I need to weigh the importance of each relationship.
 
 
 */
@@ -40,7 +37,7 @@ Future goals for this project:
 export default function MapChart() {
   const { rotation, setRotation } = useStore(state => ({ rotation: state.rotation, setRotation: state.setRotation }));
   const [scale, setScale] = useState(180);
-  const [projectionType, setProj] = useState("geoEqualEarth");
+  const [projectionType, setProj] = useState("geoMercator");
   const [geographiesData, setGeographiesData] = useState([]);
   const [stateWrapper, dispatch] = useReducer(countriesReducer, initialState);
   const [isCountrySearchVisible, setIsCountrySearchVisible] = useState(false);
@@ -99,8 +96,8 @@ export default function MapChart() {
 
 
   return (
-    <div className="whole-container h-screen w-screen" >
-      <div className='map-container sticky border-4 md:border-none z-11 md:absolute top-0 right-0 bottom-0 left-0 md:z-0 md:overflow-hidden sm:overflow-auto'>
+    <div className="transition ease-in-out whole-container h-screen w-screen" >
+      <div className='map-container z-11 lg:absolute top-0 right-0 bottom-0 left-0 lg:z-0 lg:overflow-hidden sm:overflow-auto'>
         <Map
           rotation={rotation}
           scale={scale}
@@ -110,23 +107,15 @@ export default function MapChart() {
           handleCountryClick={handleCountryClick}
         />
       </div>
-      <div className="map-controls pt-2 pb-2 border-x-4 border-y-2 md:absolute md:top-0 md:left-0 z-10 bg-slate-100 md:pb-5 md:pr-5 md:rounded-br-3xl md:overflow-hidden" >
+      <div className="map-controls pt-2 pb-2 border-x-4 border-y-2 lg:border-y-4 lg:absolute lg:top-0 lg:left-0 z-10 bg-slate-100 lg:h-28 lg:w-52 lg:rounded-br-3xl lg:pt-0 lg:overflow-hidden" >
          <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} 
         setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} 
         setIsSecondOrderActive={setIsSecondOrderActive} dispatch={dispatch} state={stateWrapper}/>
       </div>
-      <div className="country-search border-x-4 border-y-2 pl-2 pr-2 pt-2 pb-2 md:absolute md:top-0 md:right-0 z-10 bg-slate-100 md:h-1/6 md:w-1/6  md:overflow-x-hidden md:overflow-y-auto md:border-black md:rounded-bl-3xl md:pl-2">
+      <div className="country-search border-x-4 border-y-2 lg:border-y-4 pl-2 pr-2 pt-2 pb-2 lg:absolute lg:top-0 lg:right-0 z-10 bg-slate-100 lg:overflow-x-hidden lg:overflow-y-auto lg:rounded-bl-3xl lg:pl-2 lg:h-28 lg:w-52">
           <SearchCountry handleCountryClick={handleCountryClick} state={stateWrapper} useCountries={useCountries}/>
         </div>
       <div className="Card-Info z-10 h-12">
-      <Accordion type="single" collapsible>
-  <AccordionItem value="item-1">
-       <AccordionTrigger className="pr-20 pl-20 border-x-4 border-y-2 bg-slate-100" >Custom Prompt</AccordionTrigger>
-        <AccordionContent>
-        <CardExample/>
-       </AccordionContent>
-      </AccordionItem>
-    </Accordion>
       </div>
     
   </div>
@@ -222,8 +211,8 @@ const updateProbabilities = async (newIsProjectionActive, newIsSecondOrderActive
   
 
 return (
-  <div className="view-options-container flex md:block justify-center items-center h-full md:justify-start md:items-start md:h-auto">
-      <div className="inline md:block ml-2 md:ml-0 mt-2 md:mt-2">
+  <div className="view-options-container flex lg:block justify-center items-center h-full lg:justify-start lg:items-start lg:h-auto">
+      <div className="inline lg:block ml-2 lg:ml-0 mt-2 lg:mt-2">
           <Switch
               checked={isPacific}
               onCheckedChange={handleToggle}
@@ -231,7 +220,7 @@ return (
           />
           <label className="toggle-label relative -top-0.5" onClick={handleToggle}> Pacific</label>
       </div>
-          <div className="inline md:block ml-2 md:ml-0 mt-2 md:mt-2">
+          <div className="inline lg:block ml-2 lg:ml-0 mt-2 lg:mt-2">
               <Switch
                   checked={isProjectionActive}
                   onCheckedChange={handleProjectionToggle}
@@ -239,7 +228,7 @@ return (
               />
               <label className="toggle-label relative -top-0.5" onClick={handleProjectionToggle}> Geopolitics</label>
           </div>
-          <div className="inline md:block ml-2 md:ml-0 mt-2 md:mt-2">
+          <div className="inline lg:block ml-2 lg:ml-0 mt-2 lg:mt-2">
               <Switch
                   checked={isSecondOrderActive}
                   onCheckedChange={handleSecondOrderToggle}
@@ -263,14 +252,18 @@ const Map = ({
   handleCountryClick, 
   getCountryColor 
 }) => {
+ const width = 800;
+ const height = 600;
+
+ const projection = geoRobinson().translate([width / 2, height / 2]).scale(scale).rotate(rotation);
   return (
     <div className="bg-slate-400">
     <ComposableMap 
-      viewBox="20 50 800 450" // 0 0 800 450
-      projection={projectionType}
+      viewBox="-80 -10 1000 550" // 0 0 800 450
+      projection={projection}
       projectionConfig={{
         rotate: rotation,
-        scale: scale,
+        scale: 200,
       }}>
       <Sphere stroke="#E4E5E6" strokeWidth={0.5} />
       <Graticule stroke="#E4E5E6" strokeWidth={0.3} />
@@ -283,7 +276,7 @@ const Map = ({
               geography={geo}
               onClick={() => handleCountryClick(geo.properties.name)}
               stroke="black"
-              strokeWidth={0.25}
+              strokeWidth={0.15}
               style={{
                 default: {
                   fill: countryState.color, // Use the state to get the color

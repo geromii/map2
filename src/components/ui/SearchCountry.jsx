@@ -35,7 +35,7 @@ export function SearchCountry({ handleCountryClick, state, useCountries }) {
   const buttonColor = selectedCountry ? state[selectedCountry].color : 'defaultButtonColor';
 
   return (
-    <div className= "flex md:block justify-center items-center h-full md:justify-start md:items-start md:h-auto">
+    <div className= "flex lg:block justify-center items-center h-full lg:justify-start lg:items-start lg:h-auto">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -77,7 +77,7 @@ export function SearchCountry({ handleCountryClick, state, useCountries }) {
           </Command>
         </PopoverContent>
       </Popover>
-      <Button onClick={handleButtonClick} disabled={!selectedCountry} className="ml-2 md:ml-0 md:mt-2" style={{ backgroundColor: buttonColor }} >
+      <Button onClick={handleButtonClick} disabled={!selectedCountry} className="ml-2 lg:ml-0 lg:mt-2" style={{ backgroundColor: buttonColor }} >
         Select
       </Button>
     </div>
