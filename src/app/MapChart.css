@@ -2,3 +2,20 @@
 .country:hover {
   stroke-width: 1px;
 }
+
+@keyframes colorCycle {
+  0%, 100% {
+    color: #3b82f6; /* text-blue-500 */
+  }
+  15%, 35%, 65%, 85% {
+    color: #9ca3af; /* text-gray-500 */
+  }
+  50% {
+    color: #ef4444; /* text-red-500 */
+  }
+}
+
+.color-transition {
+  @apply lg:text-lg; /* Apply Tailwind utility classes */
+  animation: colorCycle 5s infinite; /* Adjust '8s' to control the speed */
+}

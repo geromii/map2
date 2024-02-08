@@ -97,7 +97,8 @@ export default function MapChart() {
 
   return (
     <div className="transition ease-in-out whole-container h-screen w-screen" >
-      <div className='map-container z-11 lg:absolute top-0 right-0 bottom-0 left-0 lg:z-0 lg:overflow-hidden sm:overflow-auto'>
+      <div className="block">
+      <div className='map-container z-11 lg:relative top-0 right-0 bottom-0 left-0 lg:z-0 overflow-auto lg:border-b-4'>
         <Map
           rotation={rotation}
           scale={scale}
@@ -107,51 +108,52 @@ export default function MapChart() {
           handleCountryClick={handleCountryClick}
         />
       </div>
-      <div className="map-controls pt-2 pb-2 border-x-4 border-y-2 lg:border-y-4 lg:absolute lg:top-0 lg:left-0 z-10 bg-slate-100 lg:h-28 lg:w-52 lg:rounded-br-3xl lg:pt-0 lg:overflow-hidden" >
+      <div className="map-controls pt-2 pb-2 border-x-4 border-y-2 lg:border-y-4 lg:absolute lg:top-0 lg:left-0 z-10 bg-slate-100 lg:h-28 lg:w-52 lg:rounded-br-3xl lg:pt-0 lg:overflow-hidden lg:pl-6" >
          <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} 
         setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} 
         setIsSecondOrderActive={setIsSecondOrderActive} dispatch={dispatch} state={stateWrapper}/>
       </div>
-      <div className="country-search border-x-4 border-y-2 lg:border-y-4 pl-2 pr-2 pt-2 pb-2 lg:absolute lg:top-0 lg:right-0 z-10 bg-slate-100 lg:overflow-x-hidden lg:overflow-y-auto lg:rounded-bl-3xl lg:pl-2 lg:h-28 lg:w-52">
+      <div className="country-search border-x-4 border-y-2 lg:border-y-4 pl-2 pr-2 pt-2 pb-2 lg:absolute lg:top-0 lg:right-0 z-10 bg-slate-100 lg:overflow-x-hidden lg:overflow-y-auto lg:rounded-bl-3xl lg:pl-1 lg:h-28 lg:w-52">
           <SearchCountry handleCountryClick={handleCountryClick} state={stateWrapper} useCountries={useCountries}/>
         </div>
-      <div className="Card-Info z-10 h-12">
+       <div className="instructions lg:hidden">
+        <Instructions/>
       </div>
-    
+      </div>
+      <div className="instructions hidden lg:block">
+           <Instructions/>
+        </div>
   </div>
   );
 }
 
-const ScoreInfo = (stateWrapper) => {
-  function sumProbabilities(stateWrapper) {
-    const state = stateWrapper.state;
-
-    const sum = Object.entries(state).reduce((acc, [countryName, countryData], index) => { 
-        if (typeof countryData.probability === 'number') {
-            return acc + Math.abs(countryData.probability);
-        } else {
-            console.warn(`Invalid probability value for ${countryName} at index ${index}:`, countryData);
-            return acc;
-        }
-    }, 0);
-
-    const roundedSum = Number(sum.toFixed(1));
-    return roundedSum;
-
-}
-
-
-
-
-let severity_score = sumProbabilities(stateWrapper);
+const Instructions = () => {
   return (
-    <div className="second-order-info-box font-bold"> 
-      <br></br>
-      Global Severity score is {severity_score}
-    </div>
-  );
-};
-
+    <article class="max-w-4xl mx-auto px-5 py-8 lg:max-w-6xl lg:px-8">
+    <header class="mb-12">
+      <h1 class="text-3xl font-bold text-gray-900 lg:text-4xl">How to use</h1>
+    </header>
+    <section class="mb-8 lg:mb-12">
+      <h2 class="text-2xl font-semibold text-gray-800 lg:text-3xl">Countries have 4 states:</h2>
+      <ol class="list-decimal list-inside bg-white p-6 rounded-lg shadow space-y-3 lg:p-8">
+        <li class="color-transition font-medium lg:text-lg">Undecided (Variable)</li>
+        <li class="text-red-800 font-medium lg:text-lg">Side A (Dark Red)</li>
+        <li class="text-blue-800 font-medium lg:text-lg">Side B (Dark Blue)</li>
+        <li class="text-gray-700 font-medium lg:text-lg">Neutral (Dark Gray)</li>
+      </ol>
+      <p class="mt-6 text-gray-700 lg:text-lg">Clicking a country (or selecting it through the search) will cycle its state.</p>
+    </section>
+    <section class="mb-6">
+      <h2 class="text-2xl font-semibold text-gray-700"><span class="font-bold">Geopolitics Mode</span>:</h2>
+      <p class="text-gray-600 mt-2">When <span class="font-bold">Geopolitics Mode</span> is on and there is at least one country in each of <span class="text-red-800">Side A</span> and <span class="text-blue-800">Side B</span>, every country in the default state receives a probability of siding with either <span class="text-red-800">Side A</span> or <span class="text-blue-800">Side B</span> depending on its relationships with the respective sides. Each country's probability of siding with <span class="text-red-800">A</span> or <span class="text-blue-800">B</span> will be reflected by their color on the map.</p>
+    </section>
+    <section>
+      <h2 class="text-2xl font-semibold text-gray-700"><span class="font-bold">War Outbreak Mode</span>:</h2>
+      <p class="text-gray-600 mt-2">When <span class="font-bold">War Outbreak Mode</span> is on the calculation gets more complex. Instead, the countries in the default state now receive a predicted side according to what their allies think about the conflict (the second order relationship). For example, <span class="color-transition font-medium">Germany</span> may not initially take a side if <span class="text-red-800">Saudi Arabia</span> and <span class="text-blue-800">Iran</span> go to war, but when all of its major allies side with <span class="text-red-800">Saudi Arabia</span>, they are much more inclined to do the same. However, if an ally is in the <span class="text-gray-800 font-medium">Neutral</span> state then that country will be excluded from the calculation.</p>
+    </section>
+  </article>
+  )
+}
 
 
 
@@ -218,7 +220,7 @@ return (
               onCheckedChange={handleToggle}
               // Add additional Shadcn Switch props as needed
           />
-          <label className="toggle-label relative -top-0.5" onClick={handleToggle}> Pacific</label>
+          <label className="toggle-label relative -top-0.5" onClick={handleToggle}> Pacific View</label>
       </div>
           <div className="inline lg:block ml-2 lg:ml-0 mt-2 lg:mt-2">
               <Switch
