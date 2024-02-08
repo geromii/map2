@@ -145,7 +145,7 @@ const Instructions = () => {
     </section>
     <section class="mb-6">
       <h2 class="text-2xl font-semibold text-gray-700"><span class="font-bold">Geopolitics Mode</span>:</h2>
-      <p class="text-gray-600 mt-2">When <span class="font-bold">Geopolitics Mode</span> is on and there is at least one country in each of <span class="text-red-800">Side A</span> and <span class="text-blue-800">Side B</span>, every country in the default state receives a probability of siding with either <span class="text-red-800">Side A</span> or <span class="text-blue-800">Side B</span> depending on its relationships with the respective sides. Each country's probability of siding with <span class="text-red-800">A</span> or <span class="text-blue-800">B</span> will be reflected by their color on the map.</p>
+      <p class="text-gray-600 mt-2">When <span class="font-bold">Geopolitics Mode</span> is on and there is at least one country in each of <span class="text-red-800">Side A</span> and <span class="text-blue-800">Side B</span>, every country in the default state receives a probability of siding with either <span class="text-red-800">Side A</span> or <span class="text-blue-800">Side B</span> depending on its relationships with the respective sides. Each country&apos;s probability of siding with <span class="text-red-800">A</span> or <span class="text-blue-800">B</span> will be reflected by their color on the map.</p>
     </section>
     <section>
       <h2 class="text-2xl font-semibold text-gray-700"><span class="font-bold">War Outbreak Mode</span>:</h2>
