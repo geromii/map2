@@ -130,12 +130,15 @@ export default function MapChart() {
 const Instructions = () => {
   return (
     <article class="max-w-4xl mx-auto px-5 py-8 lg:max-w-6xl lg:px-8">
-    <header class="mb-12">
-      <h1 class="text-3xl font-bold text-gray-900 lg:text-4xl">How to use</h1>
+      <section>
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 lg:text-4xl">How to use</h1>
     </header>
+    <p class = "mb-8 text-gray-600">Click countries on the map until you have at least one country on the <span class="text-red-800">Red side</span> (click once), and at least one country on the <span class="text-blue-800">Blue side</span> (click twice). You will then see a global opinion map.</p>
+    </section>
     <section class="mb-8 lg:mb-12">
       <h2 class="text-2xl font-semibold text-gray-800 lg:text-3xl">Countries have 4 states:</h2>
-      <ol class="list-decimal list-inside bg-white p-6 rounded-lg shadow space-y-3 lg:p-8">
+      <ol class="mt-2 list-decimal list-inside bg-white p-6 rounded-lg shadow space-y-3 lg:p-8">
         <li class="color-transition font-medium lg:text-lg">Undecided (Variable)</li>
         <li class="text-red-800 font-medium lg:text-lg">Side A (Dark Red)</li>
         <li class="text-blue-800 font-medium lg:text-lg">Side B (Dark Blue)</li>
@@ -145,11 +148,11 @@ const Instructions = () => {
     </section>
     <section class="mb-6">
       <h2 class="text-2xl font-semibold text-gray-700"><span class="font-bold">Geopolitics Mode</span>:</h2>
-      <p class="text-gray-600 mt-2">When <span class="font-bold">Geopolitics Mode</span> is on and there is at least one country in each of <span class="text-red-800">Side A</span> and <span class="text-blue-800">Side B</span>, every country in the default state receives a probability of siding with either <span class="text-red-800">Side A</span> or <span class="text-blue-800">Side B</span> depending on its relationships with the respective sides. Each country&apos;s probability of siding with <span class="text-red-800">A</span> or <span class="text-blue-800">B</span> will be reflected by their color on the map.</p>
+      <p class="text-gray-600 mt-2">When <span class="font-bold">Geopolitics Mode</span> is on and there is at least one country in each of <span class="text-red-800">Side A</span> and <span class="text-blue-800">Side B</span>, every country in the undecided state receives a probability of siding with either <span class="text-red-800">Side A</span> or <span class="text-blue-800">Side B</span> depending on its relationships with the respective sides. Each country&apos;s probability of siding with <span class="text-red-800">A</span> or <span class="text-blue-800">B</span> will be reflected by their color on the map.</p>
     </section>
     <section>
       <h2 class="text-2xl font-semibold text-gray-700"><span class="font-bold">War Outbreak Mode</span>:</h2>
-      <p class="text-gray-600 mt-2">When <span class="font-bold">War Outbreak Mode</span> is on the calculation gets more complex. Instead, the countries in the default state now receive a predicted side according to what their allies think about the conflict (the second order relationship). For example, <span class="color-transition font-medium">Germany</span> may not initially take a side if <span class="text-red-800">Saudi Arabia</span> and <span class="text-blue-800">Iran</span> go to war, but when all of its major allies side with <span class="text-red-800">Saudi Arabia</span>, they are much more inclined to do the same. However, if an ally is in the <span class="text-gray-800 font-medium">Neutral</span> state then that country will be excluded from the calculation.</p>
+      <p class="text-gray-600 mt-2">When <span class="font-bold">War Outbreak Mode</span> is on the calculation gets more complex. Instead, the countries in the undecided state now receive a predicted side according to what their allies think about the conflict (the second order relationship). For example, <span class="color-transition font-medium">Germany</span> may not initially take a side if <span class="text-red-800">Saudi Arabia</span> and <span class="text-blue-800">Iran</span> go to war, but when all of its major allies side with <span class="text-red-800">Saudi Arabia</span>, they are much more inclined to do the same. However, if an ally is in the <span class="text-gray-800 font-medium">Neutral</span> state then that country will be excluded from the calculation.</p>
     </section>
   </article>
   )
@@ -214,15 +217,15 @@ const updateProbabilities = async (newIsProjectionActive, newIsSecondOrderActive
 
 return (
   <div className="view-options-container flex lg:block justify-center items-center h-full lg:justify-start lg:items-start lg:h-auto">
-      <div className="inline lg:block ml-2 lg:ml-0 mt-2 lg:mt-2">
+      <div className="inline lg:block ml-1 lg:ml-0 mt-2 lg:mt-2">
           <Switch
               checked={isPacific}
               onCheckedChange={handleToggle}
               // Add additional Shadcn Switch props as needed
           />
-          <label className="toggle-label relative -top-0.5" onClick={handleToggle}> Pacific View</label>
+          <label className="toggle-label relative -top-0.5" onClick={handleToggle}> Pacific</label>
       </div>
-          <div className="inline lg:block ml-2 lg:ml-0 mt-2 lg:mt-2">
+          <div className="inline lg:block ml-1 lg:ml-0 mt-2 lg:mt-2">
               <Switch
                   checked={isProjectionActive}
                   onCheckedChange={handleProjectionToggle}
@@ -230,13 +233,13 @@ return (
               />
               <label className="toggle-label relative -top-0.5" onClick={handleProjectionToggle}> Geopolitics</label>
           </div>
-          <div className="inline lg:block ml-2 lg:ml-0 mt-2 lg:mt-2">
+          <div className="inline lg:block ml-1 lg:ml-0 mt-2 lg:mt-2">
               <Switch
                   checked={isSecondOrderActive}
                   onCheckedChange={handleSecondOrderToggle}
                   // Add additional Shadcn Switch props as needed
               />
-              <label className="toggle-label relative -top-0.5" onClick={handleSecondOrderToggle}> War Outbreak</label>
+              <label className="toggle-label relative -top-0.5 whitespace-nowrap" onClick={handleSecondOrderToggle}> War Outbreak</label>
           </div>
   </div>
 );
