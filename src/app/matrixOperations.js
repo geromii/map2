@@ -4,7 +4,7 @@ function transformStateToNumericArray(stateWrapper) {
     const stateArray = new Array(200).fill(0); // Assuming the array length is always 200
 
     Object.keys(stateWrapper).forEach((country, index) => {
-        const countryState = stateWrapper[country].state;
+        const countryState = stateWrapper[country].phase;
         
         switch (countryState) {
             case 0: 
@@ -43,16 +43,16 @@ async function fetchScoresMatrix() {
 
 export async function multiplyWithScoresMatrix(stateWrapper, isProjectionActive, isSecondOrderActive) {
     if (!isProjectionActive) return new Array(200).fill(0); // If projections are off, return an array of zeros
-
     let case1Exists = false;
     let case2Exists = false;
 
     // Checking if at least one country is in case 1 and one in case 2
     Object.values(stateWrapper).forEach(countryStateWrapper => {
-        if (countryStateWrapper.state === 1) case1Exists = true;
-        if (countryStateWrapper.state === 2) case2Exists = true;
+        if (countryStateWrapper.phase === 1) case1Exists = true;
+        if (countryStateWrapper.phase === 2) case2Exists = true;
     });
 
+    console.log(case1Exists, case2Exists)
     // Return an array of zeros if the required condition is not met
     if (!case1Exists || !case2Exists) return new Array(200).fill(0);
 
@@ -62,7 +62,7 @@ export async function multiplyWithScoresMatrix(stateWrapper, isProjectionActive,
 
     // Reset case 3 countries in the result to zero
     Object.keys(stateWrapper).forEach((country, index) => {
-        if (stateWrapper[country].state === 3) {
+        if (stateWrapper[country].phase === 3) {
             result[index] = 0;
         }
     });
@@ -72,7 +72,8 @@ export async function multiplyWithScoresMatrix(stateWrapper, isProjectionActive,
         const secondOrderResult = math.multiply(modifiedScoresMatrix, result);
         result = math.divide(math.add(result, secondOrderResult), 2); // Averaging the result with the second order result
     }
-
+    
+    console.log("Result", result);
     return result;
 }
 

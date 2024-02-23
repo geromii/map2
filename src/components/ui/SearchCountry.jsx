@@ -12,6 +12,8 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 
+import useCountryStore from "@/app/useCountryStore";
+
 export function SearchCountry({ handleCountryClick, state, useCountries }) {
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState('');
@@ -29,8 +31,6 @@ export function SearchCountry({ handleCountryClick, state, useCountries }) {
   };
 
   const selectedCountries = Object.keys(state).filter(country => state[country].state !== 0);
-  console.log(selectedCountries);
-  console.log(state);
 
   const buttonColor = selectedCountry ? state[selectedCountry].color : 'defaultButtonColor';
 

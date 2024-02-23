@@ -5,7 +5,7 @@ import { ComposableMap, Geographies, Geography, Sphere,
   Graticule } from "react-simple-maps";
 import { useCountries } from './useCountries';
 import './MapChart.css';
-import useCountryStore from './useCountryStore';
+import { countriesReducer, initialState } from './countriesReducer';
 import { multiplyWithScoresMatrix } from './matrixOperations';
 import {Tooltip} from 'react-tooltip';
 import { useStore } from './store';
@@ -39,12 +39,10 @@ export default function MapChart() {
   const [scale, setScale] = useState(180);
   const [projectionType, setProj] = useState("geoMercator");
   const [geographiesData, setGeographiesData] = useState([]);
+  const [stateWrapper, dispatch] = useReducer(countriesReducer, initialState);
   const [isCountrySearchVisible, setIsCountrySearchVisible] = useState(false);
   const [isProjectionActive, setIsProjectionActive] = useState(true);
   const [isSecondOrderActive, setIsSecondOrderActive] = useState(false);
-  const countries = useCountryStore(state => state.countries);
-  const incrementCountryPhase = useCountryStore(state => state.incrementCountryPhase);
-  const setProbabilities = useCountryStore(state => state.setProbabilities);
 
 
 
@@ -63,30 +61,31 @@ export default function MapChart() {
   let dispatchTimeoutId; // Variable to store the timeout ID
 
   const handleCountryClick = (countryName) => {
-    incrementCountryPhase(countryName);
-  
-    // Clear any existing timeout to reset the delay
-    clearTimeout(dispatchTimeoutId);
-  
-    // Set a new timeout
-    dispatchTimeoutId = setTimeout(async () => {
-        // Step 1: Clone the state
-        const clonedState = JSON.parse(JSON.stringify(countries));
-  
-        // Step 2: Update the cloned state
-        const currentPhase = clonedState[countryName].phase;
-        const nextPhase = (currentPhase + 1) % 4;
-        clonedState[countryName] = {
-            ...clonedState[countryName],
-            phase: nextPhase,
-        };
-  
-        // Step 3: Pass the cloned state to the function
-        const resultArray = await multiplyWithScoresMatrix(clonedState, isProjectionActive, isSecondOrderActive);
-        console.log(resultArray);
-        setProbabilities(resultArray);
-    }, 5); 
-  };
+  dispatch({ type: 'INCREMENT_COUNTRY_STATE', payload: countryName });
+  console.log("Test")
+
+  // Clear any existing timeout to reset the delay
+  clearTimeout(dispatchTimeoutId);
+
+  // Set a new timeout
+  dispatchTimeoutId = setTimeout(async () => {
+      // Step 1: Clone the state
+      const clonedState = JSON.parse(JSON.stringify(stateWrapper));
+
+      // Step 2: Update the cloned state
+      const currentState = clonedState[countryName].state;
+      const nextState = (currentState + 1) % 4;
+      clonedState[countryName] = {
+          ...clonedState[countryName],
+          state: nextState,
+      };
+
+      // Step 3: Pass the cloned state to the function
+      const resultArray = await multiplyWithScoresMatrix(clonedState, isProjectionActive, isSecondOrderActive);
+
+      dispatch({ type: 'SET_PROBABILITIES', payload: { probabilities: resultArray } });
+  }, 75); 
+};
 
 
 
@@ -106,17 +105,17 @@ export default function MapChart() {
           scale={scale}
           projectionType={projectionType}
           geographiesData={geographiesData}
-          state={countries}
+          state={stateWrapper}
           handleCountryClick={handleCountryClick}
         />
       </div>
       <div className="map-controls pt-2 pb-2 border-x-4 border-y-2 lg:border-y-4 lg:absolute lg:top-0 lg:left-0 z-10 bg-slate-100 lg:h-28 lg:w-52 lg:rounded-br-3xl lg:pt-0 lg:overflow-hidden lg:pl-6" >
          <MapControls setRotation={setRotation} setScale={setScale} setProj={setProj} isProjectionActive={isProjectionActive} 
         setIsProjectionActive={setIsProjectionActive} isSecondOrderActive={isSecondOrderActive} 
-        setIsSecondOrderActive={setIsSecondOrderActive} useCountryStore={useCountryStore}/>
+        setIsSecondOrderActive={setIsSecondOrderActive} dispatch={dispatch} state={stateWrapper}/>
       </div>
       <div className="country-search border-x-4 border-y-2 lg:border-y-4 pl-2 pr-2 pt-2 pb-2 lg:absolute lg:top-0 lg:right-0 z-10 bg-slate-100 lg:overflow-x-hidden lg:overflow-y-auto lg:rounded-bl-3xl lg:pl-1 lg:h-28 lg:w-52">
-          <SearchCountry handleCountryClick={handleCountryClick} state={countries} useCountries={useCountries}/>
+          <SearchCountry handleCountryClick={handleCountryClick} state={stateWrapper} useCountries={useCountries}/>
         </div>
        <div className="instructions lg:hidden">
         <Instructions/>
@@ -131,30 +130,30 @@ export default function MapChart() {
 
 const Instructions = () => {
   return (
-    <article className="max-w-4xl mx-auto px-5 py-8 lg:max-w-6xl lg:px-8">
+    <article class="max-w-4xl mx-auto px-5 py-8 lg:max-w-6xl lg:px-8">
       <section>
-    <header className="mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 lg:text-4xl">How to use</h1>
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 lg:text-4xl">How to use</h1>
     </header>
-    <p className = "mb-8 text-gray-600">Click countries on the map until you have at least one country on the <span className="text-red-800">Red side</span> (click once), and at least one country on the <span className="text-blue-800">Blue side</span> (click twice). You will then see a global opinion map.</p>
+    <p class = "mb-8 text-gray-600">Click countries on the map until you have at least one country on the <span class="text-red-800">Red side</span> (click once), and at least one country on the <span class="text-blue-800">Blue side</span> (click twice). You will then see a global opinion map.</p>
     </section>
-    <section className="mb-8 lg:mb-12">
-      <h2 className="text-2xl font-semibold text-gray-800 lg:text-3xl">Countries have 4 states:</h2>
-      <ol className="mt-2 list-decimal list-inside bg-white p-6 rounded-lg shadow space-y-3 lg:p-8">
-        <li className="color-transition font-medium lg:text-lg">Undecided (Variable)</li>
-        <li className="text-red-800 font-medium lg:text-lg">Side A (Dark Red)</li>
-        <li className="text-blue-800 font-medium lg:text-lg">Side B (Dark Blue)</li>
-        <li className="text-gray-700 font-medium lg:text-lg">Neutral (Dark Gray)</li>
+    <section class="mb-8 lg:mb-12">
+      <h2 class="text-2xl font-semibold text-gray-800 lg:text-3xl">Countries have 4 states:</h2>
+      <ol class="mt-2 list-decimal list-inside bg-white p-6 rounded-lg shadow space-y-3 lg:p-8">
+        <li class="color-transition font-medium lg:text-lg">Undecided (Variable)</li>
+        <li class="text-red-800 font-medium lg:text-lg">Side A (Dark Red)</li>
+        <li class="text-blue-800 font-medium lg:text-lg">Side B (Dark Blue)</li>
+        <li class="text-gray-700 font-medium lg:text-lg">Neutral (Dark Gray)</li>
       </ol>
-      <p className="mt-6 text-gray-700 lg:text-lg">Clicking a country (or selecting it through the search) will cycle its state.</p>
+      <p class="mt-6 text-gray-700 lg:text-lg">Clicking a country (or selecting it through the search) will cycle its state.</p>
     </section>
-    <section className="mb-6">
-      <h2 className="text-2xl font-semibold text-gray-700"><span className="font-bold">Geopolitics Mode</span>:</h2>
-      <p className="text-gray-600 mt-2">When <span className="font-bold">Geopolitics Mode</span> is on and there is at least one country in each of <span className="text-red-800">Side A</span> and <span className="text-blue-800">Side B</span>, every country in the undecided state receives a probability of siding with either <span className="text-red-800">Side A</span> or <span className="text-blue-800">Side B</span> depending on its relationships with the respective sides. Each country&apos;s probability of siding with <span className="text-red-800">A</span> or <span className="text-blue-800">B</span> will be reflected by their color on the map.</p>
+    <section class="mb-6">
+      <h2 class="text-2xl font-semibold text-gray-700"><span class="font-bold">Geopolitics Mode</span>:</h2>
+      <p class="text-gray-600 mt-2">When <span class="font-bold">Geopolitics Mode</span> is on and there is at least one country in each of <span class="text-red-800">Side A</span> and <span class="text-blue-800">Side B</span>, every country in the undecided state receives a probability of siding with either <span class="text-red-800">Side A</span> or <span class="text-blue-800">Side B</span> depending on its relationships with the respective sides. Each country&apos;s probability of siding with <span class="text-red-800">A</span> or <span class="text-blue-800">B</span> will be reflected by their color on the map.</p>
     </section>
     <section>
-      <h2 className="text-2xl font-semibold text-gray-700"><span className="font-bold">War Outbreak Mode</span>:</h2>
-      <p className="text-gray-600 mt-2">When <span className="font-bold">War Outbreak Mode</span> is on the calculation gets more complex. Instead, the countries in the undecided state now receive a predicted side according to what their allies think about the conflict (the second order relationship). For example, <span className="color-transition font-medium">Germany</span> may not initially take a side if <span className="text-red-800">Saudi Arabia</span> and <span className="text-blue-800">Iran</span> go to war, but when all of its major allies side with <span className="text-red-800">Saudi Arabia</span>, they are much more inclined to do the same. However, if an ally is in the <span className="text-gray-800 font-medium">Neutral</span> state then that country will be excluded from the calculation.</p>
+      <h2 class="text-2xl font-semibold text-gray-700"><span class="font-bold">War Outbreak Mode</span>:</h2>
+      <p class="text-gray-600 mt-2">When <span class="font-bold">War Outbreak Mode</span> is on the calculation gets more complex. Instead, the countries in the undecided state now receive a predicted side according to what their allies think about the conflict (the second order relationship). For example, <span class="color-transition font-medium">Germany</span> may not initially take a side if <span class="text-red-800">Saudi Arabia</span> and <span class="text-blue-800">Iran</span> go to war, but when all of its major allies side with <span class="text-red-800">Saudi Arabia</span>, they are much more inclined to do the same. However, if an ally is in the <span class="text-gray-800 font-medium">Neutral</span> state then that country will be excluded from the calculation.</p>
     </section>
   </article>
   )
@@ -164,9 +163,8 @@ const Instructions = () => {
 
 
 const MapControls = ({ setRotation, setScale, setProj, isProjectionActive, 
-  setIsProjectionActive, isSecondOrderActive, setIsSecondOrderActive, useCountryStore}) => {
+  setIsProjectionActive, isSecondOrderActive, setIsSecondOrderActive, dispatch, state}) => {
   const [isPacific, setIsPacific] = useState(false);
-  const { countries, incrementCountryPhase, setProbabilities } = useCountryStore(state => state)
 
   const handleToggle = () => {
     setIsPacific(!isPacific);
@@ -205,8 +203,15 @@ const handleSecondOrderToggle = async () => {
 
 const updateProbabilities = async (newIsProjectionActive, newIsSecondOrderActive) => {
     // Update state with scores matrix
-    const resultArray = await multiplyWithScoresMatrix(countries, newIsProjectionActive, newIsSecondOrderActive);
-    setProbabilities(resultArray);
+    const resultArray = await multiplyWithScoresMatrix(state, newIsProjectionActive, newIsSecondOrderActive);
+    dispatch({
+      type: 'SET_PROBABILITIES',
+      payload: {
+        probabilities: resultArray,
+        isProjectionActive: newIsProjectionActive,
+        isSecondOrderActive: newIsSecondOrderActive
+      }
+    });
 };
 
   
@@ -253,7 +258,6 @@ const Map = ({
   handleCountryClick, 
   getCountryColor 
 }) => {
-
  const width = 800;
  const height = 600;
 
