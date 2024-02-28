@@ -1,6 +1,6 @@
-import * as React from "react"
+import * as React from "react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,23 +8,25 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 export function CardExample() {
   return (
     <Card className="w-full opacity-50">
       <CardHeader>
         <CardTitle>Create Modifier</CardTitle>
-        <CardDescription>Write a custom ChatGPT prompt describing a situation.</CardDescription>
+        <CardDescription>
+          Write a custom ChatGPT prompt describing a situation.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form>
@@ -53,5 +55,5 @@ export function CardExample() {
         <Button>Deploy</Button>
       </CardFooter>
     </Card>
-  )
+  );
 }

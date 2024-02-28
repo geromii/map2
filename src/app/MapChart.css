@@ -1,13 +1,16 @@
-
 .country:hover {
   stroke-width: 1px;
 }
 
 @keyframes colorCycle {
-  0%, 100% {
+  0%,
+  100% {
     color: #3b82f6; /* text-blue-500 */
   }
-  15%, 35%, 65%, 85% {
+  15%,
+  35%,
+  65%,
+  85% {
     color: #6b7280; /* text-gray-500 */
   }
   50% {

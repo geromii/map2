@@ -2,7 +2,11 @@
 
 import * as React from "react";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -16,10 +20,10 @@ import useCountryStore from "@/app/useCountryStore";
 
 export function SearchCountry({ handleCountryClick, state, useCountries }) {
   const [open, setOpen] = React.useState(false);
-  const [searchValue, setSearchValue] = React.useState('');
-  const [selectedCountry, setSelectedCountry] = React.useState('');
+  const [searchValue, setSearchValue] = React.useState("");
+  const [selectedCountry, setSelectedCountry] = React.useState("");
   const { allCountries, filteredCountries } = useCountries(searchValue);
-  
+
   const handleSelect = (country) => {
     setSelectedCountry(country);
     setOpen(false); // Add this line to close the popover when a country is selected
@@ -30,12 +34,16 @@ export function SearchCountry({ handleCountryClick, state, useCountries }) {
     }
   };
 
-  const selectedCountries = Object.keys(state).filter(country => state[country].state !== 0);
+  const selectedCountries = Object.keys(state).filter(
+    (country) => state[country].state !== 0,
+  );
 
-  const buttonColor = selectedCountry ? state[selectedCountry].color : 'defaultButtonColor';
+  const buttonColor = selectedCountry
+    ? state[selectedCountry].color
+    : "defaultButtonColor";
 
   return (
-    <div className= "flex lg:block justify-center items-center h-full lg:justify-start lg:items-start lg:h-auto">
+    <div className="flex lg:block justify-center items-center h-full lg:justify-start lg:items-start lg:h-auto">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -56,15 +64,17 @@ export function SearchCountry({ handleCountryClick, state, useCountries }) {
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
-            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-              {filteredCountries.length === 0 && <CommandEmpty>No country found.</CommandEmpty>}
+            <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+              {filteredCountries.length === 0 && (
+                <CommandEmpty>No country found.</CommandEmpty>
+              )}
               <CommandGroup>
                 {filteredCountries.map((country) => (
                   <CommandItem
                     key={country}
                     value={country}
                     onSelect={() => handleSelect(country)}
-                    style={{ color: state[country].color, fontWeight: 'bold' }}
+                    style={{ color: state[country].color, fontWeight: "bold" }}
                   >
                     {country}
                     <CheckIcon
@@ -77,7 +87,12 @@ export function SearchCountry({ handleCountryClick, state, useCountries }) {
           </Command>
         </PopoverContent>
       </Popover>
-      <Button onClick={handleButtonClick} disabled={!selectedCountry} className="ml-2 lg:ml-0 lg:mt-2" style={{ backgroundColor: buttonColor }} >
+      <Button
+        onClick={handleButtonClick}
+        disabled={!selectedCountry}
+        className="ml-2 lg:ml-0 lg:mt-2"
+        style={{ backgroundColor: buttonColor }}
+      >
         Select
       </Button>
     </div>

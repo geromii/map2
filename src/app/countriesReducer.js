@@ -1,5 +1,4 @@
-
-import countries from './countries.json'; // Adjust the path as necessary
+import countries from "./countries.json"; // Adjust the path as necessary
 
 export const STATES = {
   INITIAL: 0,
@@ -9,8 +8,8 @@ export const STATES = {
 };
 
 // Action Types
-export const INCREMENT_COUNTRY_STATE = 'INCREMENT_COUNTRY_STATE';
-export const SET_PROBABILITIES = 'SET_PROBABILITIES';
+export const INCREMENT_COUNTRY_STATE = "INCREMENT_COUNTRY_STATE";
+export const SET_PROBABILITIES = "SET_PROBABILITIES";
 
 // Color Map based on states
 export const COLOR_MAP = {
@@ -19,7 +18,6 @@ export const COLOR_MAP = {
   [STATES.BLUE]: "#000085",
   [STATES.NEUTRAL]: "#646464",
 };
-
 
 // Function to compute color based on probability
 
@@ -35,7 +33,7 @@ function getColorFromProbability(number) {
 
   // Define saturation and lightness
   let saturation = 100 * probability; // Scale from 0 to 100%
-  let lightness = 78 - (30 * probability); 
+  let lightness = 78 - 30 * probability;
 
   // Convert HSL to RGB (or use a library function for this)
   // return hslToRgb(hue, saturation, lightness);
@@ -43,49 +41,52 @@ function getColorFromProbability(number) {
   return `hsl(${hue}, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
 }
 
-
-
-
-
-
 // Reducer Function
 export const countriesReducer = (state, action) => {
   switch (action.type) {
-    case 'INCREMENT_COUNTRY_STATE':
+    case "INCREMENT_COUNTRY_STATE":
       const countryName = action.payload;
       const currentState = state[countryName].state;
       const nextState = (currentState + 1) % Object.keys(STATES).length;
-      
+
       return {
         ...state,
         [countryName]: {
           ...state[countryName],
           state: nextState,
-          color: nextState === STATES.INITIAL ? getColorFromProbability(state[countryName].probability) : COLOR_MAP[nextState]
-        }
+          color:
+            nextState === STATES.INITIAL
+              ? getColorFromProbability(state[countryName].probability)
+              : COLOR_MAP[nextState],
+        },
       };
 
-      case SET_PROBABILITIES:
-        const { probabilities } = action.payload;
-        return probabilities.reduce((newState, prob, index) => {
+    case SET_PROBABILITIES:
+      const { probabilities } = action.payload;
+      return probabilities.reduce(
+        (newState, prob, index) => {
           const country = Object.keys(state)[index];
           newState[country] = {
             ...state[country],
             probability: prob,
-            color: state[country].state === STATES.INITIAL ? getColorFromProbability(prob) : state[country].color
+            color:
+              state[country].state === STATES.INITIAL
+                ? getColorFromProbability(prob)
+                : state[country].color,
           };
           return newState;
-        }, {...state});
+        },
+        { ...state },
+      );
   }
 };
 
-
 // Initial State
 export const initialState = countries.reduce((acc, country) => {
-  acc[country] = { 
-    state: STATES.INITIAL, 
+  acc[country] = {
+    state: STATES.INITIAL,
     color: COLOR_MAP[STATES.INITIAL],
-    probability: 0 // Default probability
+    probability: 0, // Default probability
   };
   return acc;
 }, {});

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 // List of small countries
 const SMALL_COUNTRIES = [
@@ -11,11 +11,11 @@ const SMALL_COUNTRIES = [
   "Grenada",
   "Kiribati",
   "Liechtenstein",
-  "Luxembourg", 
+  "Luxembourg",
   "Maldives",
   "Malta",
   "Marshall Islands",
-  "Mauritius", 
+  "Mauritius",
   "Micronesia",
   "Monaco",
   "Nauru",
@@ -28,7 +28,7 @@ const SMALL_COUNTRIES = [
   "Singapore",
   "Tonga",
   "Tuvalu",
-  "Vatican City"
+  "Vatican City",
 ];
 
 // SmallCountries component
@@ -37,21 +37,25 @@ function SmallCountries({ state }) {
   const countryStates = Object.entries(state).map(([name, stateObj]) => ({
     name,
     state: stateObj.state, // Now accessing state property of the object
-    color: stateObj.color  // You can also use the color here if needed
+    color: stateObj.color, // You can also use the color here if needed
   }));
 
   // Filter out small countries and exclude those in the initial state
-  const smallSelectedCountries = countryStates.filter(country => 
-    SMALL_COUNTRIES.includes(country.name) && country.state !== 0
+  const smallSelectedCountries = countryStates.filter(
+    (country) => SMALL_COUNTRIES.includes(country.name) && country.state !== 0,
   );
 
   // Function to convert state value to a readable string
   const stateToString = (stateValue) => {
-    switch(stateValue) {
-      case 1: return 'Red';
-      case 2: return 'Blue';
-      case 3: return 'Neutral';
-      default: return ''; // We don't expect this to be used given the filter
+    switch (stateValue) {
+      case 1:
+        return "Red";
+      case 2:
+        return "Blue";
+      case 3:
+        return "Neutral";
+      default:
+        return ""; // We don't expect this to be used given the filter
     }
   };
 
@@ -61,7 +65,9 @@ function SmallCountries({ state }) {
         <ul>
           <li>Small countries list</li>
           {smallSelectedCountries.map((country) => (
-            <li key={country.name}>{country.name} - {stateToString(country.state)}</li>
+            <li key={country.name}>
+              {country.name} - {stateToString(country.state)}
+            </li>
           ))}
         </ul>
       ) : (

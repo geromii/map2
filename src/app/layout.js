@@ -1,17 +1,17 @@
-import './globals.css'
-import { Inter as FontSans } from 'next/font/google'
-import { cn } from "@/lib/utils"
-
+import "./globals.css";
+import { Inter as FontSans } from "next/font/google";
+import { cn } from "@/lib/utils";
 
 export const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
-})
+});
 
 export const metadata = {
-  title: 'Geopolitical Opinions Map',
-  description: 'An interactive map that displays the geopolitical opinions of the world.',
-}
+  title: "Geopolitical Opinions Map",
+  description:
+    "An interactive map that displays the geopolitical opinions of the world.",
+};
 
 export default function RootLayout({ children }) {
   return (
@@ -19,9 +19,11 @@ export default function RootLayout({ children }) {
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
+          fontSans.variable,
         )}
-      >{children}</body>
+      >
+        {children}
+      </body>
     </html>
-  )
+  );
 }
