@@ -3,8 +3,8 @@ import dynamic from "next/dynamic";
 import { MapInstructions } from "./mapInstructions";
 import { CountryBadge } from "@/components/ui/countryBadge";
 import { Suspense } from 'react';
-import { MapSkeleton } from "./mapskeleton";
 import MapChart from "./MapChart";
+import { MapSkeleton } from "./skeletonMap";
 
 
 export default function Home() {
