@@ -15,10 +15,10 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
+import { useCountries } from "@/app/useCountries";
 
-import useCountryStore from "@/app/useCountryStore";
 
-export function SearchCountry({ handleCountryClick, state, useCountries }) {
+export function SearchCountry({ handleCountryClick, state }) {
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
   const [selectedCountry, setSelectedCountry] = React.useState("");

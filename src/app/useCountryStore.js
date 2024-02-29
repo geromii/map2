@@ -70,6 +70,53 @@ const useCountryStore = create((set, get) => ({
     // After updating the phase, calculate new probabilities
     await get().calculateProbabilities();
   },
+  resetAllExcept: (exceptions = []) => {
+    const currentCountries = get().countries;
+    const resetCountries = Object.keys(currentCountries).reduce((acc, country) => {
+      if (!exceptions.includes(country)) {
+        acc[country] = {
+          phase: PHASES.INITIAL,
+          color: COLOR_MAP[PHASES.INITIAL],
+          probability: 0,
+        };
+      } else {
+        acc[country] = currentCountries[country];
+      }
+      return acc;
+    }, {});
+
+    set({ countries: resetCountries });
+
+    // Optionally, recalculate probabilities if needed
+    get().calculateProbabilities();
+  },
+
+  setCountryPhase: (countryName, phase) => {
+    if (!Object.values(PHASES).includes(phase)) {
+      console.error("Invalid phase provided");
+      return;
+    }
+
+    const countryExists = get().countries.hasOwnProperty(countryName);
+    if (!countryExists) {
+      console.error("Country does not exist");
+      return;
+    }
+
+    set((state) => ({
+      countries: {
+        ...state.countries,
+        [countryName]: {
+          ...state.countries[countryName],
+          phase: phase,
+          color: getColorFromProbability(state.countries[countryName].probability, phase, state.isProjectionActive),
+        },
+      },
+    }));
+
+    // After updating the state, recalculate probabilities
+    get().calculateProbabilities();
+  },
 
   calculateProbabilities: async () => {
     const { isProjectionActive, isSecondOrderActive, countries } = get();
@@ -84,7 +131,6 @@ const useCountryStore = create((set, get) => ({
       let scoresMatrix = await fetchScoresMatrix();
       let stateArray = transformStateToNumericArray(countries);
       result = math.multiply(scoresMatrix, stateArray);
-      console.log("result", result);
   
       Object.keys(countries).forEach((country, index) => {
         if (countries[country].phase === 3) {
@@ -100,7 +146,6 @@ const useCountryStore = create((set, get) => ({
     } else {
       // Handle the case where either case1Exists or case2Exists is false
       // For example, initialize result as an array of zeros if that's appropriate for your scenario
-      console.log("Case 1 or Case 2 does not exist");
       result = new Array(Object.keys(countries).length).fill(0);
     }
   

@@ -1,5 +1,6 @@
 const { fontFamily } = require("tailwindcss/defaultTheme");
 
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -23,6 +24,18 @@ module.exports = {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       colors: {
+        'countryRed': {
+          DEFAULT: '#850000',
+          foreground: '#FFFFFF',
+        },
+        'countryBlue': {
+          DEFAULT: '#000085',
+          foreground: '#FFFFFF',
+        },
+        'countryNeutral': {
+          DEFAULT: '#646464',
+          foreground: '#FFFFFF',
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
