@@ -79,8 +79,9 @@ const {
 
 
   return (
-      <div className = "relative h-full aspect-[100/55] lg:border-b-4">
+      <div className = "relative h-full lg:aspect-[100/55] lg:border-b-4">
         <div className="map-container z-11 lg:relative top-0 right-0 bottom-0 left-0 lg:z-0 overflow-auto">
+          
           <Map
             rotation={rotation}
             scale={scale}
@@ -108,7 +109,7 @@ const {
             state={countries}
           />
         </div>
-      <div className="bottom-28 lg:bottom-0 lg:left-0 absolute">
+      <div className="top-1 right-1 lg:top-auto lg:right-auto lg:bottom-0 lg:left-0 absolute">
         <ChangeCountries />
       </div>
       </div>
@@ -208,6 +209,8 @@ const MapControls = ({
           {" "}
           War Outbreak
         </label>
+        <div className="lg:hidden">
+        </div>
       </div>
     </div>
   );
