@@ -77,8 +77,8 @@ export default function MapChart() {
 
 
   return (
-      <>
-        <div className="map-container z-11 lg:relative top-0 right-0 bottom-0 left-0 lg:z-0 overflow-auto lg:border-b-4">
+      <div className = "relative h-full aspect-[100/55] lg:border-b-4">
+        <div className="map-container z-11 lg:relative top-0 right-0 bottom-0 left-0 lg:z-0 overflow-auto">
           <Map
             rotation={rotation}
             scale={scale}
@@ -106,7 +106,7 @@ export default function MapChart() {
             state={countries}
           />
         </div>
-      </>
+      </div>
   );
 }
 

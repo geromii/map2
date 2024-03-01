@@ -21,7 +21,6 @@ export default function Home() {
       <div className="instructions hidden lg:block">
         <MapInstructions />
       </div>
-    <CountryBadge country="USA" color="red" />
     </div>
   );
 }
