@@ -76,6 +76,8 @@ export const MapInstructions = () => {
             that country will be excluded from the calculation.
           </p>
         </section>
+        <br></br>
+        <p className="text-xs">Made by Jeremy Russell, 2024.</p>
       </article>
     );
   };
