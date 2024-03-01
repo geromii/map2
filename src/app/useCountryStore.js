@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import countries from "./countries.json"; // Adjust the path as necessary
+import countries from "./countries.json"; 
 import * as math from "mathjs";
 
 const PHASES = {
@@ -87,7 +87,7 @@ const useCountryStore = create((set, get) => ({
 
     set({ countries: resetCountries });
 
-    // Optionally, recalculate probabilities if needed
+    // recalculate probabilities
     get().calculateProbabilities();
   },
 
@@ -121,12 +121,15 @@ const useCountryStore = create((set, get) => ({
   calculateProbabilities: async () => {
     const { isProjectionActive, isSecondOrderActive, countries } = get();
   
+
+    // Check if both phase 1 and phase 2 exist
     const case1Exists = Object.values(countries).some(({ phase }) => phase === 1);
     const case2Exists = Object.values(countries).some(({ phase }) => phase === 2);
     const bothExist = case1Exists && case2Exists;
 
     let result = null
   
+    // If both phase 1 and phase 2 exist, calculate probabilities
     if (bothExist) {
       let scoresMatrix = await fetchScoresMatrix();
       let stateArray = transformStateToNumericArray(countries);
@@ -171,7 +174,6 @@ async function fetchScoresMatrix() {
   if (storedMatrix) {
     return JSON.parse(storedMatrix);
   } else {
-    // Assuming you have a URL to fetch the scores matrix
     const response = await fetch('/scores_matrix.json');
     const matrix = await response.json();
     sessionStorage.setItem('scoresMatrix', JSON.stringify(matrix));
@@ -180,7 +182,7 @@ async function fetchScoresMatrix() {
 }
 
 function transformStateToNumericArray(stateWrapper) {
-  const stateArray = new Array(200).fill(0); // Assuming the array length is always 200
+  const stateArray = new Array(200).fill(0); 
 
   Object.keys(stateWrapper).forEach((country, index) => {
     const countryState = stateWrapper[country].phase;
@@ -199,7 +201,7 @@ function transformStateToNumericArray(stateWrapper) {
         stateArray[index] = 0;
         break;
       default:
-        stateArray[index] = 0; // Default case, you can adjust it as per your needs
+        stateArray[index] = 0;
     }
   });
 

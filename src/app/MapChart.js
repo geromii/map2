@@ -24,12 +24,12 @@ import { geoRobinson } from "d3-geo-projection";
 /*
 Future goals for this project:
 1. Demographic information of each side
-2. fix the data. perhaps square all values?
+2. better scale the data? perhaps square all values?
 3. change the color scheme multiplier from 0.5 to 1
 4. decide to delete or fix the second order setting
 5 . Toggle between: different projections? different color schemes? different data?
 6. Option to amplify/bolden when the projections are small
-7. Text based summary
+7. Text based summary using GPT
 
 
 Possible in the backened I need to weigh the importance of each relationship.
@@ -38,33 +38,34 @@ Possible in the backened I need to weigh the importance of each relationship.
 */
 
 export default function MapChart() {
-  const { 
-    rotation,
-    setRotation
-  } = useStore((state) => ({
-    rotation: state.rotation,
-    setRotation: state.setRotation
-  }));
-  const { 
-    isProjectionActive,
-    setIsProjectionActive,
-    isSecondOrderActive,
-    setIsSecondOrderActive
-  } = useCountryStore((state) => ({
-    isProjectionActive: state.isProjectionActive,
-    setIsProjectionActive: state.setIsProjectionActive,
-    isSecondOrderActive: state.isSecondOrderActive,
-    setIsSecondOrderActive: state.setIsSecondOrderActive
-  }));
+const { rotation, setRotation } = useStore(state => ({
+  rotation: state.rotation,
+  setRotation: state.setRotation
+}));
+
+const {
+  countries,
+  incrementCountryPhase,
+  isProjectionActive,
+  setIsProjectionActive,
+  isSecondOrderActive,
+  setIsSecondOrderActive
+} = useCountryStore(state => ({
+  countries: state.countries,
+  incrementCountryPhase: state.incrementCountryPhase,
+  isProjectionActive: state.isProjectionActive,
+  setIsProjectionActive: state.setIsProjectionActive,
+  isSecondOrderActive: state.isSecondOrderActive,
+  setIsSecondOrderActive: state.setIsSecondOrderActive
+}));
+
+
+  // scale, projection and geographies need to be migrated to Zustand store
   const [scale, setScale] = useState(180);
   const [projectionType, setProj] = useState("geoMercator");
   const [geographiesData, setGeographiesData] = useState([]);
-  const countries = useCountryStore((state) => state.countries);
-  const incrementCountryPhase = useCountryStore(
-    (state) => state.incrementCountryPhase,
-  );
+ 
 
-  // First useEffect: Retain this for fetching geographies data
   useEffect(() => {
     fetch("/features.json")
       .then((response) => response.json())
@@ -110,6 +111,7 @@ export default function MapChart() {
   );
 }
 
+// Add refresh button to the map controls
 const CountryControls = ({ handleCountryClick, state, useCountries }) => {
 }
 
@@ -155,7 +157,6 @@ const MapControls = ({
         <Switch
           checked={isPacific}
           onCheckedChange={handleToggle}
-          // Add additional Shadcn Switch props as needed
         />
         <label
           className="toggle-label relative -top-0.5"
@@ -169,7 +170,6 @@ const MapControls = ({
         <Switch
           checked={isProjectionActive}
           onCheckedChange={handleProjectionToggle}
-          // Add additional Shadcn Switch props as needed
         />
         <label
           className="toggle-label relative -top-0.5"
@@ -183,7 +183,6 @@ const MapControls = ({
         <Switch
           checked={isSecondOrderActive}
           onCheckedChange={handleSecondOrderToggle}
-          // Add additional Shadcn Switch props as needed
         />
         <label
           className="toggle-label relative -top-0.5 whitespace-nowrap"
@@ -200,11 +199,9 @@ const MapControls = ({
 const Map = ({
   rotation,
   scale,
-  projectionType,
   geographiesData,
   state,
-  handleCountryClick,
-  getCountryColor,
+  handleCountryClick
 }) => {
   const width = 800;
   const height = 600;
@@ -216,7 +213,7 @@ const Map = ({
   return (
     <div className="bg-slate-400">
       <ComposableMap
-        viewBox="-80 -10 1000 550" // 0 0 800 450
+        viewBox="-80 -10 1000 550" // 0 0 800 450 default
         projection={projection}
         projectionConfig={{
           rotate: rotation,
@@ -242,11 +239,11 @@ const Map = ({
                       outline: "none",
                     },
                     hover: {
-                      fill: countryState.color, // Use the state to get the color for hover as well
+                      fill: countryState.color, // hover color
                       outline: "none",
                     },
                     pressed: {
-                      fill: countryState.color, // Use the state to get the color for pressed state too
+                      fill: countryState.color, // pressed color
                       outline: "none",
                     },
                   }}

@@ -5,10 +5,9 @@ export function useCountries(searchValue) {
   const [filteredCountries, setFilteredCountries] = useState([]);
 
   useEffect(() => {
-    fetch("/countries.json") // Change the URL to point to your "countries.json" file
+    fetch("/countries.json") 
       .then((response) => response.json())
       .then((data) => {
-        // Assuming data is an array of country names in "countries.json"
         setAllCountries(data.sort());
       });
   }, []);

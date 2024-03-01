@@ -7,7 +7,7 @@ export function MapSkeleton () {
       <div className="map-container z-11 lg:relative top-0 right-0 bottom-0 left-0 lg:z-0 lg:border-b-4">
         {/* Custom aspect ratio container for the placeholder */}
         <div className="relative w-full aspect-[100/55] bg-gray-300 animate-pulse flex justify-center items-center">
-            {/* This inner div is for further content or additional styling if needed */}
+            {/* This inner div is for further content or additional styling */}
             <div className="w-[15rem] h-[15rem] rounded-full bg-gray-400"></div>
         </div>
      </div>
