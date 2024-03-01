@@ -18,6 +18,7 @@ import { useStore } from "./store";
 import { SearchCountry } from "@/components/ui/SearchCountry";
 import { Switch } from "@/components/ui/switch";
 import { geoRobinson } from "d3-geo-projection";
+import { IconRefresh } from "@tabler/icons-react";
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -107,12 +108,28 @@ const {
             state={countries}
           />
         </div>
+      <div className="bottom-28 lg:bottom-0 lg:left-0 absolute">
+        <ChangeCountries />
+      </div>
       </div>
   );
 }
 
-// Add refresh button to the map controls
-const CountryControls = ({ handleCountryClick, state, useCountries }) => {
+// refresh button to reset all countries
+const ChangeCountries = ({ handleCountryClick, state, useCountries }) => {
+  const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
+  return (
+    <div className="flex flex-col flew-row items-center">
+      <button
+        onClick={() => {
+          resetAllExcept();
+        }}
+        className=" text-white font-bold py-2 px-2 rounded-sm lg:rounded-full"
+      >
+        <IconRefresh/>
+      </button>
+    </div>
+  );
 }
 
 const MapControls = ({
