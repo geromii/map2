@@ -109,7 +109,7 @@ const {
             state={countries}
           />
         </div>
-      <div className="top-1 right-1 lg:top-auto lg:right-auto lg:bottom-0 lg:left-0 absolute">
+      <div className="top-0.5 right-0.5 lg:top-auto lg:right-auto lg:bottom-0 lg:left-0 absolute">
         <ChangeCountries />
       </div>
       </div>
@@ -127,7 +127,7 @@ const ChangeCountries = ({ handleCountryClick, state, useCountries }) => {
         }}
         className=" text-white font-bold py-2 px-2 rounded-sm lg:rounded-full"
       >
-        <IconRefresh/>
+        <IconRefresh color="#e6e3e3"/>
       </button>
     </div>
   );
