@@ -38,6 +38,13 @@ export function SearchCountry({ handleCountryClick, state }) {
     (country) => state[country].state !== 0,
   );
 
+  // Search handler
+  const handleSearch = (e) => {
+    console.log(e.target.value);
+    setSearchValue(e.target.value);
+  };
+
+
   const buttonColor = selectedCountry
     ? state[selectedCountry].color
     : "defaultButtonColor";
@@ -62,7 +69,8 @@ export function SearchCountry({ handleCountryClick, state }) {
               placeholder="Search for a country..."
               className="h-9"
               value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              //  console log the search value
+              onValueChange={setSearchValue}
             />
             <div style={{ maxHeight: "200px", overflowY: "auto" }}>
               {filteredCountries.length === 0 && (
