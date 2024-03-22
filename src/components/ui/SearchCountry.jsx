@@ -50,16 +50,16 @@ export function SearchCountry({ handleCountryClick, state }) {
     : "defaultButtonColor";
 
   return (
-    <div className="flex lg:block justify-center items-center h-full lg:justify-start lg:items-start lg:h-auto">
+    <div className="flex-wrap align-center justify-center items-center lg:justify-start lg:items-start h-auto">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[200px] justify-between"
+            className="w-[200px] justify-between overflow-hidden"
           >
-            {selectedCountry || "Search for a country..."}
+            {selectedCountry || "Search countries..."}
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -98,7 +98,7 @@ export function SearchCountry({ handleCountryClick, state }) {
       <Button
         onClick={handleButtonClick}
         disabled={!selectedCountry}
-        className="ml-2 lg:ml-0 lg:mt-2"
+        className="ml-2 lg:ml-0 lg:mt-2 "
         style={{ backgroundColor: buttonColor }}
       >
         Select

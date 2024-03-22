@@ -2,6 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
+/* CSS HEX 
+--yale-blue: #0d3b66ff;
+--lemon-chiffon: #faf0caff;
+--naples-yellow: #f4d35eff;
+--sandy-brown: #ee964bff;
+--tomato: #f95738ff;
+
+
+--yale-blue: hsla(209.0, 77.4%, 22.5%, 1);
+--lemon-chiffon: hsla(47.5, 82.8%, 88.6%, 1);
+--naples-yellow: hsla(46.8, 87.2%, 66.3%, 1);
+--sandy-brown: hsla(27.6, 82.7%, 61.4%, 1);
+--tomato: hsla(9.6, 94.1%, 59.8%, 1);
+*/
+
+/*
+Rich Black: 0B2027
+Cerulean: 40798C
+Verdigris: 70A9A1
+Ash Gray: CED7C7
+Cornsilk: F6F1D1
+
+Rich Black: HSL(195.0, 56.0%, 9.8%)
+Cerulean: HSL(195.0, 37.3%, 40.0%)
+Verdigris: HSL(171.6, 24.9%, 55.1%)
+Ash Gray: HSL(93.8, 16.7%, 81.2%)
+Cornsilk: HSL(51.9, 67.3%, 89.2%)
+*/ 
+
+
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -13,17 +46,17 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 195.0, 56.0%, 9.8%;
+    --primary-foreground: 93.8, 16.7%, 81.2%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 51.9, 67.3%, 89.2%;
+    --secondary-foreground: 195.0, 37.3%, 40.0%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 51.9, 67.3%, 89.2%;
+    --muted-foreground: 171.6, 24.9%, 55.1%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 171.6, 24.9%, 55.1%;
+    --accent-foreground: 51.9, 67.3%, 89.2%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;

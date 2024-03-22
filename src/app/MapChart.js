@@ -1,9 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-} from "react";
+import React, { useState, useEffect } from "react";
 import {
   ComposableMap,
   Geographies,
@@ -19,6 +16,7 @@ import { SearchCountry } from "@/components/ui/SearchCountry";
 import { Switch } from "@/components/ui/switch";
 import { geoRobinson } from "d3-geo-projection";
 import { IconRefresh } from "@tabler/icons-react";
+import Tabs from "./tabs";
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -35,37 +33,37 @@ Future goals for this project:
 
 Possible in the backened I need to weigh the importance of each relationship.
 
+1. Add prominent conflicts to the map
+2. Demographic information of each side
 
 */
 
 export default function MapChart() {
-const { rotation, setRotation } = useStore(state => ({
-  rotation: state.rotation,
-  setRotation: state.setRotation
-}));
+  const { rotation, setRotation } = useStore((state) => ({
+    rotation: state.rotation,
+    setRotation: state.setRotation,
+  }));
 
-const {
-  countries,
-  incrementCountryPhase,
-  isProjectionActive,
-  setIsProjectionActive,
-  isSecondOrderActive,
-  setIsSecondOrderActive
-} = useCountryStore(state => ({
-  countries: state.countries,
-  incrementCountryPhase: state.incrementCountryPhase,
-  isProjectionActive: state.isProjectionActive,
-  setIsProjectionActive: state.setIsProjectionActive,
-  isSecondOrderActive: state.isSecondOrderActive,
-  setIsSecondOrderActive: state.setIsSecondOrderActive
-}));
-
+  const {
+    countries,
+    incrementCountryPhase,
+    isProjectionActive,
+    setIsProjectionActive,
+    isSecondOrderActive,
+    setIsSecondOrderActive,
+  } = useCountryStore((state) => ({
+    countries: state.countries,
+    incrementCountryPhase: state.incrementCountryPhase,
+    isProjectionActive: state.isProjectionActive,
+    setIsProjectionActive: state.setIsProjectionActive,
+    isSecondOrderActive: state.isSecondOrderActive,
+    setIsSecondOrderActive: state.setIsSecondOrderActive,
+  }));
 
   // scale, projection and geographies need to be migrated to Zustand store
   const [scale, setScale] = useState(180);
   const [projectionType, setProj] = useState("geoMercator");
   const [geographiesData, setGeographiesData] = useState([]);
- 
 
   useEffect(() => {
     fetch("/features.json")
@@ -76,12 +74,29 @@ const {
       });
   }, []);
 
-
-
   return (
-      <div className = "relative h-full lg:aspect-[100/55] lg:border-b-4">
-        <div className="map-container z-11 lg:relative top-0 right-0 bottom-0 left-0 lg:z-0 overflow-auto">
-          
+    <div className="pt-1 grid gap-1 lg:gap-2 grid-cols-2 md:grid-cols-7 grid-rows-4 2xl:grid-cols-9 2xl:grid-rows-4" /* 2xl:grid-rows-3 2xl:grid-cols-9 */>
+      <div className="country-search flex justify-center items-center overflow-hidden landscape:bg-blue-400">
+        <SearchCountry
+          handleCountryClick={incrementCountryPhase}
+          state={countries}
+        />
+      </div>
+      <div className="map-controls flex justify-center items-center overflow-hidden">
+        <MapControls
+          setRotation={setRotation}
+          setScale={setScale}
+          setProj={setProj}
+          isProjectionActive={isProjectionActive}
+          setIsProjectionActive={setIsProjectionActive}
+          isSecondOrderActive={isSecondOrderActive}
+          setIsSecondOrderActive={setIsSecondOrderActive}
+          useCountryStore={useCountryStore}
+        />
+      </div>
+      <div className="map grid grid-rows-3 md:grid-rows-4 relative row-start-1 row-span-3 col-span-2 md:col-start-2 md:col-span-5 h-full 2xl:col-span-5 2xl:col-start-3" /* 2xl:col-start-3 2xl:col-span-5 2xl:row-span-3 */ >
+        <Tabs/>
+        <div className="map-container row-span-2 md:row-span-3">
           <Map
             rotation={rotation}
             scale={scale}
@@ -91,28 +106,21 @@ const {
             handleCountryClick={incrementCountryPhase}
           />
         </div>
-        <div className="map-controls pt-2 pb-2 border-x-4 border-y-2 lg:border-y-4 lg:absolute lg:top-0 lg:left-0 z-10 bg-slate-100 lg:h-28 lg:w-52 lg:rounded-br-3xl lg:pt-0 lg:overflow-hidden lg:pl-6">
-          <MapControls
-            setRotation={setRotation}
-            setScale={setScale}
-            setProj={setProj}
-            isProjectionActive={isProjectionActive}
-            setIsProjectionActive={setIsProjectionActive}
-            isSecondOrderActive={isSecondOrderActive}
-            setIsSecondOrderActive={setIsSecondOrderActive}
-            useCountryStore={useCountryStore}
-          />
+        <div className="top-0.5 right-0.5 lg:top-auto lg:right-auto lg:bottom-0 lg:left-0 absolute">
+          <ChangeCountries />
         </div>
-        <div className="country-search border-x-4 border-y-2 lg:border-y-4 pl-2 pr-2 pt-2 pb-2 lg:absolute lg:top-0 lg:right-0 z-10 bg-slate-100 lg:overflow-x-hidden lg:overflow-y-auto lg:rounded-bl-3xl lg:pl-1 lg:h-28 lg:w-52">
-          <SearchCountry
-            handleCountryClick={incrementCountryPhase}
-            state={countries}
-          />
-        </div>
-      <div className="top-0.5 right-0.5 lg:top-auto lg:right-auto lg:bottom-0 lg:left-0 absolute">
-        <ChangeCountries />
       </div>
-      </div>
+      <div className="bg-[#087E8B] flex justify-center items-center ">1</div>
+      <div className="bg-secondary-foreground">2</div>
+      <div className="bg-secondary">3</div>
+      <div className="bg-primary-foreground">4</div>
+      <div className="bg-accent">5</div>
+      <div className="bg-primary-foreground">6</div>
+      <div className="bg-secondary-foreground">7</div>
+      <div className="bg-[#087E8B]">8</div>
+      <div className="bg-secondary">9</div>
+      <div className="bg-accent">10</div>
+    </div>
   );
 }
 
@@ -127,13 +135,13 @@ const ChangeCountries = ({ handleCountryClick, state, useCountries }) => {
         }}
         className=" text-white font-bold py-2 px-2 rounded-sm lg:rounded-full"
       >
-        <IconRefresh color="#e6e3e3"/>
+        <IconRefresh color="#e6e3e3" />
       </button>
     </div>
   );
-}
+};
 
-const MapControls = ({
+export const MapControls = ({
   setRotation,
   setScale,
   setProj,
@@ -144,8 +152,9 @@ const MapControls = ({
   useCountryStore,
 }) => {
   const [isPacific, setIsPacific] = useState(false);
-  const { countries, incrementCountryPhase } =
-    useCountryStore((state) => state);
+  const { countries, incrementCountryPhase } = useCountryStore(
+    (state) => state
+  );
 
   const handleToggle = () => {
     setIsPacific(!isPacific);
@@ -168,23 +177,19 @@ const MapControls = ({
     setIsSecondOrderActive(!isSecondOrderActive);
   };
 
-
   return (
-    <div className="view-options-container flex lg:block justify-center items-center h-full lg:justify-start lg:items-start lg:h-auto">
-      <div className="inline lg:block ml-1 lg:ml-0 mt-2 lg:mt-2">
-        <Switch
-          checked={isPacific}
-          onCheckedChange={handleToggle}
-        />
+    <div className="view-options-container block overflow-hidden justify-center items-center lg:justify-start lg:items-start h-auto">
+      <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2">
+        <Switch checked={isPacific} onCheckedChange={handleToggle} />
         <label
-          className="toggle-label relative -top-0.5"
+          className="toggle-label relative -top-0.5 md:text-sm lg:text-base"
           onClick={handleToggle}
         >
           {" "}
           Pacific
         </label>
       </div>
-      <div className="inline lg:block ml-1 lg:ml-0 mt-2 lg:mt-2">
+      <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 md:text-sm lg:text-base">
         <Switch
           checked={isProjectionActive}
           onCheckedChange={handleProjectionToggle}
@@ -197,7 +202,7 @@ const MapControls = ({
           Geopolitics
         </label>
       </div>
-      <div className="inline lg:block ml-1 lg:ml-0 mt-2 lg:mt-2">
+      <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 md:text-sm lg:text-base">
         <Switch
           checked={isSecondOrderActive}
           onCheckedChange={handleSecondOrderToggle}
@@ -209,8 +214,7 @@ const MapControls = ({
           {" "}
           War Outbreak
         </label>
-        <div className="lg:hidden">
-        </div>
+        <div className="lg:hidden"></div>
       </div>
     </div>
   );
@@ -221,7 +225,7 @@ const Map = ({
   scale,
   geographiesData,
   state,
-  handleCountryClick
+  handleCountryClick,
 }) => {
   const width = 800;
   const height = 600;
@@ -252,7 +256,7 @@ const Map = ({
                   geography={geo}
                   onClick={() => handleCountryClick(geo.properties.name)}
                   stroke="black"
-                  strokeWidth={0.15}
+                  strokeWidth={0.5}
                   style={{
                     default: {
                       fill: countryState.color, // Use the state to get the color
