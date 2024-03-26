@@ -31,6 +31,7 @@ const getColorFromProbability = (number, phase, isProjectionActive) => {
 };
 
 const useCountryStore = create((set, get) => ({
+  isOpinionActive: false,
   isProjectionActive: true,
   isSecondOrderActive: false,
   countries: countries.reduce((acc, country) => {
@@ -41,6 +42,11 @@ const useCountryStore = create((set, get) => ({
     };
     return acc;
   }, {}),
+
+  setIsOpinionActive: async (isActive) => {
+    set(() => ({ isOpinionActive: isActive }));
+    await get().calculateProbabilities();
+  },
 
   setIsProjectionActive: async (isActive) => {
     set(() => ({ isProjectionActive: isActive }));
@@ -192,10 +198,10 @@ function transformStateToNumericArray(stateWrapper) {
         stateArray[index] = 0;
         break;
       case 1:
-        stateArray[index] = 0.6;
+        stateArray[index] = 0.8;
         break;
       case 2:
-        stateArray[index] = -0.6;
+        stateArray[index] = -0.8;
         break;
       case 3:
         stateArray[index] = 0;

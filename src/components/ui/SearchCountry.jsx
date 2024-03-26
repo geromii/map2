@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRef, useEffect } from "react"; // Import useRef and useEffect
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import {
   Popover,
@@ -17,76 +18,74 @@ import {
 } from "@/components/ui/command";
 import { useCountries } from "@/app/useCountries";
 
-
-export function SearchCountry({ handleCountryClick, state }) {
+export function SearchCountry({ selectedCountries, setSelectedCountries }) {
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
-  const [selectedCountry, setSelectedCountry] = React.useState("");
-  const { allCountries, filteredCountries } = useCountries(searchValue);
+  const { allCountries, filteredCountries, sortedFilteredCountries } = useCountries(searchValue);
+  const inputRef = useRef(null); // Create a ref for the input
+
+
+ 
 
   const handleSelect = (country) => {
-    setSelectedCountry(country);
-    setOpen(false); // Add this line to close the popover when a country is selected
-  };
-  const handleButtonClick = () => {
-    if (selectedCountry) {
-      handleCountryClick(selectedCountry);
+    setSearchValue("");
+    if (selectedCountries.includes(country)) {
+      setSelectedCountries(selectedCountries.filter((c) => c !== country));
+    } else {
+      setSelectedCountries([...selectedCountries, country]);
     }
   };
 
-  const selectedCountries = Object.keys(state).filter(
-    (country) => state[country].state !== 0,
-  );
-
-  // Search handler
-  const handleSearch = (e) => {
-    console.log(e.target.value);
-    setSearchValue(e.target.value);
-  };
-
-
-  const buttonColor = selectedCountry
-    ? state[selectedCountry].color
-    : "defaultButtonColor";
+  useEffect(() => {
+    // Set focus on the input whenever the selectedCountries changes
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [selectedCountries]);
 
   return (
-    <div className="flex-wrap align-center justify-center items-center lg:justify-start lg:items-start h-auto">
-      <Popover open={open} onOpenChange={setOpen}>
+    <div className="flex-wrap align-center justify-center items-center lg:justify-center lg:items-center h-auto w-full">
+      <Popover
+        open={open}
+        onOpenChange={setOpen}
+        className="w-full align-middle justify-center m-2"
+      >
         <PopoverTrigger asChild>
           <Button
             variant="outline"
+            size="default"
             role="combobox"
             aria-expanded={open}
-            className="w-[200px] justify-between overflow-hidden"
+            className="w-full md:justify-around overflow-hidden pl-1 text-xs lg:text-sm"
           >
-            {selectedCountry || "Search countries..."}
-            <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <CaretSortIcon className="h-5 w-5 shrink-0 opacity-50" />
+            Select countries
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
           <Command>
             <CommandInput
-              placeholder="Search for a country..."
+              placeholder="Type to search"
               className="h-9"
               value={searchValue}
-              //  console log the search value
               onValueChange={setSearchValue}
+              ref={inputRef} // Apply the ref to the input
             />
             <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-              {filteredCountries.length === 0 && (
+              {sortedFilteredCountries.length === 0 && (
                 <CommandEmpty>No country found.</CommandEmpty>
               )}
               <CommandGroup>
-                {filteredCountries.map((country) => (
+                {sortedFilteredCountries.map((country) => (
                   <CommandItem
                     key={country}
                     value={country}
                     onSelect={() => handleSelect(country)}
-                    style={{ color: state[country].color, fontWeight: "bold" }}
+                    style={{ color: "primary-foreground", fontWeight: "bold" }}
                   >
                     {country}
                     <CheckIcon
-                      className={`ml-auto h-4 w-4 ${selectedCountry === country ? "opacity-100" : "opacity-0"}`}
+                      className={`ml-auto h-4 w-4 ${selectedCountries.includes(country) ? "opacity-100" : "opacity-0"}`}
                     />
                   </CommandItem>
                 ))}
@@ -95,14 +94,6 @@ export function SearchCountry({ handleCountryClick, state }) {
           </Command>
         </PopoverContent>
       </Popover>
-      <Button
-        onClick={handleButtonClick}
-        disabled={!selectedCountry}
-        className="ml-2 lg:ml-0 lg:mt-2 "
-        style={{ backgroundColor: buttonColor }}
-      >
-        Select
-      </Button>
     </div>
   );
 }
