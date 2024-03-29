@@ -12,11 +12,12 @@ import "./MapChart.css";
 import useCountryStore from "./useCountryStore";
 import { Tooltip } from "react-tooltip";
 import { useStore } from "./store";
-import { SearchCountry } from "@/components/ui/SearchCountry";
 import { SearchBox } from "@/components/ui/SearchBox";
 import { Switch } from "@/components/ui/switch";
+import { DarkSwitch } from "@/components/ui/darkSwitch";
 import { geoRobinson } from "d3-geo-projection";
-import { IconRefresh } from "@tabler/icons-react";
+import { IconRefresh, IconArrowsShuffle } from "@tabler/icons-react";
+import ShuffleCountries from "../components/ui/shuffle";
 import Tabs from "./tabs";
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -75,10 +76,11 @@ export default function MapChart() {
   }, []);
 
   return (
-    <div className="pt-1 grid gap-1 lg:gap-1.5 2xl:gap-2 grid-cols-2 md:grid-cols-7 grid-rows-3  mt-0.5 xl:mt-1 lg:mx-1" /* 2xl:grid-rows-3 2xl:grid-cols-9 */>
-      <div className="country-search border-2 border-primary bg-primary-foreground rounded-lg flex justify-center items-center overflow-hidden md:h-[16.96vw] h-32">
-      </div>
-      <div className="map-controls border-2 border-primary bg-accent rounded-lg flex justify-center items-center overflow-hidden md:h-[16.96vw] h-32">
+    <div
+      className="pt-1 grid gap-1 lg:gap-1.5 2xl:gap-2 grid-cols-2 md:grid-cols-7 grid-rows-3  mt-0.5 xl:mt-1 lg:mx-1" /* 2xl:grid-rows-3 2xl:grid-cols-9 */
+    >
+      <div className="border-2 border-primary bg-primary-foreground rounded flex flex-row lg:flex-col p-4 justify-around items-center overflow-hidden md:h-[16.96vw] h-32">
+        
         <MapControls
           isProjectionActive={isProjectionActive}
           setIsProjectionActive={setIsProjectionActive}
@@ -86,8 +88,13 @@ export default function MapChart() {
           setIsSecondOrderActive={setIsSecondOrderActive}
         />
       </div>
-      <div className="map grid grid-rows-3 md:grid-rows-4 relative row-start-1 row-span-3 col-span-2 md:col-start-2 md:col-[2_/_-2] h-full" /* 2xl:col-start-3 2xl:col-span-5 2xl:row-span-3 */ >
-        <Tabs/>
+      <div className="map-controls border-2 border-primary bg-primary-foreground rounded flex justify-center items-center overflow-hidden md:h-[16.96vw] h-32">
+        <SearchBox />
+      </div>
+      <div
+        className="map grid grid-rows-3 md:grid-rows-4 relative row-start-1 row-span-3 col-span-2 md:col-start-2 md:col-[2_/_-2] h-full" /* 2xl:col-start-3 2xl:col-span-5 2xl:row-span-3 */
+      >
+        <Tabs />
         <div className=" map-container row-span-2 md:row-span-3 overflow-hidden">
           <Map
             rotation={rotation}
@@ -99,30 +106,36 @@ export default function MapChart() {
           />
         </div>
       </div>
-      <div className="border-2 border-primary bg-[#087E8B] flex justify-center items-center rounded-xl md:h-[16.96vw] h-32"> Search </div>
-      <div className="border-2 border-primary bg-primary-foreground flex justify-center items-center rounded-xl md:h-[16.96vw] h-32"><SearchBox /></div>
-      <div className="border-2 border-primary bg-black rounded-xl md:h-[16.96vw] hidden lg:block "></div>
-      <div className="border-2 border-primary bg-black rounded-xl md:h-[16.96vw] hidden lg:block"></div>
+      <div className="border-2 border-primary bg-secondary-foreground text-secondary flex justify-center items-center rounded md:h-[16.96vw] h-32">
+
+      </div>
+      <div className="border-2 border-primary bg-secondary-foreground flex justify-center items-center rounded md:h-[16.96vw] h-32 shadow-xl"></div>
+      <div className="border-2 border-primary bg-black rounded md:h-[16.96vw] row-start-4 md:row-start-3  flex flex-row md:flex-col items-center justify-around lg:p-5 ">
+        <ShuffleCountries />
+        <ChangeCountries />
+      </div>
+      <div className="border-2 border-primary bg-black rounded md:h-[16.96vw] flex items-center justify-center row-start-4 md:row-start-3"></div>
     </div>
   );
 }
 
 // refresh button to reset all countries
-const ChangeCountries = ({ handleCountryClick, state, useCountries }) => {
+const ChangeCountries = () => {
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   return (
-    <div className="flex flex-col flew-row items-center">
-      <button
+    <div className="">
+      <IconRefresh
         onClick={() => {
           resetAllExcept();
         }}
-        className=" text-white font-bold py-2 px-2 rounded-sm lg:rounded-full"
-      >
-        <IconRefresh color="#e6e3e3" />
-      </button>
+        color="white"
+        className="cursor-pointer  h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 xl:h-14 xl:w-14"
+      />
     </div>
   );
 };
+
+
 
 export const MapControls = ({
   isProjectionActive,
@@ -130,8 +143,6 @@ export const MapControls = ({
   isSecondOrderActive,
   setIsSecondOrderActive,
 }) => {
-
-
   const handleProjectionToggle = async () => {
     setIsProjectionActive(!isProjectionActive);
   };
@@ -141,9 +152,9 @@ export const MapControls = ({
   };
 
   return (
-    <div className= "view-options-container block overflow-hidden justify-center items-center lg:justify-start lg:items-start h-auto">
+    <div className="view-options-container flex-col overflow-hidden justify-between items-around h-full w-ful text-black font-medium">
       <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 md:text-sm lg:text-base">
-        <Switch
+        <DarkSwitch
           checked={isProjectionActive}
           onCheckedChange={handleProjectionToggle}
         />
@@ -156,7 +167,7 @@ export const MapControls = ({
         </label>
       </div>
       <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 md:text-sm lg:text-base">
-        <Switch
+        <DarkSwitch
           checked={isSecondOrderActive}
           onCheckedChange={handleSecondOrderToggle}
         />
@@ -188,7 +199,7 @@ const Map = ({
     .scale(scale)
     .rotate(rotation);
   return (
-    <div className="bg-slate-500 rounded-b-xl border-2 lg:border-4 border-t-0 lg:border-t-0 border-primary scale-x-[1.01] sm:scale-x-100">
+    <div className="bg-slate-500 rounded-b-lg border-2 lg:border-4 border-t-0 lg:border-t-0 border-primary scale-x-[1.01] sm:scale-x-100">
       <ComposableMap
         viewBox="-60 -15 1000 550" // 0 0 800 450 default, [x, y, width, height]
         projection={projection}

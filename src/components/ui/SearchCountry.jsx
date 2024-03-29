@@ -17,11 +17,16 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { useCountries } from "@/app/useCountries";
+import useCountryStore from "@/app/useCountryStore";
 
-export function SearchCountry({ selectedCountries, setSelectedCountries }) {
+export function SearchCountry({ countries }) {
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
   const { allCountries, filteredCountries, sortedFilteredCountries } = useCountries(searchValue);
+  const { setCountryPhase, incrementCountryPhase } = useCountryStore((state) => ({
+    setCountryPhase: state.setCountryPhase, 
+    incrementCountryPhase: state.incrementCountryPhase,
+  }));
   const inputRef = useRef(null); // Create a ref for the input
 
 
@@ -29,19 +34,18 @@ export function SearchCountry({ selectedCountries, setSelectedCountries }) {
 
   const handleSelect = (country) => {
     setSearchValue("");
-    if (selectedCountries.includes(country)) {
-      setSelectedCountries(selectedCountries.filter((c) => c !== country));
+    if (countries[country].nonInitial) {
+      setCountryPhase(country, "INITIAL");
     } else {
-      setSelectedCountries([...selectedCountries, country]);
+      setCountryPhase(country, "neutral");
     }
   };
-
   useEffect(() => {
     // Set focus on the input whenever the selectedCountries changes
     if (inputRef.current) {
       inputRef.current.focus();
     }
-  }, [selectedCountries]);
+  }, [countries]);
 
   return (
     <div className="flex-wrap align-center justify-center items-center lg:justify-center lg:items-center h-auto w-full">
@@ -56,7 +60,7 @@ export function SearchCountry({ selectedCountries, setSelectedCountries }) {
             size="default"
             role="combobox"
             aria-expanded={open}
-            className="w-full md:justify-around overflow-hidden pl-1 text-xs lg:text-sm"
+            className="w-full md:justify-around overflow-hidden pl-1 text-xs lg:text-sm rounded-sm"
           >
             <CaretSortIcon className="h-5 w-5 shrink-0 opacity-50" />
             Select countries
@@ -85,7 +89,7 @@ export function SearchCountry({ selectedCountries, setSelectedCountries }) {
                   >
                     {country}
                     <CheckIcon
-                      className={`ml-auto h-4 w-4 ${selectedCountries.includes(country) ? "opacity-100" : "opacity-0"}`}
+                      className={`ml-auto h-4 w-4 ${countries[country].nonInitial ? "opacity-100" : "opacity-0"}`}
                     />
                   </CommandItem>
                 ))}

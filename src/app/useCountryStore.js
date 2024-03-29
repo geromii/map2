@@ -4,9 +4,9 @@ import * as math from "mathjs";
 
 const PHASES = {
   INITIAL: 0,
-  RED: 1,
+  NEUTRAL: 1,
   BLUE: 2,
-  NEUTRAL: 3,
+  RED: 3,
 };
 
 const COLOR_MAP = {
@@ -31,7 +31,6 @@ const getColorFromProbability = (number, phase, isProjectionActive) => {
 };
 
 const useCountryStore = create((set, get) => ({
-  isOpinionActive: false,
   isProjectionActive: true,
   isSecondOrderActive: false,
   countries: countries.reduce((acc, country) => {
@@ -39,14 +38,12 @@ const useCountryStore = create((set, get) => ({
       phase: PHASES.INITIAL,
       color: COLOR_MAP[PHASES.INITIAL],
       probability: 0,
+      nonInitial: false,
+      selectionOrder: 0,
     };
     return acc;
   }, {}),
 
-  setIsOpinionActive: async (isActive) => {
-    set(() => ({ isOpinionActive: isActive }));
-    await get().calculateProbabilities();
-  },
 
   setIsProjectionActive: async (isActive) => {
     set(() => ({ isProjectionActive: isActive }));
@@ -62,17 +59,24 @@ const useCountryStore = create((set, get) => ({
   incrementCountryPhase: async (countryName) => {
     const countryData = get().countries[countryName];
     const nextPhase = (countryData.phase + 1) % Object.keys(PHASES).length;
-    await set((state) => ({
-      countries: {
+    await set((state) => {
+      const maxSelectionOrder = getMaxSelectionOrder(state.countries);
+      const currentSelectionOrder = countryData.selectionOrder;
+      const updatedCountries = {
         ...state.countries,
         [countryName]: {
           ...countryData,
           phase: nextPhase,
-          color: getColorFromProbability(countryData.probability, nextPhase, state.isProjectionActive)
+          color: getColorFromProbability(countryData.probability, nextPhase, state.isProjectionActive),
+          nonInitial: nextPhase !== PHASES.INITIAL,
+          selectionOrder: currentSelectionOrder !== 0 ? currentSelectionOrder : (nextPhase !== PHASES.INITIAL ? maxSelectionOrder + 1 : 0),
         },
-      },
-    }));
-
+      };
+      return {
+        countries: updatedCountries,
+      };
+    });
+  
     // After updating the phase, calculate new probabilities
     await get().calculateProbabilities();
   },
@@ -84,43 +88,63 @@ const useCountryStore = create((set, get) => ({
           phase: PHASES.INITIAL,
           color: COLOR_MAP[PHASES.INITIAL],
           probability: 0,
+          nonInitial: false,
+          selectionOrder: 0,
         };
       } else {
         acc[country] = currentCountries[country];
       }
       return acc;
     }, {});
-
-    set({ countries: resetCountries });
-
+  
+    set({
+      countries: resetCountries,
+    });
+  
     // recalculate probabilities
     get().calculateProbabilities();
   },
-
   setCountryPhase: (countryName, phase) => {
+    // Check if phase is provided as a string and convert it to its corresponding numeric value
+    if (typeof phase === 'string') {
+      phase = phase.toUpperCase(); // Ensure the string is in uppercase to match the keys in PHASES
+      if (PHASES.hasOwnProperty(phase)) {
+        phase = PHASES[phase];
+      } else {
+        console.error("Invalid phase provided");
+        return;
+      }
+    }
+  
     if (!Object.values(PHASES).includes(phase)) {
       console.error("Invalid phase provided");
       return;
     }
-
+  
     const countryExists = get().countries.hasOwnProperty(countryName);
     if (!countryExists) {
       console.error("Country does not exist");
       return;
     }
-
-    set((state) => ({
-      countries: {
+    set((state) => {
+      const maxSelectionOrder = getMaxSelectionOrder(state.countries);
+      const currentSelectionOrder = state.countries[countryName].selectionOrder;
+      const updatedCountries = {
         ...state.countries,
         [countryName]: {
           ...state.countries[countryName],
           phase: phase,
           color: getColorFromProbability(state.countries[countryName].probability, phase, state.isProjectionActive),
+          nonInitial: phase !== PHASES.INITIAL,
+          selectionOrder: currentSelectionOrder !== 0 ? currentSelectionOrder : (phase !== PHASES.INITIAL ? maxSelectionOrder + 1 : 0),
         },
-      },
-    }));
-
-    // After updating the state, recalculate probabilities
+      };
+      return {
+        countries: updatedCountries,
+      };
+    });
+  
+    // after updating the state, recalculate probabilities
     get().calculateProbabilities();
   },
 
@@ -128,10 +152,10 @@ const useCountryStore = create((set, get) => ({
     const { isProjectionActive, isSecondOrderActive, countries } = get();
   
 
-    // Check if both phase 1 and phase 2 exist
-    const case1Exists = Object.values(countries).some(({ phase }) => phase === 1);
-    const case2Exists = Object.values(countries).some(({ phase }) => phase === 2);
-    const bothExist = case1Exists && case2Exists;
+    // Check if both phase 2 and phase 3 exist
+    const case1Exists = Object.values(countries).some(({ phase }) => phase === 2);
+    const case2Exists = Object.values(countries).some(({ phase }) => phase === 3);
+    const bothExist = case1Exists && case2Exists //case1Exists && case2Exists;
 
     let result = null
   
@@ -142,7 +166,7 @@ const useCountryStore = create((set, get) => ({
       result = math.multiply(scoresMatrix, stateArray);
   
       Object.keys(countries).forEach((country, index) => {
-        if (countries[country].phase === 3) {
+        if (countries[country].phase === 1) {
           result[index] = 0;
         }
       });
@@ -187,6 +211,10 @@ async function fetchScoresMatrix() {
   }
 }
 
+const getMaxSelectionOrder = (countries) => {
+  return Math.max(...Object.values(countries).map((country) => country.selectionOrder));
+};
+
 function transformStateToNumericArray(stateWrapper) {
   const stateArray = new Array(200).fill(0); 
 
@@ -198,13 +226,13 @@ function transformStateToNumericArray(stateWrapper) {
         stateArray[index] = 0;
         break;
       case 1:
-        stateArray[index] = 0.8;
+        stateArray[index] = 0;
         break;
       case 2:
-        stateArray[index] = -0.8;
+        stateArray[index] = -1;
         break;
       case 3:
-        stateArray[index] = 0;
+        stateArray[index] = 1;
         break;
       default:
         stateArray[index] = 0;

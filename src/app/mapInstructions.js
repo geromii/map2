@@ -9,9 +9,9 @@ export const MapInstructions = () => {
           </header>
           <p className="mb-8 text-gray-600">
             Click countries on the map until you have at least one country on the{" "}
-            <span className="text-red-800">Red side</span> (click once), and at
+            <span className="text-red-800">Red side</span> (click twice), and at
             least one country on the{" "}
-            <span className="text-blue-800">Blue side</span> (click twice). You
+            <span className="text-blue-800">Blue side</span> (click thrice). You
             will then see a global opinion map.
           </p>
         </section>
@@ -23,14 +23,14 @@ export const MapInstructions = () => {
             <li className="color-transition font-medium lg:text-lg">
               Undecided (Variable)
             </li>
+            <li className="text-gray-700 font-medium lg:text-lg">
+              Neutral (Dark Gray)
+            </li>
             <li className="text-red-800 font-medium lg:text-lg">
               Side A (Dark Red)
             </li>
             <li className="text-blue-800 font-medium lg:text-lg">
               Side B (Dark Blue)
-            </li>
-            <li className="text-gray-700 font-medium lg:text-lg">
-              Neutral (Dark Gray)
             </li>
           </ol>
           <p className="mt-6 text-gray-700 lg:text-lg">

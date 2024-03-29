@@ -1,5 +1,5 @@
 .country:hover {
-  stroke-width: 1px;
+  stroke-width: 1.5px;
 }
 
 @keyframes colorCycle {

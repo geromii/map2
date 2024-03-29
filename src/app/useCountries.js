@@ -10,8 +10,7 @@ export function useCountries(searchValue) {
     fetch("/countries.json")
       .then((response) => response.json())
       .then((data) => {
-        // Assuming your countries data is an array of strings.
-        // Adjust sorting logic if your data structure is different.
+ 
         setAllCountries(data.sort((a, b) => a.localeCompare(b)));
       });
   }, []);
@@ -25,7 +24,6 @@ export function useCountries(searchValue) {
   }, [searchValue, allCountries]);
 
   useEffect(() => {
-    console.log("sortedfilteredCountries")
     const priorityCountries = ["Israel", "Palestine", "United States", "China", "Russia"];
 
     const sorted = filteredCountries.sort((a, b) => {
