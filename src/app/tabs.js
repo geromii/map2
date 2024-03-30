@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import useCountryStore from "./useCountryStore";
+import DemographicTab from "./tabDemographic";
 
-const tabs = ["News", "Select", "Overlays", "Data"];
+const tabs = ["Data", "Select", "Overlays", /* "News"*/];
 
 export default function Tabs() {
-  const [selectedTab, setSelectedTab] = useState("News");
+  const [selectedTab, setSelectedTab] = useState("Data");
 
   const getTabClassName = (tabName) => {
     const isSelected = selectedTab === tabName;
@@ -19,7 +20,6 @@ export default function Tabs() {
   return (
     <div className="flex flex-col justify-end h-full overflow-hidden">
       {" "}
-      {/* Adjust this line */}
       <div className="flex justify-evenly w-full text-xs md:text-sm lg:text-base 2xl:text-lg max-h-10 ">
         {tabs.map((tab) => (
           <div
@@ -38,7 +38,7 @@ export default function Tabs() {
 
 function TabContent({ selectedTab }) {
   return (
-    <div className="rounded-t-lg row-span-3 bg-accent-foreground text-primary border-primary border-2 border-b-1 lg:border-4 lg:border-b-[1px] h-full p-5 scale-x-[1.01] sm:scale-x-100 z-10 overflow-hidden">
+    <div className="rounded-t-lg row-span-3 bg-accent-foreground text-primary border-primary border-2 border-b-1 lg:border-4 lg:border-b-[1px] h-full md:p-5 scale-x-[1.01] sm:scale-x-100 z-10 overflow-hidden">
       {selectedTab === "News" && <NewsContent />}
       {selectedTab === "Select" && <SelectContent />}
       {selectedTab === "Overlays" && <OverlaysContent />}
@@ -65,5 +65,7 @@ function OverlaysContent() {
 }
 
 function DataContent() {
-  return <div>Content for Data</div>;
+  return <div>
+    <DemographicTab />
+  </div>;
 }

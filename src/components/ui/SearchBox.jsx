@@ -38,7 +38,7 @@ export function SearchBox() {
     .map(([countryName, country]) => ( // Destructure to get countryName and country
       <div
         key={countryName} // Use countryName as the key
-        className="flex justify-between items-center whitespace-nowrap font-semibold border-y-2 mb-[-2px] border-accent"
+        className="flex justify-between items-center whitespace-nowrap font-semibold border-b-1 mt-[-2px] border-accent"
       >
         <div className="flex mr-1 relative shadow">
           <Squares

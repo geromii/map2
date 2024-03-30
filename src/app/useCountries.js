@@ -15,6 +15,7 @@ export function useCountries(searchValue) {
       });
   }, []);
 
+
   // Filter countries based on searchValue
   useEffect(() => {
     const result = allCountries.filter((country) =>
