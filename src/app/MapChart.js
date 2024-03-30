@@ -107,7 +107,7 @@ export default function MapChart() {
         </div>
       </div>
       <div className="border-2 border-primary bg-secondary-foreground text-secondary flex justify-center items-center rounded md:h-[16.96vw] h-32">
-
+        <PresetPairings/>
       </div>
       <div className="border-2 border-primary bg-secondary-foreground flex justify-center items-center rounded md:h-[16.96vw] h-32 shadow-xl"></div>
       <div className="border-2 border-primary bg-black rounded md:h-[16.96vw] row-start-4 md:row-start-3  flex flex-row md:flex-col items-center justify-around lg:p-5 ">
@@ -117,6 +117,24 @@ export default function MapChart() {
       <div className="border-2 border-primary bg-black rounded md:h-[16.96vw] flex items-center justify-center row-start-4 md:row-start-3"></div>
     </div>
   );
+}
+
+const PresetPairings = () => {
+  const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
+  const setCountryPhase = useCountryStore((state) => state.setCountryPhase);
+  const handlePairingClick = (country1, country2) => {
+    resetAllExcept()
+    setCountryPhase(country1, 2)
+    setCountryPhase(country2, 3)
+  };
+
+  return (
+    <div className = "w-full h-full text-xs flex flex-col justify-around ">
+      <button className="rounded shadow bg-primary-foreground text-primary" onClick={() => handlePairingClick("United States", "China")}>United States - China</button>
+      <button className="rounded shadow  bg-primary-foreground text-primary" onClick={() => handlePairingClick("Israel", "Palestine")}>Israel - Palestine</button>
+      <button className="rounded shadow bg-primary-foreground text-primary" onClick={() => handlePairingClick("Armenia", "Azerbaijan")}>Armenia - Azerbaijan</button>
+    </div>
+  )
 }
 
 // refresh button to reset all countries

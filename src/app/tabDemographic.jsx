@@ -52,7 +52,13 @@ function DemographicTab() {
     }
   };
 
-  const formatPopulation = (population) => `${(population / 1e6).toFixed(1)} million`;
+  const formatPopulation = (population) => {
+    if (population >= 1e9) {
+      return `${(population / 1e9).toFixed(1)} billion`;
+    } else {
+      return `${(population / 1e6).toFixed(1)} million`;
+    }
+  };
 
   const formatArea = (area) => area.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
