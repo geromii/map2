@@ -81,12 +81,7 @@ export default function MapChart() {
     >
       <div className="border-2 border-primary bg-primary-foreground rounded flex flex-row lg:flex-col p-4 justify-around items-center overflow-hidden md:h-[16.96vw] h-32">
         
-        <MapControls
-          isProjectionActive={isProjectionActive}
-          setIsProjectionActive={setIsProjectionActive}
-          isSecondOrderActive={isSecondOrderActive}
-          setIsSecondOrderActive={setIsSecondOrderActive}
-        />
+        <MapControls />
       </div>
       <div className="map-controls border-2 border-primary bg-primary-foreground rounded flex justify-center items-center overflow-hidden md:h-[16.96vw] h-32">
         <SearchBox />
@@ -102,7 +97,7 @@ export default function MapChart() {
             projectionType={projectionType}
             geographiesData={geographiesData}
             state={countries}
-            handleCountryClick={incrementCountryPhase}
+            incrementCountryPhase={incrementCountryPhase}
           />
         </div>
       </div>
@@ -122,32 +117,77 @@ export default function MapChart() {
 const PresetPairings = () => {
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   const setCountryPhase = useCountryStore((state) => state.setCountryPhase);
+  const mapMode = useCountryStore((state) => state.mapMode);
   const handlePairingClick = (country1, country2) => {
     resetAllExcept()
     setCountryPhase(country1, 2)
-    setCountryPhase(country2, 3)
+    if (country2) {
+    setTimeout(() => {
+      setCountryPhase(country2, 3)
+    }, 1)}
   };
+  // if mapMode is single return a bunch of buttons with single countries instead
+
+  const TwoCountryButton = ({country1, country2}) => {
+    return (
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40" onClick={() => handlePairingClick(country1, country2)}>{country1} - {country2}</button>
+    )
+  }
 
   return (
-    <div className = "w-full h-full text-xs flex flex-col justify-around ">
-      <button className="rounded shadow bg-primary-foreground text-primary" onClick={() => handlePairingClick("United States", "China")}>United States - China</button>
-      <button className="rounded shadow  bg-primary-foreground text-primary" onClick={() => handlePairingClick("Israel", "Palestine")}>Israel - Palestine</button>
-      <button className="rounded shadow bg-primary-foreground text-primary" onClick={() => handlePairingClick("Armenia", "Azerbaijan")}>Armenia - Azerbaijan</button>
+  
+    <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto">
+      {mapMode == "single" ? <>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Palestine", null)}>Palestine</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Israel", null)}>Israel</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Kosovo", null)}>Kosovo</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Cyprus", null)}>Cyprus</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Taiwan", null)}>Taiwan</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Armenia", null)}>Armenia</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Nigeria", null)}>Nigeria</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Mexico", null)}>Mexico</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Indonesia", null)}>Indonesia</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Australia", null)}>Australia</button>
+      </> : <>
+
+      <TwoCountryButton country1="Israel" country2="Iran"></TwoCountryButton> 
+      <TwoCountryButton country1="Saudi Arabia" country2="Iran"></TwoCountryButton>   
+      <TwoCountryButton country1="United States" country2="Iran"></TwoCountryButton>  
+      <TwoCountryButton country1="United States" country2="Russia"></TwoCountryButton>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40" onClick={() => handlePairingClick("United States", "China")}>United States - China</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Israel", "Palestine")}>Israel - Palestine</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Armenia", "Azerbaijan")}>Armenia - Azerbaijan</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("India", "Pakistan")}>India - Pakistan</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("North Korea", "South Korea")}>North Korea - South Korea</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Russia", "Ukraine")}>Russia - Ukraine</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Turkey", "Greece")}>Turkey - Greece</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("China", "Taiwan")}>China - Taiwan</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("China", "India")}>China - India</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Iran", "Saudi Arabia")}>Iran - Saudi Arabia</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Syria", "Turkey")}>Syria - Turkey</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("United States", "Iran")}>United States - Iran</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("United States", "Russia")}>United States - Russia</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Saudi Arabia", "Yemen")}>Saudi Arabia - Yemen</button>
+      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Ethiopia", "Egypt")}>Ethiopia - Egypt</button>
+      </>}
     </div>
   )
+  
 }
+
+
 
 // refresh button to reset all countries
 const ChangeCountries = () => {
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   return (
-    <div className="">
+    <div className="rounded border-2 border-white shadow shadow-neutral-200 hover:bg-neutral-800">
       <IconRefresh
         onClick={() => {
           resetAllExcept();
         }}
         color="white"
-        className="cursor-pointer  h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 xl:h-14 xl:w-14"
+        className="cursor-pointer h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 xl:h-14 xl:w-14 active:translate-y-[1px]"
       />
     </div>
   );
@@ -156,28 +196,34 @@ const ChangeCountries = () => {
 
 
 export const MapControls = ({
-  isProjectionActive,
-  setIsProjectionActive,
-  isSecondOrderActive,
-  setIsSecondOrderActive,
 }) => {
-  const handleProjectionToggle = async () => {
-    setIsProjectionActive(!isProjectionActive);
+  const { mapMode, setMapMode} = useCountryStore((state) => ({
+    mapMode: state.mapMode,
+    setMapMode: state.setMapMode,
+  }));
+
+  const handleSingleModeToggle = async () => {
+    console.log("single mode toggle")
+    setMapMode(mapMode == "single" ? "default" : "single");
   };
 
-  const handleSecondOrderToggle = async () => {
-    setIsSecondOrderActive(!isSecondOrderActive);
+  const handleProjectionToggle = async () => {
+    setMapMode(mapMode != "off" ? "off" : "default");
+  };
+
+  const handleWarToggle = async () => {
+    setMapMode(mapMode === "war" ? "default" : "war");
   };
 
   return (
     <div className="view-options-container flex-col overflow-hidden justify-between items-around h-full w-ful text-black font-medium">
       <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 md:text-sm lg:text-base">
         <DarkSwitch
-          checked={isProjectionActive}
+          checked={(mapMode != "off")}
           onCheckedChange={handleProjectionToggle}
         />
         <label
-          className="toggle-label relative -top-0.5"
+          className="toggle-label relative -top-0.5 ml-1"
           onClick={handleProjectionToggle}
         >
           {" "}
@@ -186,17 +232,25 @@ export const MapControls = ({
       </div>
       <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 md:text-sm lg:text-base">
         <DarkSwitch
-          checked={isSecondOrderActive}
-          onCheckedChange={handleSecondOrderToggle}
+          checked={(mapMode == "war")}
+          onCheckedChange={handleWarToggle}
         />
         <label
-          className="toggle-label relative -top-0.5 whitespace-nowrap"
-          onClick={handleSecondOrderToggle}
+          className="toggle-label relative -top-0.5 whitespace-nowrap justify-center ml-1"
+          onClick={handleWarToggle}
         >
-          {" "}
-          War Outbreak
+          {"  "}
+           WW3
         </label>
-        <div className="lg:hidden"></div>
+        <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 md:text-sm lg:text-base">
+          <DarkSwitch
+            checked={(mapMode == "single")}
+            onCheckedChange={handleSingleModeToggle}
+          />
+          <label className="toggle-label relative -top-0.5 ml-1">
+          {"  "}  Single Mode
+          </label>
+        </div>
       </div>
     </div>
   );
@@ -207,8 +261,27 @@ const Map = ({
   scale,
   geographiesData,
   state,
-  handleCountryClick,
+  incrementCountryPhase,
 }) => {
+  const {resetAllExcept} = useCountryStore((state) => ({
+    resetAllExcept: state.resetAllExcept
+  }));
+  const { mapMode} = useCountryStore((state) => ({
+    mapMode: state.mapMode
+  }));
+  const { setCountryPhase } = useCountryStore((state) => ({
+    setCountryPhase: state.setCountryPhase
+  }));
+
+  const handleCountryClick = (country) => {
+    if (mapMode == "single") {
+      resetAllExcept()
+      setCountryPhase(country, 2);
+    } else {
+      incrementCountryPhase(country);
+    }
+  };
+
   const width = 800;
   const height = 600;
 
@@ -237,8 +310,8 @@ const Map = ({
                   key={geo.rsmKey}
                   geography={geo}
                   onClick={() => handleCountryClick(geo.properties.name)}
-                  stroke="black"
-                  strokeWidth={0.5}
+                  stroke= {(mapMode == "single") && countryState.phase === 2 ? "white" : "black"}
+                  strokeWidth= {(mapMode == "single") && countryState.phase === 2 ? 1.0 : 0.5}
                   style={{
                     default: {
                       fill: countryState.color, // Use the state to get the color
@@ -253,7 +326,7 @@ const Map = ({
                       outline: "none",
                     },
                   }}
-                  className="country"
+                  className= "country"
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content={geo.properties.name}
                 />

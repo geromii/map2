@@ -16,23 +16,24 @@ const COLOR_MAP = {
   [PHASES.NEUTRAL]: "#646464",
 };
 
-const getColorFromProbability = (number, phase, isProjectionActive) => {
+const getColorFromProbability = (number, phase, mapMode) => {
   if (phase == PHASES.RED) {return COLOR_MAP[PHASES.RED]}
   if (phase == PHASES.BLUE) {return COLOR_MAP[PHASES.BLUE]}
   if (phase == PHASES.NEUTRAL) {return COLOR_MAP[PHASES.NEUTRAL]}
-  if (!isProjectionActive) {return COLOR_MAP[PHASES.INITIAL]}
+  if (mapMode == "off") {return COLOR_MAP[PHASES.INITIAL]}
+
+
 
   number = Math.max(-1, Math.min(number, 1));
   let probability = Math.abs(number) ** 1.8; // turns the probability into a more exponential curve
-  let hue = number >= 0 ? 0 : 240;
+  let hue = number >= 0 ? 240 : 0;
   let saturation = 100 * probability;
   let lightness = 78 - 30 * probability;
   return `hsl(${hue}, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
 };
 
 const useCountryStore = create((set, get) => ({
-  isProjectionActive: true,
-  isSecondOrderActive: false,
+  mapMode: "default",
   countries: countries.reduce((acc, country) => {
     acc[country] = {
       phase: PHASES.INITIAL,
@@ -45,16 +46,17 @@ const useCountryStore = create((set, get) => ({
   }, {}),
 
 
-  setIsProjectionActive: async (isActive) => {
-    set(() => ({ isProjectionActive: isActive }));
+  setMapMode: async (mode) => {
+
+    if (mode !== "default" && mode !== "single" && mode !== "war" && mode != "off") {
+      throw new Error("Invalid mode argument. Must be 'default', 'single', or 'war'.");
+    }
+
+    set(() => ({ mapMode: mode }));
     await get().calculateProbabilities();
   },
-  
-  // Function to update `isSecondOrderActive` and then recalculate probabilities
-  setIsSecondOrderActive: async (isActive) => {
-    set(() => ({ isSecondOrderActive: isActive }));
-    await get().calculateProbabilities();
-  },
+
+
   
   incrementCountryPhase: async (countryName) => {
     const countryData = get().countries[countryName];
@@ -149,20 +151,27 @@ const useCountryStore = create((set, get) => ({
   },
 
   calculateProbabilities: async () => {
-    const { isProjectionActive, isSecondOrderActive, countries } = get();
+    const { mapMode, countries } = get();
   
 
     // Check if both phase 2 and phase 3 exist
-    const case1Exists = Object.values(countries).some(({ phase }) => phase === 2);
-    const case2Exists = Object.values(countries).some(({ phase }) => phase === 3);
-    const bothExist = case1Exists && case2Exists //case1Exists && case2Exists;
+    const blueExists = Object.values(countries).some(({ phase }) => phase === 2);
+    const redExists = Object.values(countries).some(({ phase }) => phase === 3);
+    const bothExist = blueExists && redExists;
+
+
+    const revealScores = ((mapMode == "single") && blueExists && !redExists) || (bothExist && (mapMode != "single")) 
+
+    const scalar = (mapMode == "single") ? 1 : 0.8;
+
+    // if only one exists, set mode to "single", if both exist set mode to "multi"
 
     let result = null
   
     // If both phase 1 and phase 2 exist, calculate probabilities
-    if (bothExist) {
+    if (revealScores) {
       let scoresMatrix = await fetchScoresMatrix();
-      let stateArray = transformStateToNumericArray(countries);
+      let stateArray = transformStateToNumericArray(countries, scalar);
       result = math.multiply(scoresMatrix, stateArray);
   
       Object.keys(countries).forEach((country, index) => {
@@ -171,8 +180,8 @@ const useCountryStore = create((set, get) => ({
         }
       });
   
-      if (isSecondOrderActive) {
-        const modifiedScoresMatrix = math.map(scoresMatrix, (value) => Math.pow(Math.abs(value), 4) * 4 * value);
+      if (mapMode == "war") {
+        const modifiedScoresMatrix = math.map(scoresMatrix, (value) => Math.pow(Math.abs(value), 4) * 1 * value);
         const secondOrderResult = math.multiply(modifiedScoresMatrix, result);
         result = math.divide(math.add(result, secondOrderResult), 2); // Averaging the result with the second-order result
       }
@@ -186,11 +195,11 @@ const useCountryStore = create((set, get) => ({
     set((state) => ({
       countries: Object.keys(state.countries).reduce((newCountries, country, index) => {
         const currentCountry = state.countries[country];
-        const probability = (!bothExist) ? 0 : result[index];
+        const probability = (!revealScores) ? 0 : result[index];
         newCountries[country] = {
           ...currentCountry,
           probability,
-          color: getColorFromProbability(probability, currentCountry.phase, isProjectionActive),
+          color: getColorFromProbability(probability, currentCountry.phase, mapMode),
         };
         return newCountries;
       }, {}),
@@ -215,9 +224,36 @@ const getMaxSelectionOrder = (countries) => {
   return Math.max(...Object.values(countries).map((country) => country.selectionOrder));
 };
 
-function transformStateToNumericArray(stateWrapper) {
+function transformStateToNumericArray(stateWrapper, scalar) {
   const stateArray = new Array(200).fill(0); 
 
+  let REDUCER = scalar
+
+  // Initialize counters for each case
+  let case2Count = 0;
+  let case3Count = 0;
+
+  // First pass to count the cases
+  Object.keys(stateWrapper).forEach(country => {
+    const countryState = stateWrapper[country].phase;
+    if (countryState === 2) case2Count++;
+    if (countryState === 3) case3Count++;
+  });
+
+  // Function to calculate the sum of the harmonic series up to n
+  const harmonicSum = n => {
+    let sum = 0;
+    for (let i = 1; i <= n; i++) {
+      sum += 1 / i;
+    }
+    return sum;
+  };
+
+  // Calculate the average values after the harmonic series division
+  const case2value = case2Count > 0 ? REDUCER *harmonicSum(case2Count) / case2Count : 0;
+  const case3value = case3Count > 0 ? REDUCER * harmonicSum(case3Count) / case3Count : 0;
+
+  // Second pass to set the values based on the case
   Object.keys(stateWrapper).forEach((country, index) => {
     const countryState = stateWrapper[country].phase;
 
@@ -226,13 +262,13 @@ function transformStateToNumericArray(stateWrapper) {
         stateArray[index] = 0;
         break;
       case 1:
-        stateArray[index] = 0;
+        stateArray[index] = 0 ;
         break;
       case 2:
-        stateArray[index] = -1;
+        stateArray[index] = case2value  ;
         break;
       case 3:
-        stateArray[index] = 1;
+        stateArray[index] = -case3value ;
         break;
       default:
         stateArray[index] = 0;

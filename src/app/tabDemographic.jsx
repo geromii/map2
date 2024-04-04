@@ -44,7 +44,10 @@ function DemographicTab() {
 
   const formatMoney = (value) => {
     const trillion = value / 1e6; // Convert to trillion
-    if (trillion >= 0) {
+    if (value == 0) {
+      return "$0.00"
+    }
+    if (trillion >= 1) {
       return `$${trillion.toFixed(2)} trillion`;
     } else {
       const billion = value / 1e3; // Convert to billion
@@ -53,6 +56,9 @@ function DemographicTab() {
   };
 
   const formatPopulation = (population) => {
+    if (population == 0 ) {
+      return "0"
+    }
     if (population >= 1e9) {
       return `${(population / 1e9).toFixed(1)} billion`;
     } else {
@@ -83,14 +89,14 @@ function DemographicTab() {
         </thead>
         <tbody className='text-end text-xs sm:text-sm md:text-base lg:text-lg'>
           {/* Ensure you apply the same styling for each td element as their corresponding th */}
-          <tr className="bg-blue-300">
+          <tr className="bg-blue-700">
             <td style={{width: '20%'}}>{phase2Data.countries.join(', ')}</td>
             <td style={{width: '20%'}}>{formatMoney(phase2Data.GDP)}</td>
             <td style={{width: '20%'}}>{formatMoney(phase2Data.GDP_PPP)}</td>
             <td style={{width: '15%'}}>{formatPopulation(phase2Data.Population)}</td>
             <td style={{width: '15%'}}>{formatArea(phase2Data.Area)}</td>
           </tr>
-          <tr className="bg-red-300">
+          <tr className="bg-red-700">
             <td style={{width: '20%'}}>{phase3Data.countries.join(', ')}</td>
             <td style={{width: '20%'}}>{formatMoney(phase3Data.GDP)}</td>
             <td style={{width: '20%'}}>{formatMoney(phase3Data.GDP_PPP)}</td>

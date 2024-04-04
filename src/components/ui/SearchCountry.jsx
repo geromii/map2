@@ -75,7 +75,7 @@ export function SearchCountry({ countries }) {
               onValueChange={setSearchValue}
               ref={inputRef} // Apply the ref to the input
             />
-            <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+            <div style={{ maxHeight: "200px", overflowY: "auto", overflowX: "hidden" }}>
               {sortedFilteredCountries.length === 0 && (
                 <CommandEmpty>No country found.</CommandEmpty>
               )}

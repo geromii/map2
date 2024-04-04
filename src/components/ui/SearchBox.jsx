@@ -26,7 +26,7 @@ export function SearchBox() {
   return (
     <div className="w-full h-full m-1 flex flex-col pt-1 md:p-0.5 lg:p-1">
       <SearchCountry countries={countries} />
-      <div className="flex flex-col w-full h-full items-start overflow-scroll">
+      <div className="flex flex-col w-full h-full items-start overflow-y-scroll overflow-x-hidden">
         <div
           className=" mt-3 h-full w-full"
           style={{ maxHeight: "calc(100% - 1.5rem)" }}
