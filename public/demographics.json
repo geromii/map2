@@ -315,7 +315,7 @@
     "Area": 78871
   },
   {
-    "Country": "Democratic Republic of Congo",
+    "Country": "Democratic Republic of the Congo",
     "GDP": 67512,
     "GDP_PPP": 150883,
     "Population": 95370000,
@@ -904,8 +904,8 @@
   },
   {
     "Country": "North Korea",
-    "GDP": 16,
-    "GDP_PPP": 40,
+    "GDP": 16000,
+    "GDP_PPP": 40000,
     "Population": 25660000,
     "Area": 120538
   },

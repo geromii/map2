@@ -60,7 +60,7 @@ export function SearchCountry({ countries }) {
             size="default"
             role="combobox"
             aria-expanded={open}
-            className="w-full md:justify-around overflow-hidden pl-1 text-xs lg:text-sm rounded-sm"
+            className="w-full md:justify-around overflow-hidden pl-1 text-xs lg:text-sm rounded-sm shadow-sm"
           >
             <CaretSortIcon className="h-5 w-5 shrink-0 opacity-50" />
             Select countries
@@ -75,7 +75,7 @@ export function SearchCountry({ countries }) {
               onValueChange={setSearchValue}
               ref={inputRef} // Apply the ref to the input
             />
-            <div style={{ maxHeight: "200px", overflowY: "auto", overflowX: "hidden" }}>
+            <div style={{ maxHeight: "200px", overflowY: "auto" }}>
               {sortedFilteredCountries.length === 0 && (
                 <CommandEmpty>No country found.</CommandEmpty>
               )}

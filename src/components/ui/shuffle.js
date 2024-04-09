@@ -276,7 +276,7 @@ const countryEmojis = [
     };
   
     return (
-      <div className= "rounded border-2 border-white shadow shadow-neutral-200 hover:bg-neutral-800">
+      <div className= "rounded border-2 border-white shadow shadow-neutral-200 hover:bg-neutral-800 active:shadow-sm">
         <IconArrowsShuffle
           onClick={() => {
             shuffleCountries();

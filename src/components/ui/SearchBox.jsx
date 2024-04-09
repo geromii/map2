@@ -24,7 +24,7 @@ export function SearchBox() {
   };
 
   return (
-    <div className="w-full h-full m-1 flex flex-col pt-1 md:p-0.5 lg:p-1">
+    <div className="w-full h-full m flex flex-col pt-1 md:p-0.5 lg:p-1">
       <SearchCountry countries={countries} />
       <div className="flex flex-col w-full h-full items-start overflow-y-scroll overflow-x-hidden">
         <div
@@ -40,7 +40,7 @@ export function SearchBox() {
         key={countryName} // Use countryName as the key
         className="flex justify-between items-center whitespace-nowrap font-semibold border-b-1 mt-[-2px] border-accent"
       >
-        <div className="flex mr-1 relative shadow">
+        <div className="flex mr-1 relative shadow-sm">
           <Squares
             country={countryName} // Pass countryName here
             setCountryPhase={setCountryPhase}

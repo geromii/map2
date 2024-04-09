@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import useCountryStore from './useCountryStore';
 
-function DemographicTab() {
+function TabDemographic() {
   const [aggregatedData, setAggregatedData] = useState({
     phase2: { countries: [], GDP: 0, GDP_PPP: 0, Population: 0, Area: 0 },
     phase3: { countries: [], GDP: 0, GDP_PPP: 0, Population: 0, Area: 0 }
@@ -110,4 +110,4 @@ function DemographicTab() {
 }
 
 
-export default DemographicTab;
+export default TabDemographic;

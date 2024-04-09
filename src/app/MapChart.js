@@ -19,6 +19,7 @@ import { geoRobinson } from "d3-geo-projection";
 import { IconRefresh, IconArrowsShuffle } from "@tabler/icons-react";
 import ShuffleCountries from "../components/ui/shuffle";
 import Tabs from "./tabs";
+import { getCountryEmojiCountryEmoji } from "../utils/countryEmojis";
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -79,9 +80,11 @@ export default function MapChart() {
     <div
       className="pt-1 grid gap-1 lg:gap-1.5 2xl:gap-2 grid-cols-2 md:grid-cols-7 grid-rows-3  mt-0.5 xl:mt-1 lg:mx-1" /* 2xl:grid-rows-3 2xl:grid-cols-9 */
     >
+      
       <div className="border-2 border-primary bg-primary-foreground rounded flex flex-row lg:flex-col p-4 justify-around items-center overflow-hidden md:h-[16.96vw] h-32">
         
         <MapControls />
+        <PresetPairings/>
       </div>
       <div className="map-controls border-2 border-primary bg-primary-foreground rounded flex justify-center items-center overflow-hidden md:h-[16.96vw] h-32">
         <SearchBox />
@@ -101,8 +104,8 @@ export default function MapChart() {
           />
         </div>
       </div>
-      <div className="border-2 border-primary bg-secondary-foreground text-secondary flex justify-center items-center rounded md:h-[16.96vw] h-32">
-        <PresetPairings/>
+      <div className="border-2 border-primary bg-secondary-foreground flex justify-center items-center rounded md:h-[16.96vw] h-32">
+        <SearchBox />
       </div>
       <div className="border-2 border-primary bg-secondary-foreground flex justify-center items-center rounded md:h-[16.96vw] h-32 shadow-xl"></div>
       <div className="border-2 border-primary bg-black rounded md:h-[16.96vw] row-start-4 md:row-start-3  flex flex-row md:flex-col items-center justify-around lg:p-5 ">
@@ -118,62 +121,66 @@ const PresetPairings = () => {
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   const setCountryPhase = useCountryStore((state) => state.setCountryPhase);
   const mapMode = useCountryStore((state) => state.mapMode);
-  const handlePairingClick = (country1, country2) => {
-    resetAllExcept()
-    setCountryPhase(country1, 2)
-    if (country2) {
-    setTimeout(() => {
-      setCountryPhase(country2, 3)
-    }, 1)}
-  };
-  // if mapMode is single return a bunch of buttons with single countries instead
 
-  const TwoCountryButton = ({country1, country2}) => {
-    return (
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40" onClick={() => handlePairingClick(country1, country2)}>{country1} - {country2}</button>
-    )
-  }
+  const handlePairingSelection = (event) => {
+    const [country1, country2] = event.target.value.split("-");
+    resetAllExcept();
+    setCountryPhase(country1.trim(), 2);
+    if (country2) {
+      setTimeout(() => {
+        setCountryPhase(country2.trim(), 3);
+      }, 1);
+    }
+  };
+
+  const handleSingleCountrySelection = (event) => {
+    const country = event.target.value;
+    resetAllExcept();
+    setCountryPhase(country, 2);
+  };
 
   return (
-  
     <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto">
-      {mapMode == "single" ? <>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Palestine", null)}>Palestine</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Israel", null)}>Israel</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Kosovo", null)}>Kosovo</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Cyprus", null)}>Cyprus</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Taiwan", null)}>Taiwan</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Armenia", null)}>Armenia</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Nigeria", null)}>Nigeria</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Mexico", null)}>Mexico</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Indonesia", null)}>Indonesia</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2" onClick={() => handlePairingClick("Australia", null)}>Australia</button>
-      </> : <>
-
-      <TwoCountryButton country1="Israel" country2="Iran"></TwoCountryButton> 
-      <TwoCountryButton country1="Saudi Arabia" country2="Iran"></TwoCountryButton>   
-      <TwoCountryButton country1="United States" country2="Iran"></TwoCountryButton>  
-      <TwoCountryButton country1="United States" country2="Russia"></TwoCountryButton>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40" onClick={() => handlePairingClick("United States", "China")}>United States - China</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Israel", "Palestine")}>Israel - Palestine</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Armenia", "Azerbaijan")}>Armenia - Azerbaijan</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("India", "Pakistan")}>India - Pakistan</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("North Korea", "South Korea")}>North Korea - South Korea</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Russia", "Ukraine")}>Russia - Ukraine</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Turkey", "Greece")}>Turkey - Greece</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("China", "Taiwan")}>China - Taiwan</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("China", "India")}>China - India</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Iran", "Saudi Arabia")}>Iran - Saudi Arabia</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Syria", "Turkey")}>Syria - Turkey</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("United States", "Iran")}>United States - Iran</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("United States", "Russia")}>United States - Russia</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Saudi Arabia", "Yemen")}>Saudi Arabia - Yemen</button>
-      <button className="rounded shadow bg-primary-foreground text-primary mb-2 md:w-40 mt-0.5" onClick={() => handlePairingClick("Ethiopia", "Egypt")}>Ethiopia - Egypt</button>
-      </>}
+      <h2>Presets</h2>
+      {mapMode === "single" ? (
+        <select className="rounded shadow bg-primary-foreground text-primary mb-2" onChange={handleSingleCountrySelection}>
+          <option value="">Select a country</option>
+          <option value="Palestine">Palestine</option>
+          <option value="Israel">Israel</option>
+          <option value="Kosovo">Kosovo</option>
+          <option value="Cyprus">Cyprus</option>
+          <option value="Taiwan">Taiwan</option>
+          <option value="Armenia">Armenia</option>
+          <option value="Nigeria">Nigeria</option>
+          <option value="Mexico">Mexico</option>
+          <option value="Indonesia">Indonesia</option>
+          <option value="Australia">Australia</option>
+        </select>
+      ) : (
+        <select className="rounded shadow bg-primary-foreground text-primary mb-2 w-40" onChange={handlePairingSelection}>
+          <option value="">Select a pairing</option>
+          <option value="Israel - Iran">Israel - Iran</option>
+          <option value="Saudi Arabia - Iran">Saudi Arabia - Iran</option>
+          <option value="United States - Iran">United States - Iran</option>
+          <option value="United States - Russia">United States - Russia</option>
+          <option value="United States - China">United States - China</option>
+          <option value="Israel - Palestine">Israel - Palestine</option>
+          <option value="Armenia - Azerbaijan">Armenia - Azerbaijan</option>
+          <option value="India - Pakistan">India - Pakistan</option>
+          <option value="North Korea - South Korea">North Korea - South Korea</option>
+          <option value="Russia - Ukraine">Russia - Ukraine</option>
+          <option value="Turkey - Greece">Turkey - Greece</option>
+          <option value="China - Taiwan">China - Taiwan</option>
+          <option value="China - India">China - India</option>
+          <option value="Iran - Saudi Arabia">Iran - Saudi Arabia</option>
+          <option value="Syria - Turkey">Syria - Turkey</option>
+          <option value="Saudi Arabia - Yemen">Saudi Arabia - Yemen</option>
+          <option value="Ethiopia - Egypt">Ethiopia - Egypt</option>
+        </select>
+      )}
     </div>
-  )
-  
-}
+  );
+};
 
 
 
@@ -181,7 +188,7 @@ const PresetPairings = () => {
 const ChangeCountries = () => {
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   return (
-    <div className="rounded border-2 border-white shadow shadow-neutral-200 hover:bg-neutral-800">
+    <div className="rounded border-2 border-white shadow shadow-neutral-200 hover:bg-neutral-800 active:shadow-sm">
       <IconRefresh
         onClick={() => {
           resetAllExcept();
@@ -289,53 +296,98 @@ const Map = ({
     .translate([width / 2, height / 2])
     .scale(scale)
     .rotate(rotation);
-  return (
-    <div className="bg-slate-500 rounded-b-lg border-2 lg:border-4 border-t-0 lg:border-t-0 border-primary scale-x-[1.01] sm:scale-x-100">
-      <ComposableMap
-        viewBox="-60 -15 1000 550" // 0 0 800 450 default, [x, y, width, height]
-        projection={projection}
-        projectionConfig={{
-          rotate: rotation,
-          scale: 195, // 180
-        }}
-      >
-        <Sphere stroke="#E4E5E6" strokeWidth={0} />
-        <Graticule stroke="#E4E5E6" strokeWidth={0} />
-        <Geographies geography={geographiesData}>
-          {({ geographies }) =>
-            geographies.map((geo) => {
-              const countryState = state[geo.properties.name]; // Access the state for each country
-              return (
-                <Geography
-                  key={geo.rsmKey}
-                  geography={geo}
-                  onClick={() => handleCountryClick(geo.properties.name)}
-                  stroke= {(mapMode == "single") && countryState.phase === 2 ? "white" : "black"}
-                  strokeWidth= {(mapMode == "single") && countryState.phase === 2 ? 1.0 : 0.5}
-                  style={{
-                    default: {
-                      fill: countryState.color, // Use the state to get the color
-                      outline: "none",
-                    },
-                    hover: {
-                      fill: countryState.color, // hover color
-                      outline: "none",
-                    },
-                    pressed: {
-                      fill: countryState.color, // pressed color
-                      outline: "none",
-                    },
-                  }}
-                  className= "country"
-                  data-tooltip-id="my-tooltip"
-                  data-tooltip-content={geo.properties.name}
-                />
+    return (
+      <div className="bg-slate-500 rounded-b-lg border-2 lg:border-4 border-t-0 lg:border-t-0 border-primary scale-x-[1.01] sm:scale-x-100">
+        <ComposableMap
+          viewBox="-60 -15 1000 550"
+          projection={projection}
+          projectionConfig={{
+            rotate: rotation,
+            scale: 195,
+          }}
+        >
+          <Sphere stroke="#E4E5E6" strokeWidth={0} />
+          <Graticule stroke="#E4E5E6" strokeWidth={0} />
+          <Geographies geography={geographiesData}>
+            {({ geographies }) => {
+              const remainingCountries = geographies.filter(
+                (geo) =>
+                  state[geo.properties.name].phase !== 2 &&
+                  state[geo.properties.name].phase !== 3
               );
-            })
-          }
-        </Geographies>
-      </ComposableMap>
-      <Tooltip id="my-tooltip" float="true" delayShow="800" />
-    </div>
-  );
+              const highlightedCountries = geographies.filter(
+                (geo) =>
+                  state[geo.properties.name].phase === 2 ||
+                  state[geo.properties.name].phase === 3
+              );
+              // this is so that the countries that are in phase 2 or 3 are drawn on top of the other countries
+              // if this isnt done then the borders get wonky, and even if the borders are thickened they are still "under" the other countries
+              return (
+                <>
+                  {remainingCountries.map((geo) => {
+                    const countryState = state[geo.properties.name];
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        onClick={() => handleCountryClick(geo.properties.name)}
+                        stroke="black"
+                        strokeWidth={0.5}
+                        style={{
+                          default: {
+                            fill: countryState.color,
+                            outline: "none",
+                          },
+                          hover: {
+                            fill: countryState.color,
+                            outline: "none",
+                          },
+                          pressed: {
+                            fill: countryState.color,
+                            outline: "none",
+                          },
+                        }}
+                        className="country cursor-pointer"
+                        data-tooltip-id="my-tooltip"
+                        data-tooltip-content={geo.properties.name}
+                      />
+                    );
+                  })}
+                  {highlightedCountries.map((geo) => {
+                    const countryState = state[geo.properties.name];
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        onClick={() => handleCountryClick(geo.properties.name)}
+                        stroke="white"
+                        strokeWidth={1.3}
+                        style={{
+                          default: {
+                            fill: countryState.color,
+                            outline: "none",
+                          },
+                          hover: {
+                            fill: countryState.color,
+                            outline: "none",
+                          },
+                          pressed: {
+                            fill: countryState.color,
+                            outline: "none",
+                          },
+                        }}
+                        className="country cursor-pointer shadow"
+                        data-tooltip-id="my-tooltip"
+                        data-tooltip-content= {geo.properties.name}
+                      />
+                    );
+                  })}
+                </>
+              );
+            }}
+          </Geographies>
+        </ComposableMap>
+        <Tooltip id="my-tooltip" float="true" delayShow="800" />
+      </div>
+    );
 };
