@@ -11,15 +11,13 @@ import {
 import "./MapChart.css";
 import useCountryStore from "./useCountryStore";
 import { Tooltip } from "react-tooltip";
-import { useStore } from "./store";
 import { SearchBox } from "@/components/ui/SearchBox";
-import { Switch } from "@/components/ui/switch";
 import { DarkSwitch } from "@/components/ui/darkSwitch";
 import { geoRobinson } from "d3-geo-projection";
 import { IconRefresh, IconArrowsShuffle } from "@tabler/icons-react";
 import ShuffleCountries from "../components/ui/shuffle";
 import Tabs from "./tabs";
-import { getCountryEmojiCountryEmoji } from "../utils/countryEmojis";
+import { getCountryEmoji} from "../utils/countryEmojis";
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -42,26 +40,7 @@ Possible in the backened I need to weigh the importance of each relationship.
 */
 
 export default function MapChart() {
-  const { rotation, setRotation } = useStore((state) => ({
-    rotation: state.rotation,
-    setRotation: state.setRotation,
-  }));
 
-  const {
-    countries,
-    incrementCountryPhase,
-    isProjectionActive,
-    setIsProjectionActive,
-    isSecondOrderActive,
-    setIsSecondOrderActive,
-  } = useCountryStore((state) => ({
-    countries: state.countries,
-    incrementCountryPhase: state.incrementCountryPhase,
-    isProjectionActive: state.isProjectionActive,
-    setIsProjectionActive: state.setIsProjectionActive,
-    isSecondOrderActive: state.isSecondOrderActive,
-    setIsSecondOrderActive: state.setIsSecondOrderActive,
-  }));
 
   // scale, projection and geographies need to be migrated to Zustand store
   const [projectionType, setProj] = useState("geoMercator");
@@ -95,12 +74,8 @@ export default function MapChart() {
         <Tabs />
         <div className=" map-container row-span-2 md:row-span-3 overflow-hidden">
           <Map
-            rotation={rotation}
-            scale="197"
             projectionType={projectionType}
             geographiesData={geographiesData}
-            state={countries}
-            incrementCountryPhase={incrementCountryPhase}
           />
         </div>
       </div>
@@ -151,10 +126,6 @@ const PresetPairings = () => {
           <option value="Cyprus">Cyprus</option>
           <option value="Taiwan">Taiwan</option>
           <option value="Armenia">Armenia</option>
-          <option value="Nigeria">Nigeria</option>
-          <option value="Mexico">Mexico</option>
-          <option value="Indonesia">Indonesia</option>
-          <option value="Australia">Australia</option>
         </select>
       ) : (
         <select className="rounded shadow bg-primary-foreground text-primary mb-2 w-40" onChange={handlePairingSelection}>
@@ -264,11 +235,7 @@ export const MapControls = ({
 };
 
 const Map = ({
-  rotation,
-  scale,
-  geographiesData,
-  state,
-  incrementCountryPhase,
+  geographiesData
 }) => {
   const {resetAllExcept} = useCountryStore((state) => ({
     resetAllExcept: state.resetAllExcept
@@ -280,6 +247,14 @@ const Map = ({
     setCountryPhase: state.setCountryPhase
   }));
 
+  const {
+    countries,
+    incrementCountryPhase,
+  } = useCountryStore((state) => ({
+    countries: state.countries,
+    incrementCountryPhase: state.incrementCountryPhase,
+  }));
+
   const handleCountryClick = (country) => {
     if (mapMode == "single") {
       resetAllExcept()
@@ -288,6 +263,9 @@ const Map = ({
       incrementCountryPhase(country);
     }
   };
+
+  const scale = "197"
+  const rotation = [-9.5]
 
   const width = 800;
   const height = 600;
@@ -312,20 +290,20 @@ const Map = ({
             {({ geographies }) => {
               const remainingCountries = geographies.filter(
                 (geo) =>
-                  state[geo.properties.name].phase !== 2 &&
-                  state[geo.properties.name].phase !== 3
+                  countries[geo.properties.name].phase !== 2 &&
+                  countries[geo.properties.name].phase !== 3
               );
               const highlightedCountries = geographies.filter(
                 (geo) =>
-                  state[geo.properties.name].phase === 2 ||
-                  state[geo.properties.name].phase === 3
+                  countries[geo.properties.name].phase === 2 ||
+                  countries[geo.properties.name].phase === 3
               );
               // this is so that the countries that are in phase 2 or 3 are drawn on top of the other countries
               // if this isnt done then the borders get wonky, and even if the borders are thickened they are still "under" the other countries
               return (
                 <>
                   {remainingCountries.map((geo) => {
-                    const countryState = state[geo.properties.name];
+                    const countryState = countries[geo.properties.name];
                     return (
                       <Geography
                         key={geo.rsmKey}
@@ -354,7 +332,7 @@ const Map = ({
                     );
                   })}
                   {highlightedCountries.map((geo) => {
-                    const countryState = state[geo.properties.name];
+                    const countryState = countries[geo.properties.name];
                     return (
                       <Geography
                         key={geo.rsmKey}
