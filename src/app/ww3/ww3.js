@@ -11,14 +11,13 @@ import {
 import "./ww3.css";
 import useCountryStore from "../useCountryStore";
 import { Tooltip } from "react-tooltip";
-import { useStore } from "../store";
-import { SearchBox } from "@/components/ui/SearchBox";
+import { SearchBox } from "@/components/custom/SearchBox";
 import { Switch } from "@/components/ui/switch";
 import { DarkSwitch } from "@/components/ui/darkSwitch";
 import { geoRobinson } from "d3-geo-projection";
 import { IconRefresh, IconArrowsShuffle } from "@tabler/icons-react";
-import ShuffleCountries from "../../components/ui/shuffle";
-import Tabs from "../tabs";
+import ShuffleCountries from "../../components/custom/shuffle";
+import Tabs from "../mapTabs";
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -41,10 +40,6 @@ Possible in the backened I need to weigh the importance of each relationship.
 */
 
 export default function MapChart() {
-  const { rotation, setRotation } = useStore((state) => ({
-    rotation: state.rotation,
-    setRotation: state.setRotation,
-  }));
 
   const {
     countries,
@@ -97,7 +92,7 @@ export default function MapChart() {
         <Tabs />
         <div className=" map-container row-span-2 md:row-span-3 overflow-hidden">
           <Map
-            rotation={rotation}
+            rotation={[-10]}
             scale="197"
             projectionType={projectionType}
             geographiesData={geographiesData}
@@ -199,7 +194,7 @@ const Map = ({
     .scale(scale)
     .rotate(rotation);
   return (
-    <div className="bg-slate-500 rounded-b-lg border-2 lg:border-4 border-t-0 lg:border-t-0 border-primary scale-x-[1.01] sm:scale-x-100">
+    <div className="mapbg bg-slate-500 rounded-b-lg border-2 lg:border-4 border-t-0 lg:border-t-0 border-primary scale-x-[1.01] sm:scale-x-100">
       <ComposableMap
         viewBox="-60 -15 1000 550" // 0 0 800 450 default, [x, y, width, height]
         projection={projection}

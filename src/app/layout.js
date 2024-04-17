@@ -2,6 +2,7 @@ import "./globals.css";
 import { Inter as FontSans } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react"
+import  MenuBar from "@/components/custom/menubar"
 
 export const fontSans = FontSans({
   subsets: ["latin"],
@@ -23,6 +24,9 @@ export default function RootLayout({ children }) {
           fontSans.variable,
         )}
       >
+        <div className="">
+        <MenuBar/>
+        </div>
         {children}
         <Analytics />
       </body>

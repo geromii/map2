@@ -48,7 +48,7 @@ export function SearchCountry({ countries }) {
   }, [countries]);
 
   return (
-    <div className="flex-wrap align-center justify-center items-center lg:justify-center lg:items-center h-auto w-full">
+    <div className="flex flex-wrap align-center justify-center items-center lg:justify-center lg:items-center h-auto w-full">
       <Popover
         open={open}
         onOpenChange={setOpen}
@@ -60,13 +60,13 @@ export function SearchCountry({ countries }) {
             size="default"
             role="combobox"
             aria-expanded={open}
-            className="w-full md:justify-around overflow-hidden pl-1 text-xs lg:text-sm rounded-sm shadow-sm"
+            className="w-full max-w-[170px] md:justify-around overflow-hidden pl-1 text-xs lg:text-sm rounded-sm shadow-sm"
           >
             <CaretSortIcon className="h-5 w-5 shrink-0 opacity-50" />
             Select countries
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
+        <PopoverContent className="w-[170px] p-0">
           <Command>
             <CommandInput
               placeholder="Type to search"

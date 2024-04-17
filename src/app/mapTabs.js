@@ -1,6 +1,8 @@
+"use client"
+
 import React, { useState } from "react";
 import useCountryStore from "./useCountryStore";
-import TabDemographic from "./tabDemographic";
+import TabDemographic from "../components/custom/tabDemographic";
 import TabStats from "./tabStats";
 
 const tabs = ["Data", "For/Against", "Why?", /* "News"*/];

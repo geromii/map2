@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { MapInstructions } from "./mapInstructions";
 import { CountryBadge } from "@/components/ui/countryBadge";
 import MapChart from "./MapChart";
-import { SearchCountry } from "@/components/ui/SearchCountry";
+import { SearchCountry } from "@/components/custom/SearchCountry";
 import { MapControls } from "./MapChart";
 
 export default function Home() {

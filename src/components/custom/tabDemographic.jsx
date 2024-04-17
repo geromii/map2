@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import useCountryStore from './useCountryStore';
+import useCountryStore from '../../app/useCountryStore';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
-function TabDemographic() {
+
+function DemographicTable() {
   const [aggregatedData, setAggregatedData] = useState({
     phase2: { countries: [], GDP: 0, GDP_PPP: 0, Population: 0, Area: 0 },
     phase3: { countries: [], GDP: 0, GDP_PPP: 0, Population: 0, Area: 0 }
@@ -78,7 +87,7 @@ function TabDemographic() {
   return (
     <div className="w-full h-full">
       <table className="w-full h-full">
-        <thead className='text-center text-xs sm:text-sm md:text-base lg:text-lg'>
+        <thead className='text-center text-xs md:text-sm lg:text-base'>
           <tr style={{height: '10%'}}>
             <th style={{width: '20%'}}>Countries</th>
             <th style={{width: '20%'}}>GDP</th>
@@ -87,17 +96,17 @@ function TabDemographic() {
             <th style={{width: '15%'}}>Area (km²)</th>
           </tr>
         </thead>
-        <tbody className='text-end text-xs sm:text-sm md:text-base lg:text-lg'>
+        <tbody className='text-end text-xs md:text-sm lg:text-base'>
           {/* Ensure you apply the same styling for each td element as their corresponding th */}
-          <tr className="bg-blue-700">
-            <td style={{width: '20%'}}>{phase2Data.countries.join(', ')}</td>
+          <tr className="">
+            <td style={{width: '20%'}} className = "text-blue-700">{phase2Data.countries.join(', ')}</td>
             <td style={{width: '20%'}}>{formatMoney(phase2Data.GDP)}</td>
             <td style={{width: '20%'}}>{formatMoney(phase2Data.GDP_PPP)}</td>
             <td style={{width: '15%'}}>{formatPopulation(phase2Data.Population)}</td>
             <td style={{width: '15%'}}>{formatArea(phase2Data.Area)}</td>
           </tr>
-          <tr className="bg-red-700">
-            <td style={{width: '20%'}}>{phase3Data.countries.join(', ')}</td>
+          <tr className="">
+            <td style={{width: '20%'}} className = "text-red-700">{phase3Data.countries.join(', ')}</td>
             <td style={{width: '20%'}}>{formatMoney(phase3Data.GDP)}</td>
             <td style={{width: '20%'}}>{formatMoney(phase3Data.GDP_PPP)}</td>
             <td style={{width: '15%'}}>{formatPopulation(phase3Data.Population)}</td>
@@ -106,6 +115,17 @@ function TabDemographic() {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function TabDemographic() {
+  return (
+      <>
+
+        <CardContent>
+          <DemographicTable />
+        </CardContent>
+        </>
   );
 }
 
