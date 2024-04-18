@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 import "./MapChart.css";
 import useCountryStore from "./useCountryStore";
@@ -34,23 +34,58 @@ Possible in the backened I need to weigh the importance of each relationship.
 
 */
 
-export default function MapChart() {
-  return (
-    <div className="pt-1 grid gap-4 lg:gap-4 2xl:gap-4 grid-cols-2 md:grid-cols-6 grid-rows-6  mt-0.5 xl:mt-1 lg:my-1 mb-5 ">
-      <div className="row-span-6 5/6 self-center">
-        <Sidebar />
-      </div>
-      <div className="map  relative row-start-1 row-span-6 col-span-2 md:col-start-2 md:col-[2_/_-1] h-full ">
-        <MapBox />
-      </div>
 
+
+export default function MapChart() {
+
+  const [leftSidebarVisible, setLeftSidebarVisible] = useState(false)
+  const [rightSidebarVisible, setRightSidebarVisible] = useState(false)
+  
+
+  const sidebarFull = 300
+  const sidebarSmall = 50
+  
+  const leftSidebarWidth = leftSidebarVisible ? sidebarFull : sidebarSmall
+  const rightSidebarWidth = rightSidebarVisible ? sidebarFull : sidebarSmall
+  const marginRight = rightSidebarVisible ? -20 : 0
+  const marginLeft = leftSidebarVisible ? -20 : 0
+
+  const sidebarClasses = ` self-center shadow-[0_10px_30px_0px_rgba(0,0,0,0.1)] rounded-xl border z-20 h-[60%] bg-card w-full`
+  return (
+    <div className="pt-1 w-screen flex  mt-0.5 xl:mt-1 lg:my-1 mb-5 ">
+      <div style={{width: `${leftSidebarWidth}px`}} className="self-stretch transition-all ease-in-out flex">
+      <div className={sidebarClasses + ` rounded-l-none border-l-0 `} >
+      <button onClick={() => setLeftSidebarVisible(!leftSidebarVisible)}>Toggle Left Sidebar</button>
+        <LeftSidebar />
+      </div>
+      </div>
+      <div style={{marginRight: `${marginRight}px`, marginLeft: `${marginLeft}px`}} className= "map w-full relative row-start-1 transition-all h-full ">
+        <MapBox />
+
+      </div>
+      <div style={{width: `${rightSidebarWidth}px`}} className="self-stretch transition-all flex">
+      <div  className={sidebarClasses + ` rounded-r-none  border-r-0`}>
+      <button onClick={() => setRightSidebarVisible(!rightSidebarVisible)}>Toggle Right Sidebar</button>
+        <RightSidebar/>
+      </div>
+      </div>
     </div>
   );
 }
 
-const Sidebar = () => {
+const LeftSidebar = () => {
   return (
-    <div className="flex flex-col justify-evenly w-full h-5/6  shadow rounded-xl overflow-hidden mb-10 ml-2" >
+    <div className="h-[60%] w-full flex items-start justify-center px-1 sm:pt-2 xl:pt-4">
+      <div className="w-full">
+       <SearchBox/>
+      </div>
+    </div>
+  );
+};
+
+const RightSidebar = () => {
+  return (
+    <div className="flex flex-col justify-evenly  overflow-hidden mb-10  " >
       <div className="h-1/3 p-4 border-muted">
         <h2 className=" font-semibold">Map Controls</h2>
         <div className="mt-2">
@@ -60,13 +95,10 @@ const Sidebar = () => {
           </div>
         </div>
       </div>
+
       <div className="h-1/3 p-4 border-muted">
         <h2 className=" font-semibold">Presets</h2>
         <div className="mt-2"><PresetPairings /></div>
-      </div>
-      <div className="h-1/3 p-4">
-        <h2 className=" font-semibold">Search Countries</h2>
-        <div className="mt-2"><SearchBox /></div>
       </div>
     </div>
   );
@@ -99,7 +131,7 @@ const PresetPairings = () => {
       <h2>Presets</h2>
       {mapMode === "single" ? (
         <select
-          className="rounded shadow bg-primary-foreground text-primary mb-2"
+          className="rounded-none shadow bg-black text-white mb-2"
           onChange={handleSingleCountrySelection}
         >
           <option value="">Select a country</option>
@@ -112,7 +144,7 @@ const PresetPairings = () => {
         </select>
       ) : (
         <select
-          className="rounded shadow bg-primary-foreground text-primary mb-2 w-40"
+          className="rounded shadow bg-primary-foreground text-wh mb-2 w-40"
           onChange={handlePairingSelection}
         >
           <option value="">Select a pairing</option>

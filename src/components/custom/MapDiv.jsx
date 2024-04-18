@@ -61,7 +61,7 @@ export const MapDiv = ({
     .scale(scale)
     .rotate(rotation);
     return (
-      <div className="mapbg bg-slate-500 rounded scale-x-[1.01] shadow border sm:translate-y-2  sm:scale-x-100">
+      <div className="mapbg bg-slate-500 rounded scale-x-[1.01] shadow-sm border  sm:scale-[1.0]">
         <ComposableMap
           viewBox="-80 -20 1000 550"
           projection={projection}

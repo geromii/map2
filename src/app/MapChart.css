@@ -18,6 +18,7 @@
   }
 }
 
+
 .color-transition {
   @apply lg:font-semibold; /* Apply Tailwind utility classes */
   animation: colorCycle 5s infinite; /* Adjust '8s' to control the speed */
