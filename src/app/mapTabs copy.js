@@ -13,7 +13,7 @@ export default function MapTab() {
 
 
   return (
-      <Tabs defaultValue="demographics" className="flex flex-col items-center justify-between h-[13.02vw] w-full  md:w-[90%] shadow z-20 border rounded-2xl md:mb-[-30px] md:mt-[20px] bg-card/60 backdrop-blur-lg">
+      <Tabs defaultValue="demographics" className="flex flex-col items-center justify-between h-[13.02vw] w-full  md:w-[90%] shadow z-20 border rounded-2xl md:mb-[-30px] md:mt-[20px] bg-card/95">
         <TabsList className=" mt-2 justify-center w-full md:w-[70%] grid grid-cols-3 shadow-sm">
           <TabsTrigger value="demographics">Demographics</TabsTrigger>
           <TabsTrigger value="data">For/Against</TabsTrigger>

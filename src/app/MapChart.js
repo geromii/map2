@@ -38,32 +38,34 @@ Possible in the backened I need to weigh the importance of each relationship.
 
 export default function MapChart() {
 
-  const [leftSidebarVisible, setLeftSidebarVisible] = useState(false)
-  const [rightSidebarVisible, setRightSidebarVisible] = useState(false)
+  const [leftSidebarVisible, setLeftSidebarVisible] = useState(true)
+  const [rightSidebarVisible, setRightSidebarVisible] = useState(true)
   
 
-  const sidebarFull = 300
-  const sidebarSmall = 50
+  const sidebarFull = 270
+  const sidebarSmall = 80
   
   const leftSidebarWidth = leftSidebarVisible ? sidebarFull : sidebarSmall
   const rightSidebarWidth = rightSidebarVisible ? sidebarFull : sidebarSmall
+  const mapWidth = 100 - leftSidebarWidth - rightSidebarWidth
   const marginRight = rightSidebarVisible ? -20 : 0
   const marginLeft = leftSidebarVisible ? -20 : 0
 
-  const sidebarClasses = ` self-center shadow-[0_10px_30px_0px_rgba(0,0,0,0.1)] rounded-xl border z-20 h-[60%] bg-card w-full`
+
+  const sidebarClasses = ` self-center  rounded-xl shadow-2xl border z-20 h-[60%] bg-card w-full`
   return (
-    <div className="pt-1 w-screen flex  mt-0.5 xl:mt-1 lg:my-1 mb-5 ">
-      <div style={{width: `${leftSidebarWidth}px`}} className="self-stretch transition-all ease-in-out flex">
+    <div className="pt-1 w-screen flex justify-between  mt-0.5 xl:mt-1 lg:my-1 pb-[200px] ">
+      <div style={{width: `${leftSidebarWidth}px`}} className="self-stretch transition-all duration-300 ease-in-out flex">
       <div className={sidebarClasses + ` rounded-l-none border-l-0 `} >
       <button onClick={() => setLeftSidebarVisible(!leftSidebarVisible)}>Toggle Left Sidebar</button>
         <LeftSidebar />
       </div>
       </div>
-      <div style={{marginRight: `${marginRight}px`, marginLeft: `${marginLeft}px`}} className= "map w-full relative row-start-1 transition-all h-full ">
+      <div style={{marginRight: `${marginRight}px`, marginLeft: `${marginLeft}px`}} className= "map w-[80%]  row-start-1 transition-all duration-300 ease-in-out h-full ">
         <MapBox />
 
       </div>
-      <div style={{width: `${rightSidebarWidth}px`}} className="self-stretch transition-all flex">
+      <div style={{width: `${rightSidebarWidth}px`}} className="self-stretch transition-all duration-300 ease-in-out flex">
       <div  className={sidebarClasses + ` rounded-r-none  border-r-0`}>
       <button onClick={() => setRightSidebarVisible(!rightSidebarVisible)}>Toggle Right Sidebar</button>
         <RightSidebar/>
