@@ -62,7 +62,7 @@ export function SearchCountry({ countries }) {
             aria-expanded={open}
             className="w-full max-w-[170px] md:justify-around overflow-hidden pl-1 text-xs lg:text-sm rounded-sm shadow-sm"
           >
-            <CaretSortIcon className="h-5 w-5 shrink-0 opacity-50" />
+            <CaretSortIcon className="h-5 w-5 shrink-0 opacity-50 " />
             Select countries
           </Button>
         </PopoverTrigger>
@@ -85,7 +85,7 @@ export function SearchCountry({ countries }) {
                     key={country}
                     value={country}
                     onSelect={() => handleSelect(country)}
-                    style={{ color: "primary-foreground", fontWeight: "bold" }}
+                    style={{ color: "primary-foreground", fontWeight: "bold" }} className = ""
                   >
                     {country}
                     <CheckIcon

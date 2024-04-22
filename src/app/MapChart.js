@@ -7,7 +7,16 @@ import useCountryStore from "./useCountryStore";
 import { SearchBox } from "@/components/custom/SearchBox";
 import { DarkSwitch } from "@/components/ui/darkSwitch";
 import { Switch } from "@/components/ui/switch";
-import { IconRefresh, IconArrowsShuffle } from "@tabler/icons-react";
+import {
+  IconRefresh,
+  IconArrowsShuffle,
+  IconArrowsDiagonal,
+  IconArrowsDiagonal2,
+  IconArrowsDiagonalMinimize,
+  IconArrowsDiagonalMinimize2,
+  IconArrowsMaximize,
+  IconArrowsMinimize
+} from "@tabler/icons-react";
 import ShuffleCountries from "../components/custom/shuffle";
 import Tabs from "./mapTabs copy";
 import { getCountryEmoji } from "../utils/countryEmojis";
@@ -34,73 +43,114 @@ Possible in the backened I need to weigh the importance of each relationship.
 
 */
 
-
-
 export default function MapChart() {
+  const [leftSidebarVisible, setLeftSidebarVisible] = useState(true);
+  const [rightSidebarVisible, setRightSidebarVisible] = useState(true);
 
-  const [leftSidebarVisible, setLeftSidebarVisible] = useState(true)
-  const [rightSidebarVisible, setRightSidebarVisible] = useState(true)
-  
+  const sidebarFull = 270;
+  const sidebarSmall = 50;
 
-  const sidebarFull = 270
-  const sidebarSmall = 80
-  
-  const leftSidebarWidth = leftSidebarVisible ? sidebarFull : sidebarSmall
-  const rightSidebarWidth = rightSidebarVisible ? sidebarFull : sidebarSmall
-  const mapWidth = 100 - leftSidebarWidth - rightSidebarWidth
-  const marginRight = rightSidebarVisible ? -20 : 0
-  const marginLeft = leftSidebarVisible ? -20 : 0
+  const leftSidebarWidth = leftSidebarVisible ? sidebarFull : sidebarSmall;
+  const rightSidebarWidth = rightSidebarVisible ? sidebarFull : sidebarSmall;
+  const mapWidth = 100 - leftSidebarWidth - rightSidebarWidth;
+  const marginRight = rightSidebarVisible ? -15 : 0;
+  const marginLeft = leftSidebarVisible ? -15 : 0;
 
-
-  const sidebarClasses = ` self-center  rounded-xl shadow-2xl border z-20 h-[60%] bg-card w-full`
+  const sidebarClasses = ` self-center  rounded-xl shadow-2xl border z-20 h-[80%] lg:h-[60%] bg-card w-full`;
   return (
-    <div className="pt-1 w-screen flex justify-between  mt-0.5 xl:mt-1 lg:my-1 pb-[200px] ">
-      <div style={{width: `${leftSidebarWidth}px`}} className="self-stretch transition-all duration-300 ease-in-out flex">
-      <div className={sidebarClasses + ` rounded-l-none border-l-0 `} >
-      <button onClick={() => setLeftSidebarVisible(!leftSidebarVisible)}>Toggle Left Sidebar</button>
-        <LeftSidebar />
-      </div>
-      </div>
-      <div style={{marginRight: `${marginRight}px`, marginLeft: `${marginLeft}px`}} className= "map w-[80%]  row-start-1 transition-all duration-300 ease-in-out h-full ">
-        <MapBox />
+    <div className="pt-1 w-screen flex justify-between  mt-0.5 xl:mt-1 lg:my-1 pb-[100px] border-b shadow">
 
+      <div
+        style={{ width: `${leftSidebarWidth}px` }}
+        className="self-stretch transition-all duration-300 ease-in-out flex"
+      >
+        <div className={sidebarClasses + ` rounded-l-none border-l-0 overflow-hidden`}>
+          <div className="w-full flex justify-end p-1 pb-0 ">
+            <button
+              onClick={() => setLeftSidebarVisible(!leftSidebarVisible)}
+              className=""
+            >
+              {leftSidebarVisible ? (
+                <IconArrowsDiagonalMinimize2 />
+              ) : (
+                <IconArrowsDiagonal />
+              )}
+            </button>
+          </div>
+          {leftSidebarVisible && <LeftSidebar />}
+        </div>
       </div>
-      <div style={{width: `${rightSidebarWidth}px`}} className="self-stretch transition-all duration-300 ease-in-out flex">
-      <div  className={sidebarClasses + ` rounded-r-none  border-r-0`}>
-      <button onClick={() => setRightSidebarVisible(!rightSidebarVisible)}>Toggle Right Sidebar</button>
-        <RightSidebar/>
+      <div
+        style={{
+          marginRight: `${marginRight}px`,
+          marginLeft: `${marginLeft}px`,
+        }}
+        className="map w-[85%] relative row-start-1 transition-all duration-300 ease-in-out h-full "
+      >
+        <MapBox />
+        <div className="hidden md:block absolute bottom-0 left-0.5 z-30">
+         {(leftSidebarVisible || rightSidebarVisible) && <button onClick={() => {setLeftSidebarVisible(false); setRightSidebarVisible(false);}}><IconArrowsMaximize color="white" size={28}/></button>}
       </div>
+      <div className="hidden md:block absolute bottom-0 left-0.5  z-30">
+        {(!leftSidebarVisible && !rightSidebarVisible) && 
+          <button onClick={() => {setLeftSidebarVisible(true); setRightSidebarVisible(true);}}><IconArrowsMinimize color="white" size={28}/></button>
+        }
+      </div>
+      </div>
+      <div
+        style={{ width: `${rightSidebarWidth}px` }}
+        className="self-stretch transition-all duration-300 ease-in-out flex"
+      >
+        <div className={sidebarClasses + ` rounded-r-none  border-r-0`}>
+          <div className="w-full flex justify-start p-1 pb-0">
+            <button
+              onClick={() => setRightSidebarVisible(!rightSidebarVisible)}
+              className=""
+            >
+              {rightSidebarVisible ? (
+                <IconArrowsDiagonalMinimize />
+              ) : (
+                <IconArrowsDiagonal2 />
+              )}
+            </button>
+          </div>
+          {rightSidebarVisible && <RightSidebar />}
+        </div>
       </div>
     </div>
   );
 }
 
-const LeftSidebar = () => {
+const RightSidebar = () => {
   return (
     <div className="h-[60%] w-full flex items-start justify-center px-1 sm:pt-2 xl:pt-4">
       <div className="w-full">
-       <SearchBox/>
+        <h2 className=" font-semibold mb-2 pl-3">Country Search</h2>
+        <SearchBox />
       </div>
     </div>
   );
 };
 
-const RightSidebar = () => {
+const LeftSidebar = () => {
   return (
-    <div className="flex flex-col justify-evenly  overflow-hidden mb-10  " >
+    <div className="flex flex-col justify-evenly  mb-10  ">
       <div className="h-1/3 p-4 border-muted">
         <h2 className=" font-semibold">Map Controls</h2>
-        <div className="mt-2">
+        <div className="mt-2 pl-5">
           <MapControls />
-          <div className="flex justify-around mt-2">
-            <ShuffleCountries /><ResetCountries />
+          <div className="flex justify-evenly mt-4">
+            <ShuffleCountries />
+            <ResetCountries />
           </div>
         </div>
       </div>
 
-      <div className="h-1/3 p-4 border-muted">
+      <div className="h-1/3 p-4 border-muted w-full">
         <h2 className=" font-semibold">Presets</h2>
-        <div className="mt-2"><PresetPairings /></div>
+        <div className="mt-2 overflow-hidden">
+          <PresetPairings />
+        </div>
       </div>
     </div>
   );
@@ -181,6 +231,7 @@ const ResetCountries = () => {
   return (
     <IconButton
       icon={IconRefresh}
+      size = "small"
       onClick={() => {
         resetAllExcept();
       }}
@@ -209,7 +260,7 @@ export const MapControls = ({}) => {
 
   return (
     <div className="view-options-container flex-col overflow-hidden justify-between items-around  text-black font-medium">
-      <div className="block ml-1 lg:ml-0 mt-1 md:my-2 lg:my-2 md:text-sm lg:text-base">
+      <div className="block ml-1 lg:ml-0 mt-1 md:my-2 lg:my-2 ">
         <Switch
           checked={mapMode != "off"}
           onCheckedChange={handleProjectionToggle}
@@ -222,7 +273,7 @@ export const MapControls = ({}) => {
           Geopolitics
         </label>
       </div>
-      <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 md:text-sm lg:text-base">
+      <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2">
         <Switch checked={mapMode == "war"} onCheckedChange={handleWarToggle} />
         <label
           className="toggle-label relative -top-0.5 whitespace-nowrap justify-center ml-1"
@@ -231,7 +282,7 @@ export const MapControls = ({}) => {
           {"  "}
           WW3
         </label>
-        <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 md:text-sm lg:text-base">
+        <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 ">
           <Switch
             checked={mapMode == "single"}
             onCheckedChange={handleSingleModeToggle}

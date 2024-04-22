@@ -284,6 +284,7 @@ const ShuffleCountries = () => {
     <div className="rounded  text-primary-foreground active:shadow-sm">
       <IconButton
         icon={IconArrowsShuffle}
+        size = "small"
         onClick={() => {
           shuffleCountries();
         }}

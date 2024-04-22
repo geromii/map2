@@ -6,7 +6,7 @@ const MenuBar = () => {
   const isLoggedIn = false; // This will be replaced with actual logic to check if user is logged in
 
   return (
-    <nav className="bg-black text-neutral-300 text-sm font-medium  p-6 shadow mb-1">
+    <nav className="bg-primary text-primary-foreground text-sm font-medium  p-6 shadow border-b mb-1">
       <ul className="flex flex-wrap justify-between items-center">
         <div className="hidden md:flex space-x-4 ">
           <li>
@@ -50,7 +50,7 @@ const MenuBar = () => {
             <>
               <li>
                 <Link className="hover:text-neutral-100" href="/signin">
-                  Sign in 
+                  Login
                 </Link>
               </li>
               <li>

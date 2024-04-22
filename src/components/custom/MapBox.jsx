@@ -16,7 +16,7 @@ import {
 
 export function MapBox(geographiesData) {
   return (
-    <div className =  " flex flex-col items-center  bg-transparent md:scale-[1.00]">
+    <div className =  " flex flex-col items-center  bg-transparent md:scale-[1.00] select-none">
       <MapTab />
       <div className=" map-container w-full h-full ">
         <MapDiv geographiesData={geographiesData} />
