@@ -20,8 +20,8 @@ const MenuBar = () => {
             </Link>
           </li>
           <li>
-            <Link className="hover:text-neutral-100" href="/services">
-              Services
+            <Link className="hover:text-neutral-100" href="/multi">
+              Multi
             </Link>
           </li>
           <li>

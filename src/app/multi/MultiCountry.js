@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 
-import "./MapChart.css";
-import useCountryStore from "./useCountryStore";
+import "./multiapp.css";
+import useCountryStore from "../useCountryStore";
 import { SearchBox } from "@/components/custom/SearchBox";
 import { DarkSwitch } from "@/components/ui/darkSwitch";
 import { Switch } from "@/components/ui/switch";
@@ -17,11 +17,11 @@ import {
   IconArrowsMaximize,
   IconArrowsMinimize
 } from "@tabler/icons-react";
-import ShuffleCountries from "../components/custom/shuffle";
-import Tabs from "./mapTabs copy";
-import { getCountryEmoji } from "../utils/countryEmojis";
+import ShuffleCountries from "../../components/custom/shuffle";
+import Tabs from "../mapTabs copy";
+import { getCountryEmoji } from "../../utils/countryEmojis";
 import { MapBox } from "@/components/custom/MapBox";
-import IconButton from "../components/custom/boxbutton";
+import IconButton from "../../components/custom/boxbutton";
 import MapFrame from "@/components/custom/FrameMapAndSidebar";
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -45,12 +45,13 @@ Possible in the backened I need to weigh the importance of each relationship.
 */
 
 export default function MapChart() {
+
   return (
     <MapFrame
-      LeftSidebar={LeftSidebar}
-      RightSidebar={RightSidebar}
-      MainMap={MapBox}
-    />
+    LeftSidebar={LeftSidebar}
+    RightSidebar={RightSidebar}
+    MainMap={MapBox}
+  />
   );
 }
 
