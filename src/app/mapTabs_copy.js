@@ -4,8 +4,9 @@ import React, { useState } from "react";
 import useCountryStore from "./useCountryStore";
 import TabDemographic from "../components/custom/tabDemographic";
 import TabStats from "./tabStats";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.jsx";
 import { Card, CardHeader } from "@/components/ui/card";
+
 
 
 
@@ -24,8 +25,8 @@ export default function MapTab() {
             < TabDemographic />
           </div>
         </TabsContent>
-        <TabsContent value="password" className="flex justify-center">
-          Change your password here.
+        <TabsContent value="data" className="flex justify-center w-full">
+          <TabStats/>
         </TabsContent>
       </Tabs>
   );

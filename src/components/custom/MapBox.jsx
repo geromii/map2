@@ -3,7 +3,7 @@
 import React from "react";
 import { MapDiv } from "@/components/custom/MapDiv";
 import { Tooltip } from "react-tooltip";
-import MapTab from "@/app/mapTabs copy";
+import MapTab from "@/app/mapTabs_copy";
 
 import {
     Card,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 
 import "./multiapp.css";
 import useCountryStore from "../useCountryStore";
@@ -18,7 +18,7 @@ import {
   IconArrowsMinimize
 } from "@tabler/icons-react";
 import ShuffleCountries from "../../components/custom/shuffle";
-import Tabs from "../mapTabs copy";
+import Tabs from "../mapTabs_copy";
 import { getCountryEmoji } from "../../utils/countryEmojis";
 import { MapBox } from "@/components/custom/MapBox";
 import IconButton from "../../components/custom/boxbutton";
@@ -45,7 +45,15 @@ Possible in the backened I need to weigh the importance of each relationship.
 */
 
 export default function MapChart() {
+  const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
+  const { setMapMode } = useCountryStore((state) => ({
+    setMapMode: state.setMapMode,
+  }));
 
+  useEffect(() => {
+    resetAllExcept();
+    setMapMode("default");
+  }, []);
   return (
     <MapFrame
     LeftSidebar={LeftSidebar}
@@ -70,13 +78,13 @@ const LeftSidebar = () => {
   return (
     <div className="flex flex-col justify-evenly  mb-10  ">
       <div className="h-1/3 p-4 border-muted">
-        <h2 className=" font-semibold">Map Controls</h2>
-        <div className="mt-2 pl-5">
-          <MapControls />
-          <div className="flex justify-evenly mt-4">
+          <div className="flex justify-evenly mb-4">
             <ShuffleCountries />
             <ResetCountries />
           </div>
+        <h2 className=" font-semibold">Map Controls</h2>
+        <div className="mt-2 pl-5">
+          <MapControls />
         </div>
       </div>
 
@@ -114,7 +122,6 @@ const PresetPairings = () => {
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto">
-      <h2>Presets</h2>
       {mapMode === "single" ? (
         <select
           className="rounded-none shadow bg-black text-white mb-2"
@@ -165,7 +172,7 @@ const ResetCountries = () => {
   return (
     <IconButton
       icon={IconRefresh}
-      size = "small"
+      size = "medium"
       onClick={() => {
         resetAllExcept();
       }}
@@ -216,15 +223,6 @@ export const MapControls = ({}) => {
           {"  "}
           WW3
         </label>
-        <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 ">
-          <Switch
-            checked={mapMode == "single"}
-            onCheckedChange={handleSingleModeToggle}
-          />
-          <label className="toggle-label relative -top-0.5 ml-1">
-            {"  "} Single Mode
-          </label>
-        </div>
       </div>
     </div>
   );

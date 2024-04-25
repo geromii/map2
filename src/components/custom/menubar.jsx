@@ -15,13 +15,13 @@ const MenuBar = () => {
             </Link>
           </li>
           <li>
-            <Link className="hover:text-neutral-100" href="/ww3">
-              WW3
+            <Link className="hover:text-neutral-100" href="/multi">
+              Multi
             </Link>
           </li>
           <li>
-            <Link className="hover:text-neutral-100" href="/multi">
-              Multi
+            <Link className="hover:text-neutral-100" href="/old">
+              Old
             </Link>
           </li>
           <li>
@@ -37,7 +37,7 @@ const MenuBar = () => {
             </Link>
           </li>
         </div>
-        <div className="hidden md:flex space-x-4">
+        <div className="hidden md:flex space-x-4 ">
           {isLoggedIn ? (
             <>
               <li>

@@ -3,9 +3,9 @@ import { Button } from "../ui/button"; // Adjust the import path as necessary
 
 // Define mappings from size prop to button and icon size classes
 const sizeClasses = {
-  small: { button: "h-8 w-8", icon: "h-6 w-6" },
-  medium: { button: "h-10 w-10", icon: "h-8 w-8" },
-  large: { button: "h-12 w-12", icon: "h-10 w-10" },
+  small: { button: "h-10 w-10", icon: "h-6 w-6" },
+  medium: { button: "h-12 w-12", icon: "h-8 w-8" },
+  large: { button: "h-14 w-14", icon: "h-10 w-10" },
 };
 
 const IconButton = ({ icon: Icon, size = 'medium', ...props }) => {
@@ -15,9 +15,9 @@ const IconButton = ({ icon: Icon, size = 'medium', ...props }) => {
   return (
     <Button
       {...props}
-      className={`inline-flex justify-center items-center p-0 m-0 ${buttonSizeClass} ${props.className || ''}`}
+      className={`inline-flex justify-center shadow border-2 border-yellow-400 items-center p-0 m-0  ${buttonSizeClass} ${props.className || ''}`}
     >
-      {Icon && <Icon className={iconSizeClass} />}
+      {Icon && <Icon className={iconSizeClass}/>}
     </Button>
   );
 };

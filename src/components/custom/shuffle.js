@@ -209,7 +209,7 @@ const countryEmojis = [
   ["Zimbabwe", "🇿🇼"],
 ];
 
-const ShufflePopup = ({ isVisible }) => {
+const ShufflePopup = ({ isVisible, singleMode }) => {
   const [currentFlags, setCurrentFlags] = useState([]);
 
   useEffect(() => {
@@ -236,19 +236,41 @@ const ShufflePopup = ({ isVisible }) => {
   }
 
   return (
-    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl z-50 bg-white">
-      <span>{currentFlags[0]}</span>
-      <span>{currentFlags[1]}</span>
+    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl z-50 bg-white shadow-2xl border-2 rounded-lg">
+      <span className=" drop-shadow-sm">{currentFlags[0]}</span>
+      
+      { !singleMode && <span className=" drop-shadow-sm">{currentFlags[1]}</span>}
     </div>
   );
 };
 
-const ShuffleCountries = () => {
+const ShuffleCountries = ({singleMode = false}) => {
   const setCountryPhase = useCountryStore((state) => state.setCountryPhase);
-  const countries = useCountryStore((state) => state.countries);
+  const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
+  const [countries, setCountries] = useState({});
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
+  useEffect(() => {
+    const fetchCountries = async () => {
+      const response = await fetch('/demographics.json');
+      const data = await response.json();
+      const filteredCountries = data.filter(country => 
+        country.GDP >= 50000 && country.Population >= 5000000
+      );
+      const countriesDict = filteredCountries.reduce((acc, country) => {
+        acc[country.Country] = { ...country, phase: 0 };
+        return acc;
+      }, {});
+      setCountries(countriesDict);
+    };
+
+    fetchCountries();
+  }, []);
+
   const shuffleCountries = () => {
+    if (singleMode) {
+      resetAllExcept()
+    }
     const availableCountries = Object.entries(countries)
       .filter(([, country]) => country.phase === 0)
       .map(([name]) => name);
@@ -264,34 +286,32 @@ const ShuffleCountries = () => {
     let country2 = availableCountries[randomIndex2];
 
     while (country2 === country1) {
-      country2 =
-        availableCountries[
-          Math.floor(Math.random() * availableCountries.length)
-        ];
+      country2 = availableCountries[Math.floor(Math.random() * availableCountries.length)];
     }
 
     setIsPopupVisible(true);
 
     setTimeout(() => {
       setIsPopupVisible(false);
-      // Perform the final shuffle after the pop-up has finished
       setCountryPhase(country1, 2);
-      setCountryPhase(country2, 3);
+      if (!singleMode) {
+        setCountryPhase(country2, 3);
+      }
     }, 900);
   };
 
   return (
-    <div className="rounded  text-primary-foreground active:shadow-sm">
+    <div className="rounded text-primary-foreground active:shadow-sm">
       <IconButton
         icon={IconArrowsShuffle}
-        size = "small"
-        onClick={() => {
-          shuffleCountries();
-        }}
+        size="medium"
+        onClick={shuffleCountries}
       />
-      <ShufflePopup isVisible={isPopupVisible} />
+      <ShufflePopup isVisible={isPopupVisible} singleMode = {singleMode}/>
     </div>
   );
 };
 
 export default ShuffleCountries;
+
+

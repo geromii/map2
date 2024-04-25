@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import "./MapChart.css";
 import useCountryStore from "./useCountryStore";
@@ -18,7 +18,7 @@ import {
   IconArrowsMinimize
 } from "@tabler/icons-react";
 import ShuffleCountries from "../components/custom/shuffle";
-import Tabs from "./mapTabs copy";
+import Tabs from "./mapTabs_copy";
 import { getCountryEmoji } from "../utils/countryEmojis";
 import { MapBox } from "@/components/custom/MapBox";
 import IconButton from "../components/custom/boxbutton";
@@ -45,6 +45,15 @@ Possible in the backened I need to weigh the importance of each relationship.
 */
 
 export default function MapChart() {
+  const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
+  const { setMapMode } = useCountryStore((state) => ({
+    setMapMode: state.setMapMode,
+  }));
+
+  useEffect(() => {
+    resetAllExcept();
+    setMapMode("single");
+  }, []);
   return (
     <MapFrame
       LeftSidebar={LeftSidebar}
@@ -73,7 +82,7 @@ const LeftSidebar = () => {
         <div className="mt-2 pl-5">
           <MapControls />
           <div className="flex justify-evenly mt-4">
-            <ShuffleCountries />
+            <ShuffleCountries singleMode = {true} />
             <ResetCountries />
           </div>
         </div>
@@ -113,7 +122,6 @@ const PresetPairings = () => {
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto">
-      <h2>Presets</h2>
       {mapMode === "single" ? (
         <select
           className="rounded-none shadow bg-black text-white mb-2"
@@ -164,7 +172,7 @@ const ResetCountries = () => {
   return (
     <IconButton
       icon={IconRefresh}
-      size = "small"
+      size = "medium"
       onClick={() => {
         resetAllExcept();
       }}
