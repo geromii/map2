@@ -68,8 +68,8 @@ function TabStats() {
                 <tbody>
                   {sortedCountries.slice(-4).map((entry, index) => (
                     <tr key={index}>
-                        <td className="w-4/12 md:w-3/12 lg:w-4/12 text-left font-mono truncate">
-                        {entry.probability.toFixed(2)} {getCountryEmoji(entry.country)}<span className="truncate font-sans">{entry.country}</span>
+                        <td className="w-4/12 md:w-3/12 lg:w-4/12 text-left truncate">
+                        {entry.probability.toFixed(2)} {getCountryEmoji(entry.country)}<span className="truncate">{entry.country}</span>
                       </td>
                     </tr>
                   ))}
@@ -79,7 +79,7 @@ function TabStats() {
                 <tbody>
                   {sortedCountries.slice(0, 4).map((entry, index) => (
                      <tr key={index}>
-                     <td className="w-4/12 md:w-3/12 lg:w-4/12 text-left font-mono truncate">
+                     <td className="w-4/12 md:w-3/12 lg:w-4/12 text-left truncate">
                      {entry.probability.toFixed(2)} {getCountryEmoji(entry.country)}<span className="truncate font-sans">{entry.country}</span>
                    </td>
                  </tr>
