@@ -65,7 +65,7 @@ export default function MapChart() {
 
 const RightSidebar = () => {
   return (
-    <div className="h-[60%] w-full flex items-start justify-center px-1 sm:pt-2 xl:pt-4">
+    <div className="h-[60%] w-full flex items-start justify-center px-0 xl:px-0.5 sm:pt-2 xl:pt-4">
       <div className="w-full">
         <h2 className=" font-semibold mb-2 pl-3">Country Search</h2>
         <SearchBox />
@@ -76,19 +76,19 @@ const RightSidebar = () => {
 
 const LeftSidebar = () => {
   return (
-    <div className="flex flex-col justify-evenly  mb-10  ">
-      <div className="h-1/3 p-4 border-muted">
-        <h2 className=" font-semibold">Map Controls</h2>
-        <div className="mt-2 pl-5">
-          <MapControls />
-          <div className="flex justify-evenly mt-4">
+    <div className="flex flex-col justify-evenly  text-sm">
+                <div className="flex justify-evenly mt-4">
             <ShuffleCountries singleMode = {true} />
             <ResetCountries />
           </div>
+      <div className="h-1/3 p-1 lg:p-2 xl:p-4 border-muted">
+        <h2 className=" font-semibold">Map Controls</h2>
+        <div className="mt-2 pl-1 xl:pl-2">
+          <MapControls />
         </div>
       </div>
 
-      <div className="h-1/3 p-4 border-muted w-full">
+      <div className="h-1/3 p-1 lg:p-[1.5px] xl:p-4 border-muted w-full text-sm">
         <h2 className=" font-semibold">Presets</h2>
         <div className="mt-2 overflow-hidden">
           <PresetPairings />
@@ -124,10 +124,10 @@ const PresetPairings = () => {
     <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto">
       {mapMode === "single" ? (
         <select
-          className="rounded-none shadow bg-black text-white mb-2"
+          className="rounded-md shadow bg-primary text-white p-1  mb-2"
           onChange={handleSingleCountrySelection}
         >
-          <option value="">Select a country</option>
+          <option value="">Select country</option>
           <option value="Palestine">Palestine</option>
           <option value="Israel">Israel</option>
           <option value="Kosovo">Kosovo</option>
@@ -223,15 +223,6 @@ export const MapControls = ({}) => {
           {"  "}
           WW3
         </label>
-        <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2 ">
-          <Switch
-            checked={mapMode == "single"}
-            onCheckedChange={handleSingleModeToggle}
-          />
-          <label className="toggle-label relative -top-0.5 ml-1">
-            {"  "} Single Mode
-          </label>
-        </div>
       </div>
     </div>
   );

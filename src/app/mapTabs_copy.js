@@ -14,18 +14,18 @@ export default function MapTab() {
 
 
   return (
-      <Tabs defaultValue="demographics" className="flex flex-col items-center justify-between h-[13.02vw] w-full  md:w-[90%] shadow z-20 border rounded-2xl md:mb-[-30px] md:mt-[20px] bg-card/95 overflow-hidden">
-        <TabsList className=" mt-2 justify-center w-full md:w-[70%] grid grid-cols-3 shadow-sm">
-          <TabsTrigger value="demographics">Demographics</TabsTrigger>
-          <TabsTrigger value="data">For/Against</TabsTrigger>
+      <Tabs defaultValue="data" className="flex flex-col items-center justify-between h-[160px] lg:h-[13.02vw]  w-full md:w-[90%] shadow-[0_5px_15px_-2px_rgba(0,0,0,0.1)] z-20 rounded-lg md:rounded-2xl mb-[-15px] lg:mb-[-30px] md:mt-[20px] bg-card/95 border-2 overflow-hidden ">
+        <TabsList className=" mt-2 justify-center w-[95%] md:w-[70%] grid grid-cols-3 shadow-inner mb-0 ">
+          <TabsTrigger  value="demographics">Demographics</TabsTrigger>
+          <TabsTrigger  value="data">For/Against</TabsTrigger>
           <TabsTrigger value="why">Why?</TabsTrigger>
         </TabsList>
-        <TabsContent value="demographics" className="flex justify-center w-full ">
+        <TabsContent value="demographics" className="flex justify-center w-full h-full">
           <div className = "w-full">
             < TabDemographic />
           </div>
         </TabsContent>
-        <TabsContent value="data" className="flex justify-center w-full">
+        <TabsContent value="data" className="flex justify-center w-full h-full">
           <TabStats/>
         </TabsContent>
       </Tabs>

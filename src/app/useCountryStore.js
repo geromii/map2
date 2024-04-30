@@ -157,7 +157,7 @@ const useCountryStore = create((set, get) => ({
     // Check if both phase 2 and phase 3 exist
     const blueExists = Object.values(countries).some(({ phase }) => phase === 2);
     const redExists = Object.values(countries).some(({ phase }) => phase === 3);
-    const bothExist = blueExists && redExists;
+    const bothExist = true;
 
 
     const revealScores = ((mapMode == "single") && blueExists && !redExists) || (bothExist && (mapMode != "single")) 

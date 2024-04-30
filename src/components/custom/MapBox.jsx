@@ -16,9 +16,9 @@ import {
 
 export function MapBox(geographiesData) {
   return (
-    <div className =  " flex flex-col items-center  bg-transparent md:scale-[1.00] select-none">
+    <div className =  " flex flex-col items-center  bg-transparent md:scale-[1.00] w-full h-full ">
       <MapTab />
-      <div className=" map-container w-full h-full ">
+      <div className=" map-container w-full h-full select-none">
         <MapDiv geographiesData={geographiesData} />
         <Tooltip id="my-tooltip" float="true" delayShow="800" />
       </div>

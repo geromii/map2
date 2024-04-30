@@ -250,12 +250,14 @@ const ShuffleCountries = ({singleMode = false}) => {
   const [countries, setCountries] = useState({});
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
+  const gdpFilter = singleMode ? 5000 : 50000;
+  const populationFilter = singleMode ? 500000 : 5000000;
   useEffect(() => {
     const fetchCountries = async () => {
       const response = await fetch('/demographics.json');
       const data = await response.json();
       const filteredCountries = data.filter(country => 
-        country.GDP >= 50000 && country.Population >= 5000000
+        country.GDP >= gdpFilter && country.Population >= populationFilter
       );
       const countriesDict = filteredCountries.reduce((acc, country) => {
         acc[country.Country] = { ...country, phase: 0 };

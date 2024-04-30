@@ -4,7 +4,7 @@ import { Button } from "../ui/button"; // Adjust the import path as necessary
 // Define mappings from size prop to button and icon size classes
 const sizeClasses = {
   small: { button: "h-10 w-10", icon: "h-6 w-6" },
-  medium: { button: "h-12 w-12", icon: "h-8 w-8" },
+  medium: { button: "h-10 w-10 lg:h-12 lg:w-12", icon: "h-6 w-6 lg:h-8 lg:w-8" },
   large: { button: "h-14 w-14", icon: "h-10 w-10" },
 };
 

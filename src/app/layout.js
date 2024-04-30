@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
           fontSans.variable,
         )}
       >
-        <div className="">
+        <div className="top-0 z-50">
         <MenuBar/>
         </div>
         {children}

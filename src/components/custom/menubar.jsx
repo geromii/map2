@@ -1,14 +1,16 @@
+
 import React from 'react';
 import Link from 'next/link';
 
 const MenuBar = () => {
   // Placeholder for future conditional styling logic
-  const isLoggedIn = false; // This will be replaced with actual logic to check if user is logged in
+
+  const isLoggedIn = false
 
   return (
-    <nav className="bg-primary text-primary-foreground text-sm font-medium  p-6 shadow border-b mb-1">
+    <nav className="bg-primary text-primary-foreground text-sm font-medium p-6 pb-4 shadow border-b lg:border-b-2 mb-1 overscroll-none">
       <ul className="flex flex-wrap justify-between items-center">
-        <div className="hidden md:flex space-x-4 ">
+        <div className="hidden md:flex space-x-4">
           <li>
             <Link className="hover:text-neutral-100" href="/">
               Home
@@ -25,8 +27,8 @@ const MenuBar = () => {
             </Link>
           </li>
           <li>
-            <Link className="hover:text-neutral-100" href="/contact">
-              Contact
+            <Link className="hover:text-neutral-100" href="/prompt">
+              Prompt
             </Link>
           </li>
         </div>
@@ -37,7 +39,7 @@ const MenuBar = () => {
             </Link>
           </li>
         </div>
-        <div className="hidden md:flex space-x-4 ">
+        <div className="hidden md:flex space-x-4">
           {isLoggedIn ? (
             <>
               <li>
