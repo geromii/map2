@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react"
 import  MenuBar from "@/components/custom/menubar"
 
-export const fontSans = FontSans({
+const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
           fontSans.variable,
         )}
       >
-        <div className="top-0 z-50">
+        <div className="">
         <MenuBar/>
         </div>
         {children}
