@@ -146,20 +146,20 @@ const NoCountrySelected = ({ pageMode = "single", phase2Exists, phase3Exists }) 
   ) : (
     
     
-    <div className="flex justify-around  w-full translate-y-5 text-lg  drop-shadow transition">
+    <div className="flex justify-around   w-full translate-y-5 text-lg  drop-shadow transition">
       <div data-phase2exists = {phase2Exists}
-      className="flex p-2 bg-blue-500 rounded-full  font-medium items-center text-base data-[phase2exists=true]:opacity-0 data-[phase2exists=true]:translate-y-2 transition-all delay-100 duration-300">
+      className="flex p-2 bg-blue-500 rounded-full  font-medium items-center text-base data-[phase2exists=true]:opacity-0 data-[phase2exists=true]:translate-y-2 transition-transform delay-100 duration-300">
         <IconArrowBigDownLinesFilled
           size={22}
-          className="text-primary drop-shadow-lg"
+          className="text-primary drop-shadow"
         />{" "}
         Select a blue country below...
       </div>
       <div data-phase3exists = {phase3Exists}
-      className="flex p-2 bg-red-500 rounded-full  font-medium items-center text-base data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-2  transition-all delay-100 duration-300">
+      className="flex p-2 bg-red-500 rounded-full  font-medium items-center text-base data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-2  transition-transform delay-100 duration-300">
         <IconArrowBigDownLinesFilled
           size={22}
-          className="text-primary drop-shadow-lg"
+          className="text-primary drop-shadow"
         />{" "}
         Select a red country below...
       </div>
