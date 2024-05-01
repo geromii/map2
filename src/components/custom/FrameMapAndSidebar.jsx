@@ -15,6 +15,7 @@ export default function MapFrame({
   RightSidebar,
   TabDiv,
   MapDiv,
+  pageMode
 }) {
   const [leftSidebarVisible, setLeftSidebarVisible] = useState(true);
   const [rightSidebarVisible, setRightSidebarVisible] = useState(true);
@@ -59,7 +60,7 @@ export default function MapFrame({
 
       <div className="map relative w-full lg:w-[88%] row-start-1 transition-all duration-300 ease-in-out h-full">
         <div className=" flex flex-col items-center  bg-transparent md:scale-[1.00] w-full h-full ">
-          <TabDiv  />
+          <TabDiv  pageMode = {pageMode}/>
           <MapDiv />
         </div>
         <div className="hidden lg:block absolute bottom-0 left-0.5 z-30">

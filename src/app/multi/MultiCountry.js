@@ -51,6 +51,7 @@ export default function MapChart() {
     RightSidebar={RightSidebar}
     TabDiv = {TabDiv}
     MapDiv = {MapDiv}
+    pageMode = "multi"
   />
   );
 }

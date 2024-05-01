@@ -10,7 +10,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 
 
 
-export default function TabDiv(pageMode = "single") {
+export default function TabDiv({pageMode}) {
 
 
   return (

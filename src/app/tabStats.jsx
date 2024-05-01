@@ -4,15 +4,10 @@ import { IconArrowBigDownLinesFilled } from "@tabler/icons-react";
 import useCountryStore from "./useCountryStore";
 import { getCountryEmoji } from "../utils/countryEmojis";
 
-function TabStats({ mode = "multi" }) {
+function TabStats({ pageMode }) {
   const [sortedCountries, setSortedCountries] = useState([]);
   const [phase2Countries, setPhase2Countries] = useState([]);
   const [phase3Countries, setPhase3Countries] = useState([]);
-  const mapMode = useCountryStore((state) => state.mapMode);
-
-  if (mapMode === "single") {
-    mode = "single";
-  } 
 
   const countries = useCountryStore((state) => state.countries);
 
@@ -29,7 +24,7 @@ function TabStats({ mode = "multi" }) {
     setPhase3Countries(phase3);
 
     const updateStats =
-      mode === "single"
+      pageMode === "single"
         ? phase2.length > 0 || phase3.length > 0
         : phase2.length > 0 && phase3.length > 0;
     // Update sortedCountries only if there are entries in phase2 or phase3
@@ -54,7 +49,7 @@ function TabStats({ mode = "multi" }) {
 
   // same logic as updateState
   const displayStats =
-    mode === "single"
+    pageMode === "single"
       ? phase2Countries.length > 0 || phase3Countries.length > 0
       : phase2Countries.length > 0 && phase3Countries.length > 0;
 
@@ -66,7 +61,7 @@ function TabStats({ mode = "multi" }) {
         data-display={displayStats}
         className="absolute data-[display=true]:opacity-0 transition duration-400 w-[70%]"
       >
-        <NoCountrySelected mode={mode} phase2Exists={phase2exists} phase3Exists={phase3exists} />
+        <NoCountrySelected pageMode={pageMode} phase2Exists={phase2exists} phase3Exists={phase3exists} />
       </div>
 
       <div
@@ -136,8 +131,8 @@ function TabStats({ mode = "multi" }) {
   );
 }
 
-const NoCountrySelected = ({ mode = "single", phase2Exists, phase3Exists }) => {
-  return mode === "single" ? (
+const NoCountrySelected = ({ pageMode = "single", phase2Exists, phase3Exists }) => {
+  return pageMode === "single" ? (
     <div className="flex justify-center align-top w-full translate-y-5 text-lg items-center drop-shadow">
       <div className="flex p-2 bg-yellow-400 rounded-full shadow-lg font-medium items-center text-base">
         <IconArrowBigDownLinesFilled
