@@ -59,7 +59,7 @@ function TabStats({ pageMode }) {
     <div className="flex items-center justify-around w-full h-[130px] lg:h-[10.02vw]">
       <div
         data-display={displayStats}
-        className="absolute data-[display=true]:opacity-0 transition duration-300 w-[70%]"
+        className="absolute data-[display=true]:opacity-0 data-[display=true]:translate-y-3 transition duration-[250ms] w-[70%]"
       >
         <NoCountrySelected pageMode={pageMode} phase2Exists={phase2exists} phase3Exists={phase3exists} />
       </div>
@@ -147,7 +147,7 @@ const NoCountrySelected = ({ pageMode = "single", phase2Exists, phase3Exists }) 
     
     <div className="flex justify-around  w-full translate-y-5 text-lg  drop-shadow transition">
       <div data-phase2exists = {phase2Exists}
-      className="flex p-2 bg-blue-500 rounded-full  font-medium items-center text-base data-[phase2exists=true]:opacity-0 transition-opacity delay-200 duration-200">
+      className="flex p-2 bg-blue-500 rounded-full  font-medium items-center text-base data-[phase2exists=true]:opacity-0 data-[phase2exists=true]:translate-y-2 transition-all delay-50 duration-300">
         <IconArrowBigDownLinesFilled
           size={22}
           className="text-primary drop-shadow-lg"
@@ -155,7 +155,7 @@ const NoCountrySelected = ({ pageMode = "single", phase2Exists, phase3Exists }) 
         Select a blue country below...
       </div>
       <div data-phase3exists = {phase3Exists}
-      className="flex p-2 bg-red-500 rounded-full  font-medium items-center text-base data-[phase3exists=true]:opacity-0 transition-opacity delay-200 duration-200">
+      className="flex p-2 bg-red-500 rounded-full  font-medium items-center text-base data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-2  transition-all delay-50 duration-300">
         <IconArrowBigDownLinesFilled
           size={22}
           className="text-primary drop-shadow-lg"
