@@ -10,7 +10,12 @@ import {
   IconX,
 } from "@tabler/icons-react";
 
-export default function MapFrame({ LeftSidebar, RightSidebar, MainMap }) {
+export default function MapFrame({
+  LeftSidebar,
+  RightSidebar,
+  TabDiv,
+  MapDiv,
+}) {
   const [leftSidebarVisible, setLeftSidebarVisible] = useState(true);
   const [rightSidebarVisible, setRightSidebarVisible] = useState(true);
 
@@ -52,10 +57,11 @@ export default function MapFrame({ LeftSidebar, RightSidebar, MainMap }) {
         </div>
       </div>
 
-      <div
-        className="map relative w-full lg:w-[88%] row-start-1 transition-all duration-300 ease-in-out h-full"
-      >
-        <MainMap />
+      <div className="map relative w-full lg:w-[88%] row-start-1 transition-all duration-300 ease-in-out h-full">
+        <div className=" flex flex-col items-center  bg-transparent md:scale-[1.00] w-full h-full ">
+          <TabDiv  />
+          <MapDiv />
+        </div>
         <div className="hidden lg:block absolute bottom-0 left-0.5 z-30">
           {(leftSidebarVisible || rightSidebarVisible) && (
             <button
@@ -69,7 +75,6 @@ export default function MapFrame({ LeftSidebar, RightSidebar, MainMap }) {
           )}
         </div>
       </div>
-
 
       <div
         style={{
@@ -96,11 +101,11 @@ export default function MapFrame({ LeftSidebar, RightSidebar, MainMap }) {
           {rightSidebarVisible && <RightSidebar />}
         </div>
       </div>
-      <div className = "mobile view flex h-[300px] lg:hidden divide-x-2">
-        <div className = "pl-1 w-1/2">
+      <div className="mobile view flex h-[300px] lg:hidden divide-x-2">
+        <div className="pl-1 w-1/2">
           <LeftSidebar />
         </div>
-        <div className = "pl-1 w-1/2">
+        <div className="pl-1 w-1/2">
           <RightSidebar />
         </div>
       </div>

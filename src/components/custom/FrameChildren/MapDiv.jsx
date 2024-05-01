@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import useCountryStore from "@/app/useCountryStore";
 import { ComposableMap, Sphere, Graticule, Geographies, Geography } from "react-simple-maps";
 import { geoRobinson } from "d3-geo-projection";
+import { Tooltip } from "react-tooltip";
 
 
 
@@ -43,8 +44,13 @@ export const MapDiv = ({
 
   const handleCountryClick = (country) => {
     if (mapMode == "single") {
-      resetAllExcept()
-      setCountryPhase(country, 2);
+      // if the country state is 2, reset all countries, if the country state is not 2, set it it to 2
+      if (countries[country].phase == 2) {
+        resetAllExcept()
+      } else {
+        resetAllExcept()
+        setCountryPhase(country, 2);
+      }
     } else {
       incrementCountryPhase(country);
     }
@@ -61,6 +67,7 @@ export const MapDiv = ({
     .scale(scale)
     .rotate(rotation);
     return (
+      <div className=" map-container w-full h-full select-none">
       <div className="mapbg bg-slate-500 rounded scale-x-[1.01] shadow-sm border  sm:scale-[1.0]">
         <ComposableMap
           viewBox="-80 -20 1000 550"
@@ -151,6 +158,8 @@ export const MapDiv = ({
             }}
           </Geographies>
         </ComposableMap>
+      </div>
+      <Tooltip id="my-tooltip" float="true" delayShow="800" />
       </div>
     );
 };

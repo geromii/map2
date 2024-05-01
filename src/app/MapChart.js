@@ -9,18 +9,10 @@ import { DarkSwitch } from "@/components/ui/darkSwitch";
 import { Switch } from "@/components/ui/switch";
 import {
   IconRefresh,
-  IconArrowsShuffle,
-  IconArrowsDiagonal,
-  IconArrowsDiagonal2,
-  IconArrowsDiagonalMinimize,
-  IconArrowsDiagonalMinimize2,
-  IconArrowsMaximize,
-  IconArrowsMinimize
 } from "@tabler/icons-react";
 import ShuffleCountries from "../components/custom/shuffle";
-import Tabs from "./mapTabs_copy";
-import { getCountryEmoji } from "../utils/countryEmojis";
-import { MapBox } from "@/components/custom/MapBox";
+import TabDiv from "../components/custom/FrameChildren/TabDiv";
+import { MapDiv } from "@/components/custom/FrameChildren/MapDiv";
 import IconButton from "../components/custom/boxbutton";
 import MapFrame from "@/components/custom/FrameMapAndSidebar";
 
@@ -58,7 +50,9 @@ export default function MapChart() {
     <MapFrame
       LeftSidebar={LeftSidebar}
       RightSidebar={RightSidebar}
-      MainMap={MapBox}
+      TabDiv = {TabDiv}
+      MapDiv = {MapDiv}
+      pageMode = "single"
     />
   );
 }
