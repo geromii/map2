@@ -7,7 +7,7 @@ import { getCountryEmoji } from "../utils/countryEmojis";
 function TabStats({ pageMode, sortedCountries, phase2Countries, phase3Countries, phase2exists, phase3exists, displayStats }) {
 
   return (
-    <div className="flex items-center justify-around w-full h-[130px] lg:h-[10.02vw]">
+    <div className="flex items-center justify-around w-full h-[130px] lg:h-[10.02vw] -translate-y-2">
         
 
 

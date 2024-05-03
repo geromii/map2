@@ -13,7 +13,9 @@ import {
 import { Card, CardHeader } from "@/components/ui/card";
 import {
   IconInfoCircle,
+  IconInfoCircleFilled,
   IconArrowBigDownFilled,
+  IconArrowBigDownLines,
   IconArrowsVertical,
 } from "@tabler/icons-react";
 
@@ -77,7 +79,7 @@ export default function TabDiv({
     <Tabs
       data-tabvisible={tabVisible}
       defaultValue="data"
-      className="relative flex flex-col items-center justify-between h-[160px] lg:h-[13.02vw]  w-full md:w-[90%] shadow-sm z-20 rounded-lg md:rounded-2xl mb-[-15px] lg:mb-[-12px] md:mt-[20px] bg-card/95 border-2 overflow-hidden  ring-primary data-[tabvisible=false]:h-24 data-[tabvisible=false]:mb-2 transition-all duration-500"
+      className="relative flex flex-col items-center justify-between h-[160px] lg:h-[13.02vw]  w-full md:w-[90%] shadow-sm z-20 rounded-lg md:rounded-2xl mb-[-5px] lg:mb-[-12px] md:mt-[20px] bg-card/95 border-2 overflow-hidden  ring-primary data-[tabvisible=false]:h-24 data-[tabvisible=false]:mb-2 transition-all duration-500"
     >
       <div
         data-tabvisible={tabVisible}
@@ -133,34 +135,33 @@ const NoCountrySelected = ({
 }) => {
   return pageMode === "single" ? (
     <div className="flex justify-around align-top w-full translate-y-3 items-center drop-shadow">
-      <div className="flex p-2 bg-yellow-400 rounded-full shadow-lg font-medium items-center ">
+      <div className="flex p-1 lg:p-2 border-2 border-yellow-400 bg-yellow-300 rounded-full shadow-lg font-medium items-center ">
         <IconInfoCircle size={22} className="text-primary drop-shadow" />
         {"  "}
         Select a country below...
       </div>
     </div>
   ) : (
-    <div className="grid grid-rows-2 justify-center   w-full ">
-      <div className="flex">
+    <div className="flex justify-center   w-full ">
+  
         <div
           data-phase2exists={phase2Exists}
-          className="flex p-1 lg:p-2 bg-blue-500 rounded-full shadow-sm font-medium items-center  data-[phase2exists=true]:opacity-0 data-[phase2exists=true]:translate-y-4 transition-all delay-100 duration-300 mr-1"
+          className="flex p-1 lg:p-2 border-[3px] border-blue-500 bg-blue-100 rounded-full shadow-lg font-medium items-center  data-[phase2exists=true]:opacity-0 data-[phase2exists=true]:translate-y-8 transition-all delay-100 duration-500 mr-1 text-center"
         >
           <IconInfoCircle size={22} className="text-primary drop-shadow" />{" "}
           Select a blue country...
         </div>
-        <IconArrowBigDownFilled
+        <IconArrowBigDownLines
           size={30}
           className="text-primary drop-shadow self-center mx-1 md:mx-1"
         />
         <div
           data-phase3exists={phase3Exists}
-          className="flex p-1 lg:p-2 bg-red-500 rounded-full shadow-sm font-medium items-center data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-4  transition-all delay-100 duration-300 ml-1"
+          className="flex p-1 lg:p-2 border-[3px] border-red-500 bg-red-100 rounded-full shadow-lg font-medium items-center data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-8  transition-all delay-100 duration-500 ml-1 text-center"
         >
           <IconInfoCircle size={22} className="text-primary drop-shadow" />{" "}
           Select a red country...
         </div>
-      </div>
     </div>
   );
 };

@@ -45,9 +45,9 @@ export function SearchBox() {
                   <div className="flex relative shadow-sm space items-center">
                   <button
                       onClick={() => handleClose(countryName)} // Pass countryName handleClose function
-                      className="flex text-red-500 "
+                      className="flex text-red-500"
                     >
-                      <IconSquareX  size = {20} />
+                      <IconSquareX  size = {19} />
                     </button>
                     <Squares
                       country={countryName} // Pass countryName here

@@ -69,9 +69,9 @@ export const MapDiv = ({}) => {
       (c) => c.phase === 3
     ).length;
     // only trigger if there are no phase 2 or phase 3 countries and if userHasCycledCountries is false
-    if (phaseOneCountries == 3 && phaseTwoCountries === 0 && phaseThreeCountries === 0 && !userHasCycledColours) {
+    if (phaseOneCountries == 2 && phaseTwoCountries === 0 && phaseThreeCountries === 0 && !userHasCycledColours) {
       setShowPopup(true);
-    } else if (phaseOneCountries === 0 || phaseOneCountries > 3 ||  phaseTwoCountries > 0 ||  phaseThreeCountries > 0) {
+    } else if (phaseOneCountries === 0 || phaseOneCountries > 2 ||  phaseTwoCountries > 0 ||  phaseThreeCountries > 0) {
       setFadeOutPopup(true)
       setTimeout(() => {
         setShowPopup(false);
@@ -109,15 +109,15 @@ export const MapDiv = ({}) => {
   return (
     <div className=" map-container w-full h-full select-none transition">
       {showPopup && mapMode != "single" && (
-        <div className="fixed inset-0 m-auto w-72 h-72 rounded-full flex justify-center items-center z-50 ">
-          <div data-animation = {showPopup} data-fadeout = {fadeOutPopup} className="bg-yellow-400 flex items-center p-4 rounded-lg shadow-2xl relative data-[animation=true]:animate-fadeIn data-[fadeout=true]:opacity-0 transition duration-300  ">
+        <div className="fixed inset-0 m-auto w-80 h-100 rounded-full flex justify-center items-center z-50 ">
+          <div data-animation = {showPopup} data-fadeout = {fadeOutPopup} className="bg-yellow-400  flex items-center p-4 rounded-lg shadow-2xl relative data-[animation=true]:animate-fadeIn data-[fadeout=true]:opacity-0 transition duration-300  ">
             <button
               className="absolute top-0 right-1 text-2xl font-bold"
               onClick={() => setShowPopup(false)}
             >
               ×
             </button>
-            <IconInfoCircle size = {50} className = "mr-2"/> <p> Click a country multiple times to cycle its color.</p>
+            <IconInfoCircle size = {40} className = "mr-2 w-14"/> <p>Click a country again to cycle through colors. From grey to red to blue.</p>
           </div>
         </div>
       )}
