@@ -105,7 +105,7 @@ const PresetPairings = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto">
+    <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto ">
       {mapMode === "single" ? (
         <div className="grid grid-cols-2 gap-2 mb-2">
           <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Palestine' } })}>Palestine</button>
@@ -120,7 +120,7 @@ const PresetPairings = () => {
           className="rounded shadow bg-primary-foreground text-wh mb-2 w-40"
           onChange={handlePairingSelection}
         >
-          <option value="">Select a pairing</option>
+          <option value="">Select pairing</option>
           <option value="Israel - Iran">Israel - Iran</option>
           <option value="Saudi Arabia - Iran">Saudi Arabia - Iran</option>
           <option value="United States - Iran">United States - Iran</option>

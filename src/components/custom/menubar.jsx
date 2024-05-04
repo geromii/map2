@@ -35,7 +35,12 @@ const MenuBar = () => {
         <div className="flex md:hidden space-x-4">
           <li>
             <Link className="hover:text-neutral-100" href="/">
-              Menu
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link className="hover:text-neutral-100" href="/multi">
+              Advanced
             </Link>
           </li>
         </div>

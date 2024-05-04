@@ -58,7 +58,7 @@ export default function MapChart() {
 
 const RightSidebar = () => {
   return (
-    <div className="h-[60%] w-full flex items-start justify-center px-1 sm:pt-2 xl:pt-4">
+    <div className="h-[60%] w-full flex items-start justify-center px-1  pt-4 sm:pt-2 xl:pt-4">
       <div className="w-full">
         <h2 className=" font-semibold mb-2 pl-3">Country Search</h2>
         <SearchBox />
@@ -70,7 +70,7 @@ const RightSidebar = () => {
 const LeftSidebar = () => {
   return (
     <div className="flex flex-col justify-evenly  mb-10  ">
-      <div className="h-1/3 p-4 border-muted">
+      <div className="h-1/3 p-2 border-muted">
           <div className="flex justify-evenly mb-4">
             <ShuffleCountries />
             <ResetCountries />
@@ -81,7 +81,7 @@ const LeftSidebar = () => {
         </div>
       </div>
 
-      <div className="h-1/3 p-4 border-muted w-full">
+      <div className="h-1/3 p-1 border-muted w-full">
         <h2 className=" font-semibold">Presets</h2>
         <div className="mt-2 overflow-hidden">
           <PresetPairings />
