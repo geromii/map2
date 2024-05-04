@@ -85,7 +85,7 @@ export default function TabDiv({
         data-tabvisible={tabVisible}
         data-display={displayStats}
         data-pagemode={pageMode}
-        className="absolute top-[60%] data-[tabvisible=false]:top-[20%] data-[display=true]:opacity-0  data-[display=true]:translate-y-14 transition-all duration-500 data-[pagemode=single]:duration-500 data-[pagemode=multi]:duration-500 w-[95%] lg:w-[70%] text-xs sm:text-sm lg:text-base"
+        className="absolute top-[60%] data-[tabvisible=false]:top-[20%] data-[display=true]:opacity-0  data-[display=true]:translate-y-10 transition-all duration-500 data-[pagemode=single]:duration-500 data-[pagemode=multi]:duration-500 w-[95%] lg:w-[70%] text-xs sm:text-sm lg:text-base"
       >
         <NoCountrySelected
           pageMode={pageMode}
@@ -142,13 +142,13 @@ const NoCountrySelected = ({
       </div>
     </div>
   ) : (
-    <div className="flex justify-center   w-full ">
+    <div className="flex justify-center translate-y-2 w-full ">
   
         <div
           data-phase2exists={phase2Exists}
           className="flex p-1 lg:p-2 border-[3px] border-blue-500 bg-blue-100 rounded-full shadow-lg font-medium items-center  data-[phase2exists=true]:opacity-0 data-[phase2exists=true]:translate-y-8 transition-all delay-100 duration-500 mr-1 text-center"
         >
-          <IconInfoCircle size={22} className="text-primary drop-shadow" />{" "}
+          <IconInfoCircle className="text-primary drop-shadow" />{" "}
           Select a blue country...
         </div>
         <IconArrowBigDownLines
@@ -157,9 +157,9 @@ const NoCountrySelected = ({
         />
         <div
           data-phase3exists={phase3Exists}
-          className="flex p-1 lg:p-2 border-[3px] border-red-500 bg-red-100 rounded-full shadow-lg font-medium items-center data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-8  transition-all delay-100 duration-500 ml-1 text-center"
+          className="flex p-1 lg:p-2 border-[3px] border-red-500 bg-red-100 rounded-full shadow-lg font-medium items-center data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-8 transition-all delay-100 duration-500 ml-1 text-center"
         >
-          <IconInfoCircle size={22} className="text-primary drop-shadow" />{" "}
+          <IconInfoCircle className="text-primary drop-shadow" />{" "}
           Select a red country...
         </div>
     </div>

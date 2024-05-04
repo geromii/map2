@@ -20,19 +20,14 @@ import MapFrame from "@/components/custom/FrameMapAndSidebar";
 
 /*
 Future goals for this project:
-1. Demographic information of each side
-2. better scale the data? perhaps square all values?
-3. change the color scheme multiplier from 0.5 to 1
 4. decide to delete or fix the second order setting
 5 . Toggle between: different projections? different color schemes? different data?
 6. Option to amplify/bolden when the projections are small
 7. Text based summary using GPT
 
-
 Possible in the backened I need to weigh the importance of each relationship.
 
 1. Add prominent conflicts to the map
-2. Demographic information of each side
 
 */
 
@@ -59,9 +54,9 @@ export default function MapChart() {
 
 const RightSidebar = () => {
   return (
-    <div className="h-[60%] w-full flex items-start justify-center px-0 xl:px-0.5 sm:pt-2 xl:pt-4">
+    <div className="h-[60%] w-full flex items-start justify-center px-0 pt-4 xl:px-0.5 sm:pt-2 xl:pt-4">
       <div className="w-full">
-        <h2 className=" font-semibold mb-2 pl-3">Country Search</h2>
+        <h2 className=" font-semibold mb-2 pl-3 text-sm lg:text-base">Country Search</h2>
         <SearchBox />
       </div>
     </div>
@@ -75,12 +70,7 @@ const LeftSidebar = () => {
             <ShuffleCountries singleMode = {true} />
             <ResetCountries />
           </div>
-      <div className="h-1/3 p-1 lg:p-2 xl:p-4 border-muted">
-        <h2 className=" font-semibold">Map Controls</h2>
-        <div className="mt-2 pl-1 xl:pl-2">
-          <MapControls />
-        </div>
-      </div>
+
 
       <div className="h-1/3 p-1 lg:p-[1.5px] xl:p-4 border-muted w-full text-sm">
         <h2 className=" font-semibold">Presets</h2>
@@ -117,18 +107,14 @@ const PresetPairings = () => {
   return (
     <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto">
       {mapMode === "single" ? (
-        <select
-          className="rounded-md shadow bg-primary text-white p-1  mb-2"
-          onChange={handleSingleCountrySelection}
-        >
-          <option value="">Select country</option>
-          <option value="Palestine">Palestine</option>
-          <option value="Israel">Israel</option>
-          <option value="Kosovo">Kosovo</option>
-          <option value="Cyprus">Cyprus</option>
-          <option value="Taiwan">Taiwan</option>
-          <option value="Armenia">Armenia</option>
-        </select>
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Palestine' } })}>Palestine</button>
+          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Israel' } })}>Israel</button>
+          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Kosovo' } })}>Kosovo</button>
+          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Cyprus' } })}>Cyprus</button>
+          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Taiwan' } })}>Taiwan</button>
+          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Armenia' } })}>Armenia</button>
+        </div>
       ) : (
         <select
           className="rounded shadow bg-primary-foreground text-wh mb-2 w-40"

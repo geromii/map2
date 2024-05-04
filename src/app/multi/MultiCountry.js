@@ -204,7 +204,7 @@ export const MapControls = ({}) => {
           onClick={handleProjectionToggle}
         >
           {" "}
-          Geopolitics
+          Predictions
         </label>
       </div>
       <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2">
@@ -214,7 +214,7 @@ export const MapControls = ({}) => {
           onClick={handleWarToggle}
         >
           {"  "}
-          WW3
+          War Mode
         </label>
       </div>
     </div>
