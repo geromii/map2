@@ -67,6 +67,11 @@ const RightSidebar = () => {
 };
 
 const LeftSidebar = () => {
+  const { countries } = useCountryStore((state) => ({ countries: state.countries }));
+
+  // Retrieve keys of countries in phase 2
+  const phase2Countries = Object.keys(countries).filter(key => countries[key].phase === 2);
+  
   return (
     <div className="flex flex-col justify-evenly  text-sm lg:text-base">
                 <div className="flex justify-evenly mt-8 lg:text-lg">
@@ -77,6 +82,9 @@ const LeftSidebar = () => {
       <div className="w-full pt-5">
         <h2 className=" font-semibold mb-2 pl-3 text-sm lg:text-base">Country Search</h2>
         <SearchCountry pageMode = "single"/>
+      </div>
+      <div className="lg:hidden w-full pt-5">
+        <p className=" font-semibold mb-2 pl-3 text-sm lg:text-base">Countries: {phase2Countries.join(', ')}</p>
       </div>
     </div>
   );
@@ -103,7 +111,7 @@ const PresetPairings = () => {
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto ">
-              <h2 className=" font-semibold mb-4 pl-3 text-sm lg:text-base">Preset Options</h2>
+              <h2 className=" font-semibold mb-4 pl-3 text-sm lg:text-base">Quick Access</h2>
         <div className="grid grid-cols-2 mb-2 gap-4">
           <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Palestine')}>Palestine</button>
           <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Israel')}>Israel</button>
