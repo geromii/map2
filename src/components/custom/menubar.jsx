@@ -1,84 +1,77 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const MenuBar = () => {
-  const isLoggedIn = false;
   const pathname = usePathname();
-  console.log(pathname);
+  const [indicatorStyle, setIndicatorStyle] = useState({});
+  const linkRefs = useRef({}); // To store references to link elements
 
-  // Function to determine the class for the active parent <li>
-  const listItemStyle = (path) => {
-    return pathname === path
-      ? "border-b-2 border-yellow-400"
-      : "";
+  const updateIndicator = () => {
+    const activeLinkRef = linkRefs.current[pathname];
+    if (activeLinkRef) {
+      // Calculate the position and width of the active link
+      const { offsetLeft, offsetWidth } = activeLinkRef;
+      setIndicatorStyle({
+        left: `${offsetLeft}px`,
+        width: `${offsetWidth}px`,
+      });
+    }
+  };
+
+  // Update the indicator on pathname changes
+  useEffect(() => {
+    updateIndicator();
+  }, [pathname]);
+
+  // Function to store references for links
+  const storeLinkRef = (path) => (element) => {
+    linkRefs.current[path] = element;
   };
 
   const linkStyle = "hover:text-neutral-100";
+  const listItemStyle = (path) =>
+    pathname === path ? "text-neutral-100" : "";
 
   return (
-    <nav className="bg-primary text-primary-foreground text-sm font-medium p-6 pb-4 shadow border-b lg:border-b-2 mb-1 overscroll-none">
-      <ul className="flex flex-wrap justify-between items-center">
+    <nav className="relative bg-primary text-primary-foreground text-sm font-medium p-6 pb-4 shadow border-b lg:border-b-2 mb-1 overscroll-none">
+      <ul className="flex flex-wrap justify-between items-center relative">
         <div className="hidden md:flex space-x-4">
           <li className={listItemStyle("/")}>
-            <Link className={linkStyle} href="/">
+            <Link
+              ref={storeLinkRef("/")}
+              className={linkStyle}
+              href="/"
+            >
               Single Country Mode
             </Link>
           </li>
           <li className={listItemStyle("/multi")}>
-            <Link className={linkStyle} href="/multi">
+            <Link
+              ref={storeLinkRef("/multi")}
+              className={linkStyle}
+              href="/multi"
+            >
               Conflict Mode
             </Link>
           </li>
-          <li className={listItemStyle("/old")}>
-            <Link className={linkStyle} href="/old">
-              Old
-            </Link>
-          </li>
           <li className={listItemStyle("/prompt")}>
-            <Link className={linkStyle} href="/prompt">
+            <Link
+              ref={storeLinkRef("/prompt")}
+              className={linkStyle}
+              href="/prompt"
+            >
               Prompt
             </Link>
           </li>
         </div>
-        <div className="flex md:hidden space-x-4">
-          <li className={listItemStyle("/")}>
-            <Link className={linkStyle} href="/">
-              Single Country Mode
-            </Link>
-          </li>
-          <li className={listItemStyle("/multi")}>
-            <Link className={linkStyle} href="/multi">
-              Conflict Mode
-            </Link>
-          </li>
-        </div>
-        <div className="hidden md:flex space-x-4">
-          {isLoggedIn ? (
-            <>
-              <li>
-                <Link className="hover:text-neutral-100" href="/signout">
-                  Sign Out
-                </Link>
-              </li>
-            </>
-          ) : (
-            <>
-              <li>
-                <Link className="hover:text-neutral-100" href="/signin">
-                  Login
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-neutral-100" href="/signup">
-                  Sign up
-                </Link>
-              </li>
-            </>
-          )}
-        </div>
+        {/* Indicator bar */}
+        <div
+          className="absolute bottom-0 h-[3px] bg-yellow-400 transition-all duration-300"
+          style={indicatorStyle}
+        />
       </ul>
     </nav>
   );
