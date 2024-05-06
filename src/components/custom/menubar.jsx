@@ -38,7 +38,7 @@ const MenuBar = () => {
   return (
     <nav className="relative bg-primary text-primary-foreground text-sm font-medium p-6 pb-4 shadow border-b lg:border-b-2 mb-1 overscroll-none">
       <ul className="flex flex-wrap justify-between items-center relative">
-        <div className="hidden md:flex space-x-4">
+        <div className="flex md:flex space-x-4">
           <li className={listItemStyle("/")}>
             <Link
               ref={storeLinkRef("/")}
