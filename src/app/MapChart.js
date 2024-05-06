@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 
 import "./MapChart.css";
@@ -15,6 +14,9 @@ import TabDiv from "../components/custom/FrameChildren/TabDiv";
 import { MapDiv } from "@/components/custom/FrameChildren/MapDiv";
 import IconButton from "../components/custom/boxbutton";
 import MapFrame from "@/components/custom/FrameMapAndSidebar";
+import { SearchCountry } from "@/components/custom/SearchCountry";
+import useEuCountries from "../utils/eu";
+
 
 // const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -54,27 +56,9 @@ export default function MapChart() {
 
 const RightSidebar = () => {
   return (
-    <div className="h-[60%] w-full flex items-start justify-center px-0 pt-4 xl:px-0.5 sm:pt-2 xl:pt-4">
-      <div className="w-full">
-        <h2 className=" font-semibold mb-2 pl-3 text-sm lg:text-base">Country Search</h2>
-        <SearchBox />
-      </div>
-    </div>
-  );
-};
-
-const LeftSidebar = () => {
-  return (
-    <div className="flex flex-col justify-evenly  text-sm">
-                <div className="flex justify-evenly mt-4">
-            <ShuffleCountries singleMode = {true} />
-            <ResetCountries />
-          </div>
-
-
-      <div className="h-1/3 p-1 lg:p-[1.5px] xl:p-4 border-muted w-full text-sm">
-        <h2 className=" font-semibold">Presets</h2>
-        <div className="mt-2 overflow-hidden">
+    <div className="h-[60%] w-full flex items-start justify-center px-0 pt-2 xl:px-0.5 sm:pt-2 xl:pt-2">
+              <div className="h-1/3 p-1 lg:p-[1.5px] xl:p-2 border-muted w-full text-sm lg:text-base">
+        <div className=" overflow-hidden">
           <PresetPairings />
         </div>
       </div>
@@ -82,66 +66,53 @@ const LeftSidebar = () => {
   );
 };
 
+const LeftSidebar = () => {
+  return (
+    <div className="flex flex-col justify-evenly  text-sm lg:text-base">
+                <div className="flex justify-evenly mt-8 lg:text-lg">
+            <ShuffleCountries singleMode = {true} />
+          </div>
+
+
+      <div className="w-full pt-5">
+        <h2 className=" font-semibold mb-2 pl-3 text-sm lg:text-base">Country Search</h2>
+        <SearchCountry pageMode = "single"/>
+      </div>
+    </div>
+  );
+};
+
 const PresetPairings = () => {
+  const euCountries = useEuCountries();
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   const setCountryPhase = useCountryStore((state) => state.setCountryPhase);
-  const mapMode = useCountryStore((state) => state.mapMode);
 
-  const handlePairingSelection = (event) => {
-    const [country1, country2] = event.target.value.split("-");
-    resetAllExcept();
-    setCountryPhase(country1.trim(), 2);
-    if (country2) {
-      setTimeout(() => {
-        setCountryPhase(country2.trim(), 3);
-      }, 1);
-    }
+
+
+  const handleSingleCountrySelection = (country) => {
+    resetAllExcept(country);
+    setCountryPhase(country, 2);
   };
 
-  const handleSingleCountrySelection = (event) => {
-    const country = event.target.value;
+   const handleEuropeanUnionClick = () => {
     resetAllExcept();
-    setCountryPhase(country, 2);
+    euCountries.forEach((country) => {
+      setCountryPhase(country, 2);
+    });
   };
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto ">
-      {mapMode === "single" ? (
-        <div className="grid grid-cols-2 gap-2 mb-2">
-          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Palestine' } })}>Palestine</button>
-          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Israel' } })}>Israel</button>
-          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Kosovo' } })}>Kosovo</button>
-          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Cyprus' } })}>Cyprus</button>
-          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Taiwan' } })}>Taiwan</button>
-          <button className="rounded-md shadow bg-primary text-white p-1" onClick={() => handleSingleCountrySelection({ target: { value: 'Armenia' } })}>Armenia</button>
+              <h2 className=" font-semibold mb-4 pl-3 text-sm lg:text-base">Preset Options</h2>
+        <div className="grid grid-cols-2 mb-2 gap-4">
+          <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Palestine')}>Palestine</button>
+          <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Israel')}>Israel</button>
+          <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Kosovo')}>Kosovo</button>
+          <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Cyprus')}>Cyprus</button>
+          <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Taiwan')}>Taiwan</button>
+          <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Armenia')}>Armenia</button>
+          <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400 col-span-2" onClick={() => handleEuropeanUnionClick()}>European Union</button>
         </div>
-      ) : (
-        <select
-          className="rounded shadow bg-primary-foreground text-wh mb-2 w-40"
-          onChange={handlePairingSelection}
-        >
-          <option value="">Select pairing</option>
-          <option value="Israel - Iran">Israel - Iran</option>
-          <option value="Saudi Arabia - Iran">Saudi Arabia - Iran</option>
-          <option value="United States - Iran">United States - Iran</option>
-          <option value="United States - Russia">United States - Russia</option>
-          <option value="United States - China">United States - China</option>
-          <option value="Israel - Palestine">Israel - Palestine</option>
-          <option value="Armenia - Azerbaijan">Armenia - Azerbaijan</option>
-          <option value="India - Pakistan">India - Pakistan</option>
-          <option value="North Korea - South Korea">
-            North Korea - South Korea
-          </option>
-          <option value="Russia - Ukraine">Russia - Ukraine</option>
-          <option value="Turkey - Greece">Turkey - Greece</option>
-          <option value="China - Taiwan">China - Taiwan</option>
-          <option value="China - India">China - India</option>
-          <option value="Iran - Saudi Arabia">Iran - Saudi Arabia</option>
-          <option value="Syria - Turkey">Syria - Turkey</option>
-          <option value="Saudi Arabia - Yemen">Saudi Arabia - Yemen</option>
-          <option value="Ethiopia - Egypt">Ethiopia - Egypt</option>
-        </select>
-      )}
     </div>
   );
 };

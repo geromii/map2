@@ -238,26 +238,34 @@ const ShufflePopup = ({ isVisible, singleMode }) => {
   return (
     <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl z-50 bg-white shadow-2xl border-2 rounded-lg">
       <span className=" drop-shadow-sm">{currentFlags[0]}</span>
-      
-      { !singleMode && <span className=" drop-shadow-sm">{currentFlags[1]}</span>}
+
+      {!singleMode && (
+        <span className=" drop-shadow-sm">{currentFlags[1]}</span>
+      )}
     </div>
   );
 };
 
-const ShuffleCountries = ({singleMode = false}) => {
+
+const MAX_RECENT = 10; // Number of recent countries to keep track of
+
+const ShuffleCountries = ({ singleMode = false }) => {
   const setCountryPhase = useCountryStore((state) => state.setCountryPhase);
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   const [countries, setCountries] = useState({});
   const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [recentCountries, setRecentCountries] = useState([]); // Track recent selections to improve feeling of randomness
 
   const gdpFilter = singleMode ? 5000 : 50000;
   const populationFilter = singleMode ? 500000 : 5000000;
+  
   useEffect(() => {
     const fetchCountries = async () => {
-      const response = await fetch('/demographics.json');
+      const response = await fetch("/demographics.json");
       const data = await response.json();
-      const filteredCountries = data.filter(country => 
-        country.GDP >= gdpFilter && country.Population >= populationFilter
+      const filteredCountries = data.filter(
+        (country) =>
+          country.GDP >= gdpFilter && country.Population >= populationFilter
       );
       const countriesDict = filteredCountries.reduce((acc, country) => {
         acc[country.Country] = { ...country, phase: 0 };
@@ -269,18 +277,25 @@ const ShuffleCountries = ({singleMode = false}) => {
     fetchCountries();
   }, []);
 
+  const updateRecentCountries = (newCountry) => {
+    setRecentCountries((prev) => {
+      const updatedList = [newCountry, ...prev];
+      if (updatedList.length > MAX_RECENT) {
+        updatedList.pop(); // Remove the oldest country to maintain the list size
+      }
+      return updatedList;
+    });
+  };
+
   const shuffleCountries = () => {
     if (singleMode) {
-      resetAllExcept()
+      resetAllExcept();
     }
     const availableCountries = Object.entries(countries)
-      .filter(([, country]) => country.phase === 0)
+      .filter(([name, country]) => country.phase === 0 && !recentCountries.includes(name))
       .map(([name]) => name);
 
-    if (availableCountries.length < 2) {
-      console.log("Not enough available countries to shuffle.");
-      return;
-    }
+  
 
     const randomIndex1 = Math.floor(Math.random() * availableCountries.length);
     const randomIndex2 = Math.floor(Math.random() * availableCountries.length);
@@ -288,7 +303,10 @@ const ShuffleCountries = ({singleMode = false}) => {
     let country2 = availableCountries[randomIndex2];
 
     while (country2 === country1) {
-      country2 = availableCountries[Math.floor(Math.random() * availableCountries.length)];
+      country2 =
+        availableCountries[
+          Math.floor(Math.random() * availableCountries.length)
+        ];
     }
 
     setIsPopupVisible(true);
@@ -296,24 +314,34 @@ const ShuffleCountries = ({singleMode = false}) => {
     setTimeout(() => {
       setIsPopupVisible(false);
       setCountryPhase(country1, 2);
+      updateRecentCountries(country1); // Update the recent list with the first country
+
       if (!singleMode) {
         setCountryPhase(country2, 3);
+        updateRecentCountries(country2); // Update the recent list with the second country
       }
     }, 900);
   };
 
-  return (
+
+  return singleMode ? (
+    <div>
+      <button className="flex rounded text-primary-foreground bg-primary shadow p-2 text-center items-center ring-2 ring-yellow-400 mx-3" onClick={shuffleCountries}>
+        <IconArrowsShuffle size={28} className="mr-2" /> <p className="font-medium text-sm lg:text-base">Random </p>
+      </button>
+      <ShufflePopup isVisible={isPopupVisible} singleMode={singleMode} />
+    </div>
+  ) : (
     <div className="rounded text-primary-foreground active:shadow-sm">
       <IconButton
         icon={IconArrowsShuffle}
         size="medium"
         onClick={shuffleCountries}
       />
-      <ShufflePopup isVisible={isPopupVisible} singleMode = {singleMode}/>
+      <ShufflePopup isVisible={isPopupVisible} singleMode={singleMode} />
     </div>
   );
 };
 
 export default ShuffleCountries;
-
 

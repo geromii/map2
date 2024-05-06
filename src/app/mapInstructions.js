@@ -9,9 +9,9 @@ export const MapInstructions = () => {
           </header>
           <p className="mb-8 text-gray-600">
             Click countries on the map until you have at least one country on the{" "}
-            <span className="text-red-800">Red side</span> (click twice), and at
+            <span className="text-blue-800">Blue side</span> (click twice), and at
             least one country on the{" "}
-            <span className="text-blue-800">Blue side</span> (click thrice). You
+            <span className="text-red-800">Red side</span> (click thrice). You
             will then see a global opinion map.
           </p>
         </section>
@@ -43,7 +43,7 @@ export const MapInstructions = () => {
             <span className="font-bold">Geopolitics Mode</span>:
           </h2>
           <p className="text-gray-600 mt-2">
-            When <span className="font-bold">Geopolitics Mode</span> is on and
+            When <span className="font-bold">Predictions</span> are on and
             there is at least one country in each of{" "}
             <span className="text-blue-800">Side A</span> and{" "}
             <span className="text-red-800">Side B</span>, every country in the

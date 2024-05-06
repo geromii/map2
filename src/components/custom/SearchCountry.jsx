@@ -19,7 +19,7 @@ import {
 import { useCountries } from "@/app/useCountries";
 import useCountryStore from "@/app/useCountryStore";
 
-export function SearchCountry({ countries }) {
+export function SearchCountry({pageMode}) {
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
   const { allCountries, filteredCountries, sortedFilteredCountries } = useCountries(searchValue);
@@ -27,17 +27,26 @@ export function SearchCountry({ countries }) {
     setCountryPhase: state.setCountryPhase, 
     incrementCountryPhase: state.incrementCountryPhase,
   }));
+  const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   const inputRef = useRef(null); // Create a ref for the input
+    const {  countries } = useCountryStore((state) => ({
+    countries: state.countries,
+  }));
 
 
- 
+  
 
   const handleSelect = (country) => {
     setSearchValue("");
     if (countries[country].nonInitial) {
       setCountryPhase(country, "INITIAL");
     } else {
-      setCountryPhase(country, "neutral");
+      if (pageMode === "single") {
+        resetAllExcept();
+        setCountryPhase(country, "blue");
+      } else {
+        setCountryPhase(country, "neutral");
+      }
     }
   };
   useEffect(() => {
@@ -63,7 +72,7 @@ export function SearchCountry({ countries }) {
             className="w-full max-w-[170px] md:justify-around overflow-hidden pl-1 text-xs lg:text-sm rounded-sm shadow-sm"
           >
             <CaretSortIcon className="h-5 w-5 shrink-0 opacity-50 " />
-            Select countries
+            {pageMode == "single" ? "Search countries" : "Select countries"}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[170px] p-0">

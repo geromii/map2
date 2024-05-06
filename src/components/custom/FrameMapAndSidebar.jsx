@@ -31,9 +31,9 @@ export default function MapFrame({
   const marginLeftSidebar =
     (leftSidebarVisible ? -8 : 0) + (rightSidebarVisible ? 0 : 4);
 
-  const sidebarClasses = ` self-center  rounded-xl shadow-xl border-[1.5px]  ring-primary z-20 min-h-[80%] lg:min-h-[55%] bg-card hidden lg:block w-full`;
+  const sidebarClasses = ` self-center  rounded-xl shadow-xl border-[1.5px]  ring-primary z-20 min-h-[55%] lg:min-h-[40%] bg-card hidden lg:block w-full`;
   return (
-    <div className=" pt-1 w-screen flex flex-col lg:flex-row justify-between  mt-0.5 xl:mt-1 lg:my-1 pb-[20px] lg:pb-[100px] border-b-4 shadow min-h-[67vw]">
+    <div className=" pt-1 w-screen flex flex-col lg:flex-row justify-between  mt-0.5 xl:mt-1 lg:my-1 pb-[20px] lg:pb-[70px] border-b-4  min-h-[60vw]">
       {LeftSidebar && <div
         style={{
           width: `${leftSidebarWidth}vw`,

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card"
 
 
-function DemographicTable() {
+function TabDemographic({phase2Countries, phase3Countries, pageMode}) {
   const [aggregatedData, setAggregatedData] = useState({
     phase2: { countries: [], GDP: 0, GDP_PPP: 0, Population: 0, Area: 0 },
     phase3: { countries: [], GDP: 0, GDP_PPP: 0, Population: 0, Area: 0 }
@@ -85,49 +85,42 @@ function DemographicTable() {
   const phase3Data = aggregatedData.phase3;
 
   return (
-    <div className="w-full h-full">
+    <CardContent>
+    <div  data-pagemode={pageMode} className="w-full h-full data-[pagemode=single]:translate-y-8">
       <table className="w-full h-full">
         <thead className='text-center text-xs md:text-sm lg:text-base'>
           <tr style={{height: '10%'}}>
-            <th style={{width: '20%'}}>Countries</th>
-            <th style={{width: '20%'}}>GDP</th>
-            <th style={{width: '20%'}}>GDP PPP</th>
+            <th style={{width: '30%'}} >Countries</th>
+            <th style={{width: '15%'}}>GDP</th>
+            <th style={{width: '15%'}}>GDP PPP</th>
             <th style={{width: '15%'}}>Population</th>
             <th style={{width: '15%'}}>Area (km²)</th>
           </tr>
         </thead>
         <tbody className='text-end text-xs md:text-sm lg:text-base'>
           {/* Ensure you apply the same styling for each td element as their corresponding th */}
-          <tr className="">
-            <td style={{width: '20%'}} className = "text-blue-700">{phase2Data.countries.join(', ')}</td>
-            <td style={{width: '20%'}}>{formatMoney(phase2Data.GDP)}</td>
-            <td style={{width: '20%'}}>{formatMoney(phase2Data.GDP_PPP)}</td>
-            <td style={{width: '15%'}}>{formatPopulation(phase2Data.Population)}</td>
-            <td style={{width: '15%'}}>{formatArea(phase2Data.Area)}</td>
+          <tr>
+            
+            <td style={{width: '20%'}} className = "text-blue-700 h-full"> <div className=' overflow-auto h-12'>{phase2Countries.join(', ')}</div></td>
+            <td style={{width: '20%'}} className = "align-top">{formatMoney(phase2Data.GDP)}</td>
+            <td style={{width: '20%'}} className = "align-top">{formatMoney(phase2Data.GDP_PPP)}</td>
+            <td style={{width: '15%'}} className = "align-top">{formatPopulation(phase2Data.Population)}</td>
+            <td style={{width: '15%'}} className = "align-top">{formatArea(phase2Data.Area)}</td>
           </tr>
-          <tr className="">
-            <td style={{width: '20%'}} className = "text-red-700">{phase3Data.countries.join(', ')}</td>
-            <td style={{width: '20%'}}>{formatMoney(phase3Data.GDP)}</td>
-            <td style={{width: '20%'}}>{formatMoney(phase3Data.GDP_PPP)}</td>
-            <td style={{width: '15%'}}>{formatPopulation(phase3Data.Population)}</td>
-            <td style={{width: '15%'}}>{formatArea(phase3Data.Area)}</td>
+          <tr data-pagemode={pageMode} className="data-[pagemode=single]:hidden">
+            <td style={{width: '20%'}} className = "text-red-700 h-full"> <div className='h-12 overflow-auto'>{phase3Countries.join(', ')}</div></td>
+            <td style={{width: '20%'}} className = "align-top">{formatMoney(phase3Data.GDP)}</td>
+            <td style={{width: '20%'}} className = "align-top">{formatMoney(phase3Data.GDP_PPP)}</td>
+            <td style={{width: '15%'}} className = "align-top">{formatPopulation(phase3Data.Population)}</td>
+            <td style={{width: '15%'}} className = "align-top">{formatArea(phase3Data.Area)}</td>
           </tr>
         </tbody>
       </table>
     </div>
+    </CardContent>
   );
 }
 
-function TabDemographic() {
-  return (
-      <>
-
-        <CardContent>
-          <DemographicTable />
-        </CardContent>
-        </>
-  );
-}
 
 
 export default TabDemographic;

@@ -25,7 +25,7 @@ const getColorFromProbability = (number, phase, mapMode) => {
 
 
   number = Math.max(-1, Math.min(number, 1));
-  let probability = Math.abs(number) ** 1.8; // turns the probability into a more exponential curve
+  let probability = Math.abs(number) ** 1.6; // turns the probability into a more exponential curve
   let hue = number >= 0 ? 240 : 0;
   let saturation = 100 * probability;
   let lightness = 78 - 30 * probability;
@@ -250,8 +250,17 @@ function transformStateToNumericArray(stateWrapper, scalar) {
   };
 
   // Calculate the average values after the harmonic series division
-  const case2value = case2Count > 0 ? REDUCER *harmonicSum(case2Count) / case2Count : 0;
+  const case2value = case2Count > 0 ? REDUCER * harmonicSum(case2Count) / case2Count : 0;
   const case3value = case3Count > 0 ? REDUCER * harmonicSum(case3Count) / case3Count : 0;
+
+  let euShortcut2 = 1;
+  let euShortcut3 = 1;
+
+  if (REDUCER == 1) {
+    euShortcut2 = (case2Count == 27) ? 0.40 : 1;
+    euShortcut3 = (case3Count == 27) ? 0.40 : 1;
+  }
+
 
   // Second pass to set the values based on the case
   Object.keys(stateWrapper).forEach((country, index) => {
@@ -265,10 +274,10 @@ function transformStateToNumericArray(stateWrapper, scalar) {
         stateArray[index] = 0 ;
         break;
       case 2:
-        stateArray[index] = case2value  ;
+        stateArray[index] = case2value * euShortcut2 ;
         break;
       case 3:
-        stateArray[index] = -case3value ;
+        stateArray[index] = -case3value * euShortcut3 ;
         break;
       default:
         stateArray[index] = 0;

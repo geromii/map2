@@ -4,29 +4,35 @@ import { IconInfoCircle, IconArrowBigDownFilled } from "@tabler/icons-react";
 import useCountryStore from "./useCountryStore";
 import { getCountryEmoji } from "../utils/countryEmojis";
 
-function TabStats({ pageMode, sortedCountries, phase2Countries, phase3Countries, phase2exists, phase3exists, displayStats }) {
-
+function TabStats({
+  pageMode,
+  sortedCountries,
+  phase2Countries,
+  phase3Countries,
+  phase2exists,
+  phase3exists,
+  displayStats,
+}) {
   return (
     <div className="flex items-center justify-around w-full h-[130px] lg:h-[10.02vw] -translate-y-2">
-        
-
-
       <div
         data-display={displayStats}
         className="text-center w-full transition data-[display=false]:opacity-0 duration-200 "
       >
         <div className="text-sm xl:text-base 2xl:text-lg flex justify-around w-full  items-center align-middle pb-1">
-          <div className="hidden lg:flex w-1/6 justify-center">
-            <table className="text-xl font-semibold">
-              <tbody>
+          <div className="hidden lg:flex w-2/6 justify-center ml-5 overflow-auto">
+            <div
+              data-pagemode={pageMode}
+              className="data-[pagemode=single]:text-2xl text-xl data-[pagemode=single]:text-black font-semibold text-blue-900 overflow-auto"
+            >
+              <div className="text-left w-full space-y-">
                 {phase2Countries.map((country, index) => (
-                  <tr key={index}>
-                    <td>{getCountryEmoji(country)}</td>
-                    <td>{country}</td>
-                  </tr>
+                  <div key={index} className="inline-block mr-2">
+                    {getCountryEmoji(country)} {country}
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
           </div>
           <div className="flex w-full lg:w-6/12 items-center align-center justify-between h-full ">
             <table className="w-full table-fixed ">
@@ -60,24 +66,23 @@ function TabStats({ pageMode, sortedCountries, phase2Countries, phase3Countries,
               </tbody>
             </table>
           </div>
-          <div className="hidden lg:flex w-1/6">
-            <table className="text-xl font-semibold">
-              <tbody>
-                {phase3Countries.map((country, index) => (
-                  <tr key={index}>
-                    <td>{getCountryEmoji(country)}</td>
-                    <td>{country}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {pageMode != "single" ? (
+            <div className="hidden lg:flex w-2/6">
+              <table className="text-xl font-semibold text-left">
+                <tbody className="text-left text-red-900">
+                  {phase3Countries.map((country, index) => (
+                    <tr key={index}>
+                      {getCountryEmoji(country)} {country}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
   );
 }
-
-
 
 export default TabStats;
