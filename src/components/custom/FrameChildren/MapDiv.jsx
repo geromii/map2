@@ -14,6 +14,7 @@ import {
 import { geoRobinson } from "d3-geo-projection";
 import { Tooltip } from "react-tooltip";
 import { IconInfoCircle } from "@tabler/icons-react";
+import { getCountryEmoji } from "src/utils/countryEmojis";
 
 export const MapDiv = ({mapMode}) => {
   const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
@@ -290,7 +291,9 @@ export const MapDiv = ({mapMode}) => {
       </div>
       <Tooltip id="my-tooltip" float="true" delayShow="800" />
       <div data-mapmode={mapMode} className="lg:hidden data-[mapmode=multi]:hidden w-full">
-        <p className=" font-semibold font-serif text-base text-center h-8 bg-slate-100 border-2">{phase2Countries.join(', ')}</p>
+        <p className="font-semibold font-serif text-lg text-center h-8 bg-slate-100 border-2">
+          {phase2Countries.map(country => `${getCountryEmoji(country)} ${country}`).join(', ')}
+        </p>
       </div>
     </div>
   );

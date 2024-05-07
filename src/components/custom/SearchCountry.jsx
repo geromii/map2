@@ -72,7 +72,7 @@ export function SearchCountry({pageMode}) {
             className="w-full max-w-[170px] md:justify-around overflow-hidden pl-1 text-xs lg:text-sm rounded-sm shadow-sm"
           >
             <CaretSortIcon className="h-5 w-5 shrink-0 opacity-50 " />
-            {pageMode == "single" ? "Search countries" : "Select countries"}
+            {pageMode == "single" ? "Select country" : "Select countries"}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[170px] p-0">
