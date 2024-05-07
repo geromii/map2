@@ -74,6 +74,7 @@ const LeftSidebar = () => {
   
   return (
     <div className="flex flex-col justify-evenly  text-sm lg:text-base">
+
                 <div className="flex justify-evenly mt-8 lg:text-lg">
             <ShuffleCountries singleMode = {true} />
           </div>
@@ -82,9 +83,6 @@ const LeftSidebar = () => {
       <div className="w-full pt-5">
         <h2 className=" font-semibold mb-2 pl-3 text-sm lg:text-base">Country Search</h2>
         <SearchCountry pageMode = "single"/>
-      </div>
-      <div className="lg:hidden w-full pt-5">
-        <p className=" font-semibold mb-2 pl-3 text-sm lg:text-base">Countries: {phase2Countries.join(', ')}</p>
       </div>
     </div>
   );

@@ -214,7 +214,7 @@ export const MapControls = ({}) => {
           onClick={handleWarToggle}
         >
           {"  "}
-          War Mode
+          War Escalation
         </label>
       </div>
     </div>

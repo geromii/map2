@@ -15,7 +15,7 @@ import { geoRobinson } from "d3-geo-projection";
 import { Tooltip } from "react-tooltip";
 import { IconInfoCircle } from "@tabler/icons-react";
 
-export const MapDiv = ({}) => {
+export const MapDiv = ({mapMode}) => {
   const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
   const [maxZoom, setMaxZoom] = useState(1);
  function handleZoomIn() {
@@ -43,9 +43,6 @@ export const MapDiv = ({}) => {
 
   const { resetAllExcept } = useCountryStore((state) => ({
     resetAllExcept: state.resetAllExcept,
-  }));
-  const { mapMode } = useCountryStore((state) => ({
-    mapMode: state.mapMode,
   }));
   const { setCountryPhase } = useCountryStore((state) => ({
     setCountryPhase: state.setCountryPhase,
@@ -126,6 +123,9 @@ export const MapDiv = ({}) => {
       incrementCountryPhase(country);
     }
   };
+
+  // phase 2 countries
+  const phase2Countries = Object.keys(countries).filter(key => countries[key].phase === 2);
 
   const scale = "180";
   const rotation = [-12.5];
@@ -286,6 +286,9 @@ export const MapDiv = ({}) => {
         </ComposableMap>
       </div>
       <Tooltip id="my-tooltip" float="true" delayShow="800" />
+      <div data-mapmode={mapMode} className="lg:hidden data-[mapmode=multi]:hidden w-full">
+        <p className=" font-semibold font-serif text-base text-center h-8 bg-slate-100 border-2">{phase2Countries.join(', ')}</p>
+      </div>
     </div>
   );
 };

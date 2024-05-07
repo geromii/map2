@@ -23,7 +23,7 @@ function TabStats({
           <div className="hidden lg:flex w-2/6 justify-center ml-5 overflow-auto">
             <div
               data-pagemode={pageMode}
-              className="data-[pagemode=single]:text-2xl text-xl data-[pagemode=single]:text-black font-semibold text-blue-900 overflow-auto"
+              className="data-[pagemode=single]:text-2xl text-xl data-[pagemode=single]:text-black font-semibold text-blue-800 overflow-auto"
             >
               <div className="text-left w-full space-y-">
                 {phase2Countries.map((country, index) => (
@@ -67,17 +67,20 @@ function TabStats({
             </table>
           </div>
           {pageMode != "single" ? (
-            <div className="hidden lg:flex w-2/6">
-              <table className="text-xl font-semibold text-left">
-                <tbody className="text-left text-red-900">
-                  {phase3Countries.map((country, index) => (
-                    <tr key={index}>
-                      {getCountryEmoji(country)} {country}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="hidden lg:flex w-2/6 justify-center ml-5 overflow-auto">
+            <div
+              data-pagemode={pageMode}
+              className="data-[pagemode=single]:text-2xl text-xl data-[pagemode=single]:text-black font-semibold text-red-800 overflow-auto"
+            >
+              <div className="text-left w-full space-y-">
+                {phase3Countries.map((country, index) => (
+                  <div key={index} className="inline-block mr-2">
+                    {getCountryEmoji(country)} {country}
+                  </div>
+                ))}
+              </div>
             </div>
+          </div>
           ) : null}
         </div>
       </div>

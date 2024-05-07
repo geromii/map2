@@ -66,7 +66,7 @@ export default function MapFrame({
       >
         <div className=" flex flex-col items-center  bg-transparent md:scale-[1.00] w-full h-full ">
           <TabDiv pageMode={pageMode} tabVisible={tabVisible} />
-          <MapDiv />
+          <MapDiv mapMode={pageMode} />
         </div>
         <div className="hidden lg:block absolute bottom-0 left-0.5 z-30">
           {(leftSidebarVisible || rightSidebarVisible) && (
