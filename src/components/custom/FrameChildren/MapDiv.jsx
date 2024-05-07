@@ -114,7 +114,7 @@ export const MapDiv = ({mapMode}) => {
     if (mapMode == "single") {
       // if the country state is 2, reset all countries, if the country state is not 2, set it it to 2
       if (countries[country].phase == 2) {
-        setCountryPhase(country, 0);
+        resetAllExcept()
       } else {
         resetAllExcept()
         setCountryPhase(country, 2);
