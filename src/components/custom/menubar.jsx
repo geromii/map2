@@ -57,15 +57,7 @@ const MenuBar = () => {
               Conflict Mode
             </Link>
           </li>
-          <li className={listItemStyle("/prompt")}>
-            <Link
-              ref={storeLinkRef("/prompt")}
-              className={linkStyle}
-              href="/prompt"
-            >
-              Prompt
-            </Link>
-          </li>
+
         </div>
         {/* Indicator bar */}
         <div
