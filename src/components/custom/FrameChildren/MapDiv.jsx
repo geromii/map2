@@ -124,8 +124,11 @@ export const MapDiv = ({mapMode}) => {
     }
   };
 
-  // phase 2 countries
-  const phase2Countries = Object.keys(countries).filter(key => countries[key].phase === 2);
+  // phase 2 countries, if there are 27 phase 2 countries replace with European Union
+  let phase2Countries = Object.keys(countries).filter(key => countries[key].phase === 2);
+  if (phase2Countries.length === 27) {
+    phase2Countries = ['European Union'];
+  }
 
   const scale = "180";
   const rotation = [-12.5];
