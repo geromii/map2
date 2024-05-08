@@ -54,7 +54,7 @@ const MenuBar = () => {
   return (
     <nav className="relative bg-primary text-primary-foreground text-sm font-medium p-6 pb-4 shadow border-b lg:border-b-2 mb-1 overscroll-none">
       <ul className="flex flex-wrap justify-between items-center relative">
-        <div className="flex md:flex space-x-4">
+        <div className="absolute left-0 md:flex space-x-4">
           <li className={listItemStyle("/")}>
             <Link
               ref={storeLinkRef("/")}
@@ -74,9 +74,12 @@ const MenuBar = () => {
             </Link>
           </li>
         </div>
+        <div className = "hidden text-center just m-auto text-xl lg:block font-arvo">
+          Global Relations Map
+        </div>
         {/* Display environment */}
         {displayEnvironment && (
-          <div className="ml-auto text-sm text-gray-400">
+          <div className="absolute right-0 text-sm text-gray-400 font-arvo">
             {environment}
           </div>
         )}

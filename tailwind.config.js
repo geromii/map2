@@ -22,6 +22,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
+        arvo: ["var(--font-arvo)", ...fontFamily.serif], 
       },
       colors: {
         'countryRed': {
