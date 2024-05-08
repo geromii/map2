@@ -209,13 +209,13 @@ const useCountryStore = create((set, get) => ({
 }));
 
 async function fetchScoresMatrix() {
-  const storedMatrix = sessionStorage.getItem('scoresMatrix');
+  const storedMatrix = sessionStorage.getItem('mapDesign');
   if (storedMatrix) {
     return JSON.parse(storedMatrix);
   } else {
-    const response = await fetch('/scores_matrix.json');
+    const response = await fetch('/map_design.json');
     const matrix = await response.json();
-    sessionStorage.setItem('scoresMatrix', JSON.stringify(matrix));
+    sessionStorage.setItem('mapDesign', JSON.stringify(matrix));
     return matrix;
   }
 }
