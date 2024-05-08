@@ -77,17 +77,21 @@ function TabDemographic({phase2Countries, phase3Countries, pageMode, displayStat
 
   const formatArea = (area) => area.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
+  const singleModeNoStats = pageMode != "single" && displayStats == false;
+
   if (isLoading) {
-    return <div className="w-full h-full flex justify-center items-center">Loading...</div>;
+    return <div data-hidedemo={singleModeNoStats} className="w-full h-full flex justify-center items-center data-[hidedemo=true]:opacity-0">Loading...</div>;
   }
 
   const phase2Data = aggregatedData.phase2;
   const phase3Data = aggregatedData.phase3;
 
+  // condition that is true if pageMode == single and displayStats == false
+
   return (
     <CardContent>
     <div  data-pagemode={pageMode} className="w-full h-full data-[pagemode=single]:translate-y-8">
-      <table data-displaystats={displayStats} className="w-full h-full data-[displaystats=false]:opacity-0 transition duration-75">
+      <table data-hidedemo={singleModeNoStats} className="w-full h-full data-[hidedemo=true]:opacity-0 transition duration-75">
         <thead className='text-center text-xs md:text-sm lg:text-base'>
           <tr style={{height: '10%'}}>
             <th style={{width: '30%'}} >Countries</th>
