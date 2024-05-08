@@ -10,9 +10,9 @@ const fontSans = FontSans({
 });
 
 export const metadata = {
-  title: "Geopolitical Opinions Map",
+  title: "Global Relations Map",
   description:
-    "An interactive map that displays the geopolitical opinions of the world.",
+    "An interactive map that displays the diplomatic relations of the world.",
 };
 
 export default function RootLayout({ children }) {
