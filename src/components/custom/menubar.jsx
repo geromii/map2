@@ -38,7 +38,8 @@ const MenuBar = () => {
     const hostname = window.location.hostname;
     if (hostname === "localhost") {
       setEnvironment("Development (localhost:3000)");
-    } else if (hostname === "mapdis.com") {
+      setDisplayEnvironment(true);
+    } else if (hostname === "www.mapdis.com") {
       setEnvironment("mapdis");
       setDisplayEnvironment(true);
     } else {
