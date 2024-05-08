@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card"
 
 
-function TabDemographic({phase2Countries, phase3Countries, pageMode}) {
+function TabDemographic({phase2Countries, phase3Countries, pageMode, displayStats}) {
   const [aggregatedData, setAggregatedData] = useState({
     phase2: { countries: [], GDP: 0, GDP_PPP: 0, Population: 0, Area: 0 },
     phase3: { countries: [], GDP: 0, GDP_PPP: 0, Population: 0, Area: 0 }
@@ -87,7 +87,7 @@ function TabDemographic({phase2Countries, phase3Countries, pageMode}) {
   return (
     <CardContent>
     <div  data-pagemode={pageMode} className="w-full h-full data-[pagemode=single]:translate-y-8">
-      <table className="w-full h-full">
+      <table data-displaystats={displayStats} className="w-full h-full data-[displaystats=false]:opacity-0 transition duration-75">
         <thead className='text-center text-xs md:text-sm lg:text-base'>
           <tr style={{height: '10%'}}>
             <th style={{width: '30%'}} >Countries</th>

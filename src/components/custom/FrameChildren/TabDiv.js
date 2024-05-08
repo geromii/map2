@@ -126,6 +126,7 @@ export default function TabDiv({
                 phase2Countries={phase2Countries}
                 phase3Countries={phase3Countries}
                 pageMode={pageMode}
+                displayStats={displayStats}
               />
             </div>
           </TabsContent>
