@@ -15,10 +15,12 @@ const MenuBar = () => {
     const activeLinkRef = linkRefs.current[pathname];
     if (activeLinkRef) {
       // Calculate the position and width of the active link
-      const { offsetLeft, offsetWidth } = activeLinkRef;
+      const { offsetLeft, offsetWidth, offsetTop, offsetHeight } = activeLinkRef;
+      // Position the indicator directly below the active link
       setIndicatorStyle({
-        left: `${offsetLeft-17}px`,
+        left: `${offsetLeft}px`,
         width: `${offsetWidth}px`,
+        top: `${offsetTop + offsetHeight + 2}px`,
       });
     }
   };
@@ -52,7 +54,7 @@ const MenuBar = () => {
     pathname === path ? "text-neutral-100" : "";
 
   return (
-    <nav className="relative bg-primary text-primary-foreground text-sm font-medium p-6 pb-4 shadow border-b lg:border-b-2 mb-1 overscroll-none">
+    <nav className="relative bg-primary text-primary-foreground text-sm font-medium p-6 pb-4 shadow border-b lg:border-b-2 mb-1 overscroll-none min-h-12">
       <ul className="flex flex-wrap justify-between items-center relative">
         <div className="absolute flex left-0 md:flex space-x-4 overflow-visible w-[100%] lg:w-auto">
           <li className={listItemStyle("/")}>
@@ -73,12 +75,8 @@ const MenuBar = () => {
               Conflict Mode
             </Link>
           </li>
-          <div
-          className="absolute bottom-0 h-[3px] bg-yellow-400 transition-all duration-300"
-          style={indicatorStyle}
-        />
         </div>
-        <div className = "hidden text-center just m-auto text-xl lg:block font-arvo">
+        <div className="hidden text-center m-auto text-xl lg:block font-arvo">
           Global Relations Map
         </div>
         {/* Display environment */}
@@ -87,6 +85,14 @@ const MenuBar = () => {
             {environment}
           </div>
         )}
+        {/* Indicator bar */}
+        <div
+          className="absolute h-[3px] bg-yellow-400 transition-all duration-300"
+          style={{
+            ...indicatorStyle,
+            position: "absolute",
+          }}
+        />
       </ul>
     </nav>
   );
