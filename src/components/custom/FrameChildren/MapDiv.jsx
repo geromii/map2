@@ -224,6 +224,7 @@ export const MapDiv = ({mapMode}) => {
                       const countryState = countries[geo.properties.name];
                       return (
                         <Geography
+                          aria-label={`Heat map data for ${geo.properties.name}, value of ${countryState.probability}`}
                           key={geo.rsmKey}
                           geography={geo}
                           onClick={() =>

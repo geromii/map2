@@ -17,7 +17,7 @@ const MenuBar = () => {
       // Calculate the position and width of the active link
       const { offsetLeft, offsetWidth } = activeLinkRef;
       setIndicatorStyle({
-        left: `${offsetLeft}px`,
+        left: `${offsetLeft-17}px`,
         width: `${offsetWidth}px`,
       });
     }
@@ -37,7 +37,7 @@ const MenuBar = () => {
   useEffect(() => {
     const hostname = window.location.hostname;
     if (hostname === "localhost") {
-      setEnvironment("Development (localhost:3000)");
+      setEnvironment("(localhost:3000)");
       setDisplayEnvironment(true);
     } else if (hostname === "www.mapdis.com") {
       setEnvironment("mapdis");
@@ -54,7 +54,7 @@ const MenuBar = () => {
   return (
     <nav className="relative bg-primary text-primary-foreground text-sm font-medium p-6 pb-4 shadow border-b lg:border-b-2 mb-1 overscroll-none">
       <ul className="flex flex-wrap justify-between items-center relative">
-        <div className="absolute left-0 md:flex space-x-4">
+        <div className="absolute flex left-0 md:flex space-x-4 overflow-visible w-[100%] lg:w-auto">
           <li className={listItemStyle("/")}>
             <Link
               ref={storeLinkRef("/")}
@@ -73,6 +73,10 @@ const MenuBar = () => {
               Conflict Mode
             </Link>
           </li>
+          <div
+          className="absolute bottom-0 h-[3px] bg-yellow-400 transition-all duration-300"
+          style={indicatorStyle}
+        />
         </div>
         <div className = "hidden text-center just m-auto text-xl lg:block font-arvo">
           Global Relations Map
@@ -83,11 +87,6 @@ const MenuBar = () => {
             {environment}
           </div>
         )}
-        {/* Indicator bar */}
-        <div
-          className="absolute bottom-0 h-[3px] bg-yellow-400 transition-all duration-300"
-          style={indicatorStyle}
-        />
       </ul>
     </nav>
   );
