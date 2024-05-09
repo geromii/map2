@@ -19,8 +19,10 @@ const fontArvo = FontArvo({
 
 export const metadata = {
   title: "Global Relations Map",
-  description: "An interactive map that displays the diplomatic relations of the world.",
+  description: "Explore the world's diplomatic relationships and alliances through an interactive map. Create scenarios to see maps of how the world reacts to potential conflicts and wars.",
 };
+
+// Explore the world's diplomatic relationships and alliances through an interactive map. Dive into the net relationship scores of every country and visualize theoretical conflict scenarios that reveal potential global alliances. A captivating platform for the well-read, curious minds interested in global politics and international relations.
 
 export default function RootLayout({ children }) {
   return (

@@ -4,7 +4,7 @@ export const MapInstructions = () => {
         <section>
           <header className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 lg:text-4xl">
-              How to use
+              How to use the Geopolitics Map
             </h1>
           </header>
           <p className="mb-8 text-gray-600">
@@ -58,7 +58,7 @@ export const MapInstructions = () => {
         </section>
         <section>
           <h2 className="text-2xl font-semibold text-gray-700">
-            <span className="font-bold">War Outbreak Mode</span>:
+            <span className="font-bold">War Outbreak (WW3) Mode</span>:
           </h2>
           <p className="text-gray-600 mt-2">
             When <span className="font-bold">War Outbreak Mode</span> is on the
