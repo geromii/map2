@@ -1,3 +1,5 @@
+import { IconBrandTwitter } from "@tabler/icons-react";
+
 export const MapInstructions = () => {
     return (
       <article className="max-w-4xl mx-auto px-5 py-8 lg:max-w-6xl lg:px-8">
@@ -76,8 +78,6 @@ export const MapInstructions = () => {
             that country will be excluded from the calculation.
           </p>
         </section>
-        <br></br>
-        <p className="text-xs">Made by Jeremy Russell, 2024.</p>
       </article>
     );
   };

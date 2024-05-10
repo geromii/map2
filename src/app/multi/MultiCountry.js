@@ -69,7 +69,7 @@ const RightSidebar = () => {
 
 const LeftSidebar = () => {
   return (
-    <div className="flex flex-col justify-evenly  mb-10  ">
+    <div className="flex flex-col justify-evenly  mb-3  ">
       <div className="h-1/3 p-2 border-muted">
           <div className="flex justify-evenly mb-4">
             <ShuffleCountries />
@@ -130,7 +130,7 @@ const PresetPairings = () => {
         </select>
       ) : (
         <select
-          className="rounded shadow bg-primary-foreground text-wh mb-2 w-40"
+          className="rounded shadow bg-primary-foreground text-wh mb-1 w-40"
           onChange={handlePairingSelection}
         >
           <option value="">Select a pairing</option>

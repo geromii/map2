@@ -19,7 +19,7 @@ import { getCountryEmoji } from "src/utils/countryEmojis";
 export const MapDiv = ({mapMode}) => {
   const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
   const [maxZoom, setMaxZoom] = useState(1);
-  
+
  function handleZoomIn() {
     if (position.zoom >= 4) return;
     setPosition((pos) => ({ ...pos, zoom: pos.zoom * 2 }));

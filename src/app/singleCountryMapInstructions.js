@@ -43,8 +43,6 @@ export const SingleCountryMapInstructions = () => {
             to compare how each one&apos;s relationships change across different regions and contexts.
           </p>
         </section>
-        <br></br>
-        <p className="text-xs">Made by Jeremy Russell, 2024.</p>
       </article>
     );
   };
