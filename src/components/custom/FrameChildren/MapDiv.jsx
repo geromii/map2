@@ -309,7 +309,7 @@ export const MapDiv = ({ mapMode }) => {
         globalCloseEvents={{
           scroll: true,
           resize: false,
-          clickOutsideAnchor: true,
+          clickOutsideAnchor: false,
         }}
         render={({ content, activeAnchor }) => (
           <div
@@ -335,7 +335,7 @@ export const MapDiv = ({ mapMode }) => {
         globalCloseEvents={{
           scroll: true,
           resize: false,
-          clickOutsideAnchor: true,
+          clickOutsideAnchor: false,
         }}
         render={({ content, activeAnchor }) => (
           <div
