@@ -47,7 +47,7 @@ export const MapDiv = ({ mapMode }) => {
           Math.pow(event.clientY - (clickLocation.y + 10), 2)
       );
 
-      if (distance > 65 ) {
+      if (distance > 75 ) {
         // Close the tooltip if the distance is more than 50px
         tooltipRef1.current?.close();
         tooltipRef2.current?.close();
@@ -132,9 +132,6 @@ export const MapDiv = ({ mapMode }) => {
         setCountryPhase(country, 2);
       }
     } else {
-      tooltipRef1.current?.open();
-      tooltipRef2.current?.open();
-      tooltipRef3.current?.open();
     }
   };
 
@@ -305,7 +302,7 @@ export const MapDiv = ({ mapMode }) => {
         place="right"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "50ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: false,
@@ -331,7 +328,7 @@ export const MapDiv = ({ mapMode }) => {
         place="left"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "50ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: false,
@@ -358,7 +355,7 @@ export const MapDiv = ({ mapMode }) => {
         place="bottom"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "50ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: false,
@@ -399,7 +396,7 @@ export const MapDiv = ({ mapMode }) => {
         place="top"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "100ms" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "50ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: true,
@@ -438,7 +435,7 @@ export const MapDiv = ({ mapMode }) => {
         place="bottom"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "100ms" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "50ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: true,
