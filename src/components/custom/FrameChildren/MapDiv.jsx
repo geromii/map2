@@ -12,15 +12,17 @@ import {
   ZoomableGroup,
 } from "react-simple-maps";
 import { geoRobinson } from "d3-geo-projection";
-import { Tooltip } from "react-tooltip";
+import { Tooltip, TooltipRefProps } from "react-tooltip";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { getCountryEmoji } from "src/utils/countryEmojis";
+import { IconX } from "@tabler/icons-react";
 
-export const MapDiv = ({mapMode}) => {
+export const MapDiv = ({ mapMode }) => {
   const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
   const [maxZoom, setMaxZoom] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
 
- function handleZoomIn() {
+  function handleZoomIn() {
     if (position.zoom >= 4) return;
     setPosition((pos) => ({ ...pos, zoom: pos.zoom * 2 }));
   }
@@ -33,15 +35,54 @@ export const MapDiv = ({mapMode}) => {
   }
   const mapRef = useRef(null);
 
-  // Detect device type (mobile vs. desktop) and set appropriate maxZoom
+  //sets x and y of click location when click happens
+  const [clickLocation, setClickLocation] = useState({ x: 0, y: 0 });
+
+  // detect current coords of mouse, if more than 50 px away from clickLocation, set clickLocation to null
+
   useEffect(() => {
-    const isMobile = window.matchMedia('(pointer: coarse)').matches;
-    if (isMobile) {
-      setMaxZoom(8); // Example higher max zoom level for mobile
-    } else {
-      setMaxZoom(1); // Lower max zoom level for desktop
-    }
-  }, []); // Only run this once after the initial render
+    const handleMouseMove = (event) => {
+      const distance = Math.sqrt(
+        Math.pow(event.clientX - clickLocation.x, 2) +
+          Math.pow(event.clientY - (clickLocation.y + 10), 2)
+      );
+
+      if (distance > 65 ) {
+        // Close the tooltip if the distance is more than 50px
+        tooltipRef1.current?.close();
+        tooltipRef2.current?.close();
+        tooltipRef3.current?.close();
+        // Optionally reset click location to avoid repeated closings
+      }
+    };
+
+    // Add event listener
+    window.addEventListener("mousemove", handleMouseMove);
+
+    // Cleanup function to remove the event listener
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [clickLocation]);
+
+  // Detect device type (mobile vs. desktop) and set appropriate maxZoom
+
+  useEffect(() => {
+    const matchMedia = window.matchMedia("(pointer: coarse)");
+    const handleChange = () => setIsMobile(matchMedia.matches);
+
+    matchMedia.addEventListener('change', handleChange);
+
+    // Initial state setup
+    setIsMobile(matchMedia.matches);
+
+    return () => matchMedia.removeEventListener('change', handleChange);
+  }, []);
+
+  // Use isMobile as needed
+  useEffect(() => {
+    setMaxZoom(isMobile ? 8 : 1);
+  }, [isMobile]); // Re-run when isMobile changes
 
   const { resetAllExcept } = useCountryStore((state) => ({
     resetAllExcept: state.resetAllExcept,
@@ -57,8 +98,7 @@ export const MapDiv = ({mapMode}) => {
 
   const [geographiesData, setGeographiesData] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
-  const [userHasCycledColours, setUserHasCycledColours] = useState(false);
-  const [fadeOutPopup, setFadeOutPopup] = useState(false);
+
 
   useEffect(() => {
     fetch("/features.json")
@@ -69,67 +109,41 @@ export const MapDiv = ({mapMode}) => {
       });
   }, []);
 
-  // if a country exists in phase 2 or 3, set userHasCycledColours to true
-  useEffect(() => {
-    const phaseThreeCountries = Object.values(countries).filter(
-      (c) => c.phase === 3
-    ).length;
-    if (mapMode != "single" && phaseThreeCountries > 0) {
-      setUserHasCycledColours(true);
-    }
-  }, [countries, mapMode]);
 
-  // this is for the guide popup when users click 3 countries into phase 1 whithout clicking any country into phase 2 or phase 3
-  useEffect(() => {
-    const phaseOneCountries = Object.values(countries).filter(
-      (c) => c.phase === 1
-    ).length;
-    const phaseTwoCountries = Object.values(countries).filter(
-      (c) => c.phase === 2
-    ).length;
-    const phaseThreeCountries = Object.values(countries).filter(
-      (c) => c.phase === 3
-    ).length;
-    // only trigger if there are no phase 2 or phase 3 countries and if userHasCycledCountries is false
-    if (
-      phaseOneCountries == 2 &&
-      phaseTwoCountries === 0 &&
-      phaseThreeCountries === 0 &&
-      !userHasCycledColours
-    ) {
-      setShowPopup(true);
-    } else if (
-      phaseOneCountries === 0 ||
-      phaseOneCountries > 2 ||
-      phaseTwoCountries > 0 ||
-      phaseThreeCountries > 0
-    ) {
-      setFadeOutPopup(true);
-      setTimeout(() => {
-        setShowPopup(false);
-        setFadeOutPopup(false);
-      }, 500);
-    }
-  }, [countries]);
 
-  const handleCountryClick = (country) => {
+
+  const tooltipRef1 = useRef(null);
+  const tooltipRef2 = useRef(null);
+  const tooltipRef3 = useRef(null);
+  const tooltipRef4 = useRef(null);
+  const tooltipRef5 = useRef(null);
+
+  const handleCountryClick = (country, event) => {
+    setClickLocation({
+      x: event.clientX,
+      y: event.clientY,
+    });
     if (mapMode == "single") {
       // if the country state is 2, reset all countries, if the country state is not 2, set it it to 2
       if (countries[country].phase == 2) {
-        resetAllExcept()
+        resetAllExcept();
       } else {
-        resetAllExcept()
+        resetAllExcept();
         setCountryPhase(country, 2);
       }
     } else {
-      incrementCountryPhase(country);
+      tooltipRef1.current?.open();
+      tooltipRef2.current?.open();
+      tooltipRef3.current?.open();
     }
   };
 
   // phase 2 countries, if there are 27 phase 2 countries replace with European Union
-  let phase2Countries = Object.keys(countries).filter(key => countries[key].phase === 2);
+  let phase2Countries = Object.keys(countries).filter(
+    (key) => countries[key].phase === 2
+  );
   if (phase2Countries.length === 27) {
-    phase2Countries = ['European Union'];
+    phase2Countries = ["European Union"];
   }
 
   const scale = "180";
@@ -143,25 +157,10 @@ export const MapDiv = ({mapMode}) => {
     .scale(scale)
     .rotate(rotation);
   return (
-    <div ref={mapRef} className="relative map-container w-full h-full select-none transition">
-      {showPopup && mapMode != "single" && (
-        <div className="fixed inset-0 m-auto w-80 h-100 rounded-full flex justify-center items-center z-50 ">
-          <div
-            data-animation={showPopup}
-            data-fadeout={fadeOutPopup}
-            className="bg-yellow-400  flex items-center p-4 rounded-lg shadow-2xl relative data-[animation=true]:animate-fadeIn data-[fadeout=true]:opacity-0 transition duration-300  "
-          >
-            <button
-              className="absolute top-0 right-1 text-2xl font-bold"
-              onClick={() => setShowPopup(false)}
-            >
-              ×
-            </button>
-            <IconInfoCircle size={40} className="mr-2 w-14" />{" "}
-            <p>Click a country again to cycle through colors.</p>
-          </div>
-        </div>
-      )}
+    <div
+      ref={mapRef}
+      className="relative map-container w-full h-full select-none transition"
+    >
 
       <div className=" bg-slate-500  lg:rounded  shadow-sm   ">
         <ComposableMap
@@ -191,12 +190,15 @@ export const MapDiv = ({mapMode}) => {
           <ZoomableGroup
             zoom={position.zoom}
             center={position.coordinates}
-            translateExtent={ [[-80, -10], [920, 530]]} // first array is the top left corner, second array is the bottom right corner
+            translateExtent={[
+              [-80, -10],
+              [920, 530],
+            ]} // first array is the top left corner, second array is the bottom right corner
             onMoveEnd={handleMoveEnd}
             maxZoom={maxZoom}
           >
             <rect
-            // background rectangle so that it moves with the map on mobile
+              // background rectangle so that it moves with the map on mobile
               x="-500"
               y="-500"
               width="2000"
@@ -228,8 +230,8 @@ export const MapDiv = ({mapMode}) => {
                           aria-label={`Heat map data for ${geo.properties.name}, value of ${countryState.probability}`}
                           key={geo.rsmKey}
                           geography={geo}
-                          onClick={() =>
-                            handleCountryClick(geo.properties.name)
+                          onClick={(e) =>
+                            handleCountryClick(geo.properties.name, e)
                           }
                           stroke="black"
                           strokeWidth={0.5}
@@ -259,8 +261,8 @@ export const MapDiv = ({mapMode}) => {
                         <Geography
                           key={geo.rsmKey}
                           geography={geo}
-                          onClick={() =>
-                            handleCountryClick(geo.properties.name)
+                          onClick={(e) =>
+                            handleCountryClick(geo.properties.name, e)
                           }
                           stroke="white"
                           strokeWidth={1.3}
@@ -291,12 +293,200 @@ export const MapDiv = ({mapMode}) => {
           </ZoomableGroup>
         </ComposableMap>
       </div>
-      <Tooltip id="my-tooltip" float="true" delayShow="800" />
-      <div data-mapmode={mapMode} className="lg:hidden data-[mapmode=multi]:hidden w-full">
+      {!isMobile && <>
+        <Tooltip id="my-tooltip" float="true" delayShow="700" />
+      <Tooltip
+        arrowColor="white"
+        ref={tooltipRef1}
+        id="my-tooltip"
+        float={false}
+        openOnClick={true}
+        position={{ x: clickLocation.x, y: clickLocation.y }}
+        place="right"
+        opacity={1.0}
+        clickable={true}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent" }}
+        globalCloseEvents={{
+          scroll: true,
+          resize: false,
+          clickOutsideAnchor: true,
+        }}
+        render={({ content, activeAnchor }) => (
+          <div
+            onClick={() => {
+              setCountryPhase(content, 3);
+              tooltipRef1.current?.close();
+            }}
+            className="w-9 h-9 bg-red-600 ring-2 ring-white hover:bg-red-700 rounded-full cursor-pointer z-20 shadow-lg"
+          ></div>
+        )}
+      />
+      <Tooltip
+        arrowColor="white"
+        ref={tooltipRef2}
+        id="my-tooltip"
+        float={false}
+        openOnClick={true}
+        position={{ x: clickLocation.x, y: clickLocation.y }}
+        place="left"
+        opacity={1.0}
+        clickable={true}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent" }}
+        globalCloseEvents={{
+          scroll: true,
+          resize: false,
+          clickOutsideAnchor: true,
+        }}
+        render={({ content, activeAnchor }) => (
+          <div
+            onClick={() => {
+              setCountryPhase(content, 2);
+              tooltipRef2.current?.close();
+            }}
+            className="w-9 h-9 bg-blue-600 ring-2 ring-white hover:bg-blue-700 rounded-full cursor-pointer z-[200] shadow-lg"
+          ></div>
+        )}
+      />
+      <Tooltip
+        arrowColor="white"
+        offset={16}
+        ref={tooltipRef3}
+        id="my-tooltip"
+        float={false}
+        openOnClick={true}
+        position={{ x: clickLocation.x, y: clickLocation.y }}
+        place="bottom"
+        opacity={1.0}
+        clickable={true}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent" }}
+        globalCloseEvents={{
+          scroll: true,
+          resize: false,
+          clickOutsideAnchor: false,
+        }}
+        render={({ content, activeAnchor }) => (
+          <div className="flex">
+            <div
+              onClick={() => {
+                setCountryPhase(content, 0);
+                tooltipRef3.current?.close();
+              }}
+              className="w-5 h-5 bg-gray-300 ring-1 ring-white hover:bg-gray-200 cursor-pointer z-[200] text-red-500 flex justify-center items-center rounded-l-xl shadow"
+            >
+              <IconX />
+            </div>
+            <div
+              onClick={() => {
+                setCountryPhase(content, 1);
+                tooltipRef3.current?.close();
+              }}
+              className="w-5 h-5 bg-gray-600 ring-1 ring-white hover:bg-gray-700 cursor-pointer z-[200] rounded-r-xl shadow"
+            ></div>
+          </div>
+        )}
+      />
+      </>}
+      {isMobile && <>
+
+        <Tooltip
+                ref={tooltipRef4}
+        arrowColor="white"
+        offset={6}
+        id="my-tooltip"
+        float={false}
+        openOnClick={true}
+        position={{ x: clickLocation.x, y: clickLocation.y }}
+        place="top"
+        opacity={1.0}
+        clickable={true}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent" }}
+        globalCloseEvents={{
+          scroll: true,
+          resize: true,
+          clickOutsideAnchor: true,
+        }}
+        render={({ content, activeAnchor }) => (
+          <div className="flex">
+            <div
+              onClick={() => {
+                setCountryPhase(content, 2);
+                tooltipRef4.current?.close();
+              }}
+              className="w-8 h-8 bg-blue-500 ring-2 ring-white hover:bg-blue-700 cursor-pointer z-[200] text-red-500 flex justify-center items-center rounded-l-xl shadow"
+            >
+            </div>
+            <div
+              onClick={() => {
+                setCountryPhase(content, 3);
+                tooltipRef4.current?.close();
+              }}
+              className="w-8 h-8 bg-red-500 ring-2 ring-white hover:bg-red-700 cursor-pointer z-[200] rounded-r-xl shadow"
+            ></div>
+          </div>
+        )}
+      />
+      
+
+        <Tooltip
+        arrowColor="white"
+        ref={tooltipRef5}
+        offset={6}
+        id="my-tooltip"
+        float={false}
+        openOnClick={true}
+        position={{ x: clickLocation.x, y: clickLocation.y }}
+        place="bottom"
+        opacity={1.0}
+        clickable={true}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent" }}
+        globalCloseEvents={{
+          scroll: true,
+          resize: true,
+          clickOutsideAnchor: true,
+        }}
+        render={({ content, activeAnchor }) => (
+          <div className="flex">
+            <div
+              onClick={() => {
+                setCountryPhase(content, 0);
+                tooltipRef5.current?.close();
+              }}
+              className="w-5 h-5 bg-gray-300 ring-1 ring-white hover:bg-gray-400 cursor-pointer z-[200] text-red-500 flex justify-center items-center rounded-l-xl shadow"
+            >
+              <IconX />
+            </div>
+            <div
+              onClick={() => {
+                setCountryPhase(content, 1);
+                tooltipRef5.current?.close();
+              }}
+              className="w-5 h-5 bg-gray-600 ring-1 ring-white hover:bg-gray-700 cursor-pointer z-[200] rounded-r-xl shadow"
+            ></div>
+          </div>
+        )}
+      />
+      
+      
+      </>}
+
+
+      <div
+        data-mapmode={mapMode}
+        className="lg:hidden data-[mapmode=multi]:hidden w-full"
+      >
         <p className="font-semibold font-serif text-lg text-center h-8 bg-slate-100 border-2">
-          {phase2Countries.map(country => `${getCountryEmoji(country)} ${country}`).join(', ')}
+          {phase2Countries
+            .map((country) => `${getCountryEmoji(country)} ${country}`)
+            .join(", ")}
         </p>
       </div>
     </div>
   );
+};
+
+const testWrapper = ({ children }) => {
+  const testFunction = () => {
+    console.log("test");
+  };
+  return <div onClick={() => testFunction()}>{children}</div>;
 };

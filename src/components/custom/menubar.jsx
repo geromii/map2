@@ -66,11 +66,11 @@ const MenuBar = () => {
               Single Country Mode
             </Link>
           </li>
-          <li className={listItemStyle("/multi")}>
+          <li className={listItemStyle("/conflict")}>
             <Link
-              ref={storeLinkRef("/multi")}
+              ref={storeLinkRef("/conflict")}
               className={linkStyle}
-              href="/multi"
+              href="/conflict"
             >
               Conflict Mode
             </Link>
