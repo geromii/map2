@@ -44,10 +44,10 @@ export const MapDiv = ({ mapMode }) => {
     const handleMouseMove = (event) => {
       const distance = Math.sqrt(
         Math.pow(event.clientX - clickLocation.x, 2) +
-          Math.pow(event.clientY - (clickLocation.y + 10), 2)
+          Math.pow(event.clientY - (clickLocation.y + 8), 2)
       );
 
-      if (distance > 75 ) {
+      if (distance > 65 ) {
         // Close the tooltip if the distance is more than 50px
         tooltipRef1.current?.close();
         tooltipRef2.current?.close();
@@ -184,16 +184,7 @@ export const MapDiv = ({ mapMode }) => {
               />
             </pattern>
           </defs>
-          <ZoomableGroup
-            zoom={position.zoom}
-            center={position.coordinates}
-            translateExtent={[
-              [-80, -10],
-              [920, 530],
-            ]} // first array is the top left corner, second array is the bottom right corner
-            onMoveEnd={handleMoveEnd}
-            maxZoom={maxZoom}
-          >
+
             <rect
               // background rectangle so that it moves with the map on mobile
               x="-500"
@@ -287,7 +278,6 @@ export const MapDiv = ({ mapMode }) => {
                 );
               }}
             </Geographies>
-          </ZoomableGroup>
         </ComposableMap>
       </div>
       {!isMobile && <>
@@ -302,7 +292,7 @@ export const MapDiv = ({ mapMode }) => {
         place="right"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "50ms" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "100ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: false,
@@ -312,9 +302,11 @@ export const MapDiv = ({ mapMode }) => {
           <div
             onClick={() => {
               setCountryPhase(content, 3);
-              tooltipRef1.current?.close();
+              tooltipRef1.current?.close()
+              tooltipRef2.current?.close()
+              tooltipRef3.current?.close();
             }}
-            className="w-9 h-9 bg-red-600 ring-2 ring-white hover:bg-red-700 rounded-full cursor-pointer z-20 shadow-lg"
+            className="w-10 h-6 bg-red-600 ring-2 ring-white hover:bg-red-700 rounded-full cursor-pointer z-20 drop-shadow"
           ></div>
         )}
       />
@@ -328,7 +320,7 @@ export const MapDiv = ({ mapMode }) => {
         place="left"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "50ms" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "100ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: false,
@@ -338,9 +330,11 @@ export const MapDiv = ({ mapMode }) => {
           <div
             onClick={() => {
               setCountryPhase(content, 2);
-              tooltipRef2.current?.close();
+              tooltipRef1.current?.close()
+              tooltipRef2.current?.close()
+              tooltipRef3.current?.close();
             }}
-            className="w-9 h-9 bg-blue-600 ring-2 ring-white hover:bg-blue-700 rounded-full cursor-pointer z-[200] shadow-lg"
+            className="w-10 h-6 bg-blue-600 ring-2 ring-white hover:bg-blue-700 rounded-full cursor-pointer z-[200] drop-shadow"
           ></div>
         )}
       />
@@ -355,7 +349,7 @@ export const MapDiv = ({ mapMode }) => {
         place="bottom"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "50ms" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "100ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: false,
@@ -366,15 +360,19 @@ export const MapDiv = ({ mapMode }) => {
             <div
               onClick={() => {
                 setCountryPhase(content, 0);
+                tooltipRef1.current?.close()
+                tooltipRef2.current?.close()
                 tooltipRef3.current?.close();
               }}
-              className="w-5 h-5 bg-gray-300 ring-1 ring-white hover:bg-gray-200 cursor-pointer z-[200] text-red-500 flex justify-center items-center rounded-l-xl shadow"
+              className="w-5 h-5 bg-gray-200 ring-1 ring-white hover:bg-gray-300 cursor-pointer z-[200] text-red-500 flex justify-center items-center rounded-l-xl shadow"
             >
-              <IconX />
+              <IconX className = ""/>
             </div>
             <div
               onClick={() => {
                 setCountryPhase(content, 1);
+                tooltipRef1.current?.close()
+                tooltipRef2.current?.close()
                 tooltipRef3.current?.close();
               }}
               className="w-5 h-5 bg-gray-600 ring-1 ring-white hover:bg-gray-700 cursor-pointer z-[200] rounded-r-xl shadow"
@@ -396,7 +394,7 @@ export const MapDiv = ({ mapMode }) => {
         place="top"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "50ms" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "100ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: true,
@@ -435,7 +433,7 @@ export const MapDiv = ({ mapMode }) => {
         place="bottom"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "50ms" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "100ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: true,
