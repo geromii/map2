@@ -96,7 +96,7 @@ export default function TabDiv({
     <Tabs
       data-tabvisible={tabVisible}
       defaultValue="data"
-      className="relative flex flex-col items-center justify-between h-[160px] lg:h-[13.02vw]  w-full md:w-[90%] shadow-sm z-20 rounded-none md:rounded-2xl mb-[-5px] lg:mb-[-12px] md:mt-[20px] bg-card/95 border-2 overflow-hidden  ring-primary data-[tabvisible=false]:h-24 data-[tabvisible=false]:mb-2 transition-all duration-500"
+      className="relative flex flex-col items-center justify-between h-[160px] lg:h-[13.02vw]  w-full md:w-[90%] shadow-sm z-20 rounded-none md:rounded-2xl mb-[-2px] lg:mb-[-12px] md:mt-[20px] bg-card/95 border-2 overflow-hidden  ring-primary data-[tabvisible=false]:h-24 data-[tabvisible=false]:mb-2 transition-all duration-500"
     >
       <div
         data-tabvisible={tabVisible}

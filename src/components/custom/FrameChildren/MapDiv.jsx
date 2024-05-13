@@ -399,7 +399,7 @@ export const MapDiv = ({ mapMode }) => {
         place="top"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "100ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: true,
@@ -438,7 +438,7 @@ export const MapDiv = ({ mapMode }) => {
         place="bottom"
         opacity={1.0}
         clickable={true}
-        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent" }}
+        style={{ padding: "0px 0px 0px 0px", backgroundColor: "transparent", transitionDuration: "100ms" }}
         globalCloseEvents={{
           scroll: true,
           resize: true,
