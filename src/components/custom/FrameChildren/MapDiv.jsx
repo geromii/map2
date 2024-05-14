@@ -483,7 +483,6 @@ export const MapDiv = ({ mapMode }) => {
             .join(", ")}
         </p>
       </div>
-      <div> ActiveCountry: {activeCountry} </div>
     </div>
   );
 };

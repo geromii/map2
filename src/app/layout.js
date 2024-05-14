@@ -18,7 +18,7 @@ const fontArvo = FontArvo({
 });
 
 export const metadata = {
-  title: "Global Relations Map",
+  title: "Global Relations Map - Mapdis",
   description: "Explore the world's diplomatic relationships and alliances through an interactive map. Create scenarios to see maps of how the world reacts to potential conflicts and wars.",
 };
 
