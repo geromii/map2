@@ -21,6 +21,7 @@ export const MapDiv = ({ mapMode }) => {
   const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
   const [maxZoom, setMaxZoom] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
+  const [activeCountry, setActiveCountry] = useState(null)
 
   function handleZoomIn() {
     if (position.zoom >= 4) return;
@@ -44,10 +45,10 @@ export const MapDiv = ({ mapMode }) => {
     const handleMouseMove = (event) => {
       const distance = Math.sqrt(
         Math.pow(event.clientX - clickLocation.x, 2) +
-          Math.pow(event.clientY - (clickLocation.y + 8), 2)
+          1.8* Math.pow(event.clientY - (clickLocation.y + 5), 2)
       );
 
-      if (distance > 65 ) {
+      if (distance > 70 ) {
         // Close the tooltip if the distance is more than 50px
         tooltipRef1.current?.close();
         tooltipRef2.current?.close();
@@ -132,6 +133,7 @@ export const MapDiv = ({ mapMode }) => {
         setCountryPhase(country, 2);
       }
     } else {
+      setActiveCountry(country)
     }
   };
 
@@ -205,7 +207,7 @@ export const MapDiv = ({ mapMode }) => {
                 const highlightedCountries = geographies.filter(
                   (geo) =>
                     countries[geo.properties.name].phase === 2 ||
-                    countries[geo.properties.name].phase === 3
+                    countries[geo.properties.name].phase === 3 
                 );
                 // this is so that the countries that are in phase 2 or 3 are drawn on top of the other countries
                 // if this isnt done then the borders get wonky, and even if the borders are thickened they are still "under" the other countries
@@ -222,7 +224,7 @@ export const MapDiv = ({ mapMode }) => {
                             handleCountryClick(geo.properties.name, e)
                           }
                           stroke="black"
-                          strokeWidth={0.5}
+                          strokeWidth={activeCountry == geo.properties.name ? 1.3 : 0.5 }
                           style={{
                             default: {
                               fill: countryState.color,
@@ -253,7 +255,7 @@ export const MapDiv = ({ mapMode }) => {
                             handleCountryClick(geo.properties.name, e)
                           }
                           stroke="white"
-                          strokeWidth={1.3}
+                          strokeWidth={Math.max(1.1, 1.35 - 0.05 * highlightedCountries.length)}
                           style={{
                             default: {
                               fill: countryState.color,
@@ -283,6 +285,9 @@ export const MapDiv = ({ mapMode }) => {
       {!isMobile && <>
         <Tooltip id="my-tooltip" float="true" delayShow="700" />
       <Tooltip
+        afterHide={() => {
+          setActiveCountry(null);
+        }}
         arrowColor="white"
         ref={tooltipRef1}
         id="my-tooltip"
@@ -305,8 +310,9 @@ export const MapDiv = ({ mapMode }) => {
               tooltipRef1.current?.close()
               tooltipRef2.current?.close()
               tooltipRef3.current?.close();
+              setActiveCountry(null);
             }}
-            className="w-10 h-6 bg-red-600 ring-2 ring-white hover:bg-red-700 rounded-full cursor-pointer z-20 drop-shadow"
+            className="w-10 h-6 bg-red-700 ring-2 ring-white hover:bg-red-800 rounded-full cursor-pointer z-20 drop-shadow"
           ></div>
         )}
       />
@@ -333,8 +339,9 @@ export const MapDiv = ({ mapMode }) => {
               tooltipRef1.current?.close()
               tooltipRef2.current?.close()
               tooltipRef3.current?.close();
+              setActiveCountry(null);
             }}
-            className="w-10 h-6 bg-blue-600 ring-2 ring-white hover:bg-blue-700 rounded-full cursor-pointer z-[200] drop-shadow"
+            className="w-10 h-6 bg-blue-700 ring-2 ring-white hover:bg-blue-800 rounded-full cursor-pointer z-[200] drop-shadow"
           ></div>
         )}
       />
@@ -363,8 +370,9 @@ export const MapDiv = ({ mapMode }) => {
                 tooltipRef1.current?.close()
                 tooltipRef2.current?.close()
                 tooltipRef3.current?.close();
+                setActiveCountry(null);
               }}
-              className="w-5 h-5 bg-gray-200 ring-1 ring-white hover:bg-gray-300 cursor-pointer z-[200] text-red-500 flex justify-center items-center rounded-l-xl shadow"
+              className="w-4 h-4 bg-gray-200 ring-1 ring-white hover:bg-gray-300 cursor-pointer z-[200] text-red-500 flex justify-center items-center rounded-l-xl drop-shadow"
             >
               <IconX className = ""/>
             </div>
@@ -375,7 +383,7 @@ export const MapDiv = ({ mapMode }) => {
                 tooltipRef2.current?.close()
                 tooltipRef3.current?.close();
               }}
-              className="w-5 h-5 bg-gray-600 ring-1 ring-white hover:bg-gray-700 cursor-pointer z-[200] rounded-r-xl shadow"
+              className="w-4 h-4 bg-gray-600 ring-1 ring-white hover:bg-gray-700 cursor-pointer z-[200] rounded-r-xl drop-shadow"
             ></div>
           </div>
         )}
@@ -475,6 +483,7 @@ export const MapDiv = ({ mapMode }) => {
             .join(", ")}
         </p>
       </div>
+      <div> ActiveCountry: {activeCountry} </div>
     </div>
   );
 };
