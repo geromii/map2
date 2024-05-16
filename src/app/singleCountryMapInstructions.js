@@ -24,7 +24,7 @@ export const SingleCountryMapInstructions = () => {
             Understanding Relationship Scores
           </h2>
           <div className = "grid grid-cols-3 mt-2">
-          <p className="mt-6 text-gray-700 lg:text-base text-right p-4">
+          <p className="mt-6 text-gray-700 lg:text-base text-right p-4 ">
             The color intensity represents the strength of the relationship. Clicking any country will highlight 
             its network of relationships.
           </p>
@@ -33,8 +33,7 @@ export const SingleCountryMapInstructions = () => {
       width={220}
       height={220}
       alt="Picture of the map in the single country state, which Russia selected."
-     className = "rounded-full mx-auto my-3 border-2 border-gray-300 shadow-lg align-middle justify-center"
-     placeholder="blur" 
+     className = "rounded-full mx-auto my-3 border-2 border-gray-300 shadow-lg align-middle justify-center" 
      priority={true}
     />
           <ul className="mt-4 list-disc list-inside bg-white p-6 rounded-lg shadow space-y-3 lg:p-8 my-auto">
