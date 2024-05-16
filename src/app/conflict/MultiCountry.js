@@ -130,7 +130,7 @@ const PresetPairings = () => {
         </select>
       ) : (
         <select
-          className="rounded shadow bg-primary-foreground text-wh mb-1 w-40"
+          className="rounded shadow bg-primary-foreground text-wh mb-1 mt-0.5 w-40"
           onChange={handlePairingSelection}
         >
           <option value="">Select a pairing</option>
