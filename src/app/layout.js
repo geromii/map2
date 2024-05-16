@@ -3,6 +3,7 @@ import { Inter as FontSans, Arvo as FontArvo } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react";
 import MenuBar from "@/components/custom/menubar";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 // Import the Inter font (default)
 const fontSans = FontSans({
@@ -46,6 +47,7 @@ export default function RootLayout({ children }) {
         <br/><a href="https://twitter.com/geromi_" target="_blank" rel="noopener noreferrer" className="text-blue-500  hover:text-blue-700 visited:text-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-300 mx-1">@geromi_</a>on Twitter/X</p>
         </div>
       </body>
+      <SpeedInsights />
     </html>
   );
 }

@@ -88,7 +88,7 @@ export const MapInstructions = () => {
           Data Source
         </h2>
         <p className="text-gray-600 mt-2 p-5">
-        The underlying dataset is AI-generated synethic data, using GPT-3.5 and GPT-4 to produce a summary, and a score, of each relationship. The scores are averaged across runs to produce the final score.
+        The underlying dataset is AI-generated synethic data using GPT-3.5 and GPT-4 to produce a summary, and a score, of each relationship. The results are averaged across runs to produce the final score.
         </p>
       </section>
       </article>
