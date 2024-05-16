@@ -18,7 +18,6 @@ import useEuCountries from "src/utils/eu";
 
 export default function TabDiv({
   pageMode = "single",
-  tabVisible,
 }) {
   const [sortedCountries, setSortedCountries] = useState([]);
   const [phase2Countries, setPhase2Countries] = useState([]);
@@ -89,15 +88,13 @@ export default function TabDiv({
 
   return (
     <Tabs
-      data-tabvisible={tabVisible}
       defaultValue="data"
       className="relative flex flex-col items-center justify-between h-[160px] lg:h-[13.02vw]  w-full md:w-[90%] shadow-sm z-20 rounded-none md:rounded-2xl mb-[-2px] lg:mb-[-12px] md:mt-[20px] bg-card/95 border-2 overflow-hidden  ring-primary data-[tabvisible=false]:h-24 data-[tabvisible=false]:mb-2 transition-all duration-500"
     >
       <div
-        data-tabvisible={tabVisible}
         data-display={displayStats}
         data-pagemode={pageMode}
-        className="absolute top-[60%] data-[tabvisible=false]:top-[20%] data-[display=true]:opacity-0  data-[display=true]:translate-y-10 transition-all duration-500 data-[pagemode=single]:duration-500 data-[pagemode=multi]:duration-500 w-[95%] lg:w-[70%] text-xs sm:text-sm lg:text-base z-30"
+        className="absolute top-[60%] data-[display=true]:opacity-0  data-[display=true]:translate-y-10 transition-all duration-500 data-[pagemode=single]:duration-500 data-[pagemode=multi]:duration-500 w-[95%] lg:w-[70%] text-xs sm:text-sm lg:text-base z-30"
       >
         <NoCountrySelected
           pageMode={pageMode}
@@ -105,8 +102,6 @@ export default function TabDiv({
           phase3Exists={phase3exists}
         />
       </div>
-      {tabVisible ? (
-        <>
           <TabsList className=" mt-2 justify-center w-[95%] md:w-[70%] grid grid-cols-2 shadow-inner mb-0 z-10">
             <TabsTrigger value="data">For/Against</TabsTrigger>
             <TabsTrigger value="demographics">Demographics</TabsTrigger>
@@ -139,8 +134,6 @@ export default function TabDiv({
               displayStats={displayStats}
             />
           </TabsContent>
-        </>
-      ) : null}
     </Tabs>
   );
 }

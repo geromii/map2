@@ -17,7 +17,6 @@ export default function MapFrame({
 }) {
   const [leftSidebarVisible, setLeftSidebarVisible] = useState(true);
   const [rightSidebarVisible, setRightSidebarVisible] = useState(true);
-  const [tabVisible, setTabVisible] = useState(true);
 
   const sidebarFull = 15;
   const sidebarSmall = 3.5;
@@ -59,11 +58,10 @@ export default function MapFrame({
       </div>}
 
       <div
-        data-tabvisible={tabVisible}
-        className="map relative w-full lg:w-[88%] data-[tabvisible=false]:w-[92%] row-start-1 transition-all duration-300  h-full"
+        className="map relative w-full lg:w-[88%]  row-start-1 transition-all duration-300  h-full"
       >
         <div className=" flex flex-col items-center  bg-transparent md:scale-[1.00] w-full h-full ">
-          <TabDiv pageMode={pageMode} tabVisible={tabVisible} />
+          <TabDiv pageMode={pageMode}/>
           <MapDiv mapMode={pageMode} />
         </div>
         <div className="hidden lg:block absolute bottom-0 left-0.5 z-30">
