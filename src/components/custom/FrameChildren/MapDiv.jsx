@@ -242,6 +242,8 @@ export const MapDiv = ({ mapMode }) => {
                           className="country cursor-pointer"
                           data-tooltip-id="my-tooltip"
                           data-tooltip-content={geo.properties.name}
+                          data-country-score={`${countryState.probability.toFixed(2)}`}
+                          data-tooltip-showscore={true}
                         />
                       );
                     })}
@@ -273,6 +275,7 @@ export const MapDiv = ({ mapMode }) => {
                           className="country cursor-pointer shadow"
                           data-tooltip-id="my-tooltip"
                           data-tooltip-content={geo.properties.name}
+                          data-tooltip-showscore={false}
                         />
                       );
                     })}
@@ -283,7 +286,12 @@ export const MapDiv = ({ mapMode }) => {
         </ComposableMap>
       </div>
       {!isMobile && <>
-        <Tooltip id="my-tooltip" float="true" delayShow="700" />
+        <Tooltip id="my-tooltip" float="true" delayShow="700" 
+          render={({ content, activeAnchor }) => (
+            <span>
+              {content}{activeAnchor?.getAttribute('data-tooltip-showscore') === 'true' ? `, ${activeAnchor?.getAttribute('data-country-score')}` : ''}
+            </span>
+          )}/>
       <Tooltip
         afterHide={() => {
           setActiveCountry(null);

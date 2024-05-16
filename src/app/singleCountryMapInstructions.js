@@ -21,12 +21,12 @@ export const SingleCountryMapInstructions = () => {
           </p>
         </div>
       </section>
-      <section className="mb-8 lg:mb-12">
+      <section className="mb-6 lg:mb-8">
         <h2 className="ml-4 text-2xl font-semibold text-gray-800 lg:text-3xl">
           Understanding Relationship Scores
         </h2>
         <div className="lg:grid lg:grid-cols-3 mt-2 ">
-          <p className="mt-6 text-gray-700 lg:text-base text-left lg:text-right lg:p-4 ">
+          <p className="mt-6 text-gray-700 lg:text-base text-left lg:text-right lg:ml-10 ">
             The color intensity represents the strength of the relationship.
             Clicking any country will highlight its network of relationships.
           </p>
@@ -63,10 +63,18 @@ export const SingleCountryMapInstructions = () => {
         <h2 className="text-2xl lg:text-3xl ml-4 font-bold text-gray-700">
           Map Navigation
         </h2>
-        <p className="text-gray-600 mt-2 p-5">
+        <p className="text-gray-600 mt-3">
           Click a country to view its direct relationship map. You can click on
           different countries to compare how each one&apos;s relationships
           change across different regions and contexts.
+        </p>
+      </section>
+      <section className="mb-6">
+        <h2 className="text-2xl lg:text-3xl ml-4 font-bold text-gray-700">
+          Data Source
+        </h2>
+        <p className="text-gray-600 mt-3 ">
+        The underlying dataset is AI-generated synethic data, using GPT-3.5 and GPT-4 to produce a summary, and a score, of each relationship. The scores are averaged across runs to produce the final score.
         </p>
       </section>
     </article>
