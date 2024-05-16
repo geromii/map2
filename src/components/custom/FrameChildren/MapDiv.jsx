@@ -15,6 +15,7 @@ import { Tooltip } from "react-tooltip";
 import { getCountryEmoji } from "src/utils/countryEmojis";
 import { IconX } from "@tabler/icons-react";
 import { Suspense } from "react";
+import features from './features.json';
 
 export const MapDiv = ({ mapMode }) => {
   const [isMobile, setIsMobile] = useState(false);
@@ -85,13 +86,10 @@ export const MapDiv = ({ mapMode }) => {
 
 
   useEffect(() => {
-    fetch("/features.json")
-      .then((response) => response.json())
-      .then((data) => {
-        const geometries = data.objects.world.geometries;
-        setGeographiesData(data);
-      });
+    const geometries = features.objects.world.geometries;
+    setGeographiesData(features);
   }, []);
+
 
 
 
