@@ -34,6 +34,8 @@ export const SingleCountryMapInstructions = () => {
       height={220}
       alt="Picture of the map in the single country state, which Russia selected."
      className = "rounded-full mx-auto my-3 border-2 border-gray-300 shadow-lg align-middle justify-center"
+     placeholder="blur" 
+     priority={true}
     />
           <ul className="mt-4 list-disc list-inside bg-white p-6 rounded-lg shadow space-y-3 lg:p-8 my-auto">
             <li className="text-blue-800 font-medium lg:text-lg">
