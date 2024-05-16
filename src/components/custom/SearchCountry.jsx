@@ -69,6 +69,7 @@ export function SearchCountry({pageMode}) {
             size="default"
             role="combobox"
             aria-expanded={open}
+            aria-label="Select country"
             className="w-full max-w-[170px] md:justify-around overflow-hidden pl-1 text-xs lg:text-sm rounded-sm shadow-sm"
           >
             <CaretSortIcon className="h-5 w-5 shrink-0 opacity-50 " />
