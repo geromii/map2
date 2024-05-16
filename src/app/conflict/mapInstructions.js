@@ -1,4 +1,4 @@
-import { IconBrandTwitter } from "@tabler/icons-react";
+import Image from "next/image";
 
 export const MapInstructions = () => {
     return (
@@ -43,7 +43,9 @@ export const MapInstructions = () => {
           <h2 className="text-2xl font-semibold text-gray-700">
             <span className="font-bold">Geopolitics Mode</span>:
           </h2>
-          <p className="text-gray-600 mt-2">
+          <div className = "flex mx-10 my-2">
+          <Image src="/conflictimage.png" width={200} height={200} alt="An image of the map with Saudi Arabia (blue) and Iran (red) selected, display most of Europe as neutral but the UK shaded blue and Russia shaded red." className = "rounded-full border-2 border-gray-300 shadow-lg"/>
+          <p className="text-gray-600 mt-2 p-4">
             When <span className="font-bold">Predictions</span> are on and
             there is at least one country in each of{" "}
             <span className="text-blue-800">Side A</span> and{" "}
@@ -56,12 +58,15 @@ export const MapInstructions = () => {
             <span className="text-red-800">B</span> will be reflected by their
             color on the map.
           </p>
+          </div>
         </section>
         <section>
           <h2 className="text-2xl font-semibold text-gray-700">
             <span className="font-bold">War Outbreak (WW3) Mode</span>:
           </h2>
-          <p className="text-gray-600 mt-2">
+          <div className = "flex mx-10 my-2">
+          <Image src="/warimage.png" width={200} height={200} alt="An image of the map with Saudi Arabia (blue) and Iran (red), with war mode turned on, showing most of Europe now shaded blue." className = "rounded-full border-2 border-gray-300 shadow-lg"/>
+          <p className="text-gray-600 mt-2 p-4">
             When <span className="font-bold">War Outbreak Mode</span> is on the
             calculation gets more complex. Instead, the countries in the undecided
             state now receive a predicted side according to what their allies
@@ -76,6 +81,7 @@ export const MapInstructions = () => {
             <span className="text-gray-800 font-medium">Neutral</span> state then
             that country will be excluded from the calculation.
           </p>
+          </div>
         </section>
       </article>
     );
