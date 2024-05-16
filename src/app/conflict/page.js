@@ -1,6 +1,5 @@
 
 import React from "react";
-import dynamic from "next/dynamic";
 import { MapInstructions } from "./mapInstructions";
 import MapChart from "./MultiCountry";
 

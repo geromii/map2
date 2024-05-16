@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "src/utils/supabase/client";
-import { IconX } from "@tabler/icons-react";
 
 const MenuBar = () => {
   const pathname = usePathname();

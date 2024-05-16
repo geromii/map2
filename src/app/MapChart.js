@@ -1,10 +1,8 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, {  useEffect } from "react";
 
 import "./MapChart.css";
 import useCountryStore from "./useCountryStore";
-import { SearchBox } from "@/components/custom/SearchBox";
-import { DarkSwitch } from "@/components/ui/darkSwitch";
 import { Switch } from "@/components/ui/switch";
 import {
   IconRefresh,

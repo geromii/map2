@@ -6,8 +6,6 @@ import {
   IconArrowsDiagonalMinimize,
   IconArrowsDiagonal2,
   IconArrowsMaximize,
-  IconArrowsMinimize,
-  IconX,
 } from "@tabler/icons-react";
 
 export default function MapFrame({

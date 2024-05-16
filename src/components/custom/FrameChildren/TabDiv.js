@@ -10,20 +10,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs.jsx";
-import { Card, CardHeader } from "@/components/ui/card";
 import {
   IconInfoCircle,
-  IconInfoCircleFilled,
-  IconArrowBigDownFilled,
   IconArrowBigDownLines,
-  IconArrowsVertical,
 } from "@tabler/icons-react";
 import useEuCountries from "src/utils/eu";
 
 export default function TabDiv({
   pageMode = "single",
   tabVisible,
-  setTabVisible,
 }) {
   const [sortedCountries, setSortedCountries] = useState([]);
   const [phase2Countries, setPhase2Countries] = useState([]);

@@ -1,8 +1,6 @@
 
 import React from "react";
-import { MapInstructions } from "./conflict/mapInstructions";
 import MapChart from "./MapChart";
-import { metadata } from "./layout";
 import { SingleCountryMapInstructions } from "./singleCountryMapInstructions";
 
 

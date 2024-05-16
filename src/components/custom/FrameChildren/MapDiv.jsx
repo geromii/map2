@@ -9,31 +9,17 @@ import {
   Graticule,
   Geographies,
   Geography,
-  ZoomableGroup,
 } from "react-simple-maps";
 import { geoRobinson } from "d3-geo-projection";
-import { Tooltip, TooltipRefProps } from "react-tooltip";
-import { IconInfoCircle } from "@tabler/icons-react";
+import { Tooltip } from "react-tooltip";
 import { getCountryEmoji } from "src/utils/countryEmojis";
 import { IconX } from "@tabler/icons-react";
 
 export const MapDiv = ({ mapMode }) => {
-  const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
-  const [maxZoom, setMaxZoom] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
   const [activeCountry, setActiveCountry] = useState(null)
 
-  function handleZoomIn() {
-    if (position.zoom >= 4) return;
-    setPosition((pos) => ({ ...pos, zoom: pos.zoom * 2 }));
-  }
-  function handleZoomOut() {
-    if (position.zoom <= 1) return;
-    setPosition((pos) => ({ ...pos, zoom: pos.zoom / 2 }));
-  }
-  function handleMoveEnd(position) {
-    setPosition(position);
-  }
+
   const mapRef = useRef(null);
 
   //sets x and y of click location when click happens
@@ -80,10 +66,7 @@ export const MapDiv = ({ mapMode }) => {
     return () => matchMedia.removeEventListener('change', handleChange);
   }, []);
 
-  // Use isMobile as needed
-  useEffect(() => {
-    setMaxZoom(isMobile ? 8 : 1);
-  }, [isMobile]); // Re-run when isMobile changes
+
 
   const { resetAllExcept } = useCountryStore((state) => ({
     resetAllExcept: state.resetAllExcept,
@@ -98,7 +81,6 @@ export const MapDiv = ({ mapMode }) => {
   }));
 
   const [geographiesData, setGeographiesData] = useState([]);
-  const [showPopup, setShowPopup] = useState(false);
 
 
   useEffect(() => {
@@ -495,9 +477,3 @@ export const MapDiv = ({ mapMode }) => {
   );
 };
 
-const testWrapper = ({ children }) => {
-  const testFunction = () => {
-    console.log("test");
-  };
-  return <div onClick={() => testFunction()}>{children}</div>;
-};

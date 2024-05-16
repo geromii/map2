@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
 import { SearchCountry } from "./SearchCountry";
 import useCountryStore from "@/app/useCountryStore";
 import { IconSquareX } from "@tabler/icons-react";
