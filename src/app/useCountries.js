@@ -25,7 +25,7 @@ export function useCountries(searchValue) {
   }, [searchValue, allCountries]);
 
   useEffect(() => {
-    const priorityCountries = ["Israel", "Palestine", "United States", "China", "Russia"];
+    const priorityCountries = ["Afghanistan"];
 
     const sorted = filteredCountries.sort((a, b) => {
       const aPriority = priorityCountries.indexOf(a);
