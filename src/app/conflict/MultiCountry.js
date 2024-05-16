@@ -94,7 +94,6 @@ const LeftSidebar = () => {
 const PresetPairings = () => {
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   const setCountryPhase = useCountryStore((state) => state.setCountryPhase);
-  const mapMode = useCountryStore((state) => state.mapMode);
 
   const handlePairingSelection = (event) => {
     const [country1, country2] = event.target.value.split("-");
@@ -107,28 +106,10 @@ const PresetPairings = () => {
     }
   };
 
-  const handleSingleCountrySelection = (event) => {
-    const country = event.target.value;
-    resetAllExcept();
-    setCountryPhase(country, 2);
-  };
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto">
-      {mapMode === "single" ? (
-        <select
-          className="rounded-none shadow bg-black text-white mb-2"
-          onChange={handleSingleCountrySelection}
-        >
-          <option value="">Select a country</option>
-          <option value="Palestine">Palestine</option>
-          <option value="Israel">Israel</option>
-          <option value="Kosovo">Kosovo</option>
-          <option value="Cyprus">Cyprus</option>
-          <option value="Taiwan">Taiwan</option>
-          <option value="Armenia">Armenia</option>
-        </select>
-      ) : (
+
         <select
           className="rounded shadow bg-primary-foreground text-wh mb-1 mt-0.5 w-40"
           onChange={handlePairingSelection}
@@ -154,7 +135,6 @@ const PresetPairings = () => {
           <option value="Saudi Arabia - Yemen">Saudi Arabia - Yemen</option>
           <option value="Ethiopia - Egypt">Ethiopia - Egypt</option>
         </select>
-      )}
     </div>
   );
 };
@@ -179,10 +159,6 @@ export const MapControls = ({}) => {
     setMapMode: state.setMapMode,
   }));
 
-  const handleSingleModeToggle = async () => {
-    console.log("single mode toggle");
-    setMapMode(mapMode == "single" ? "default" : "single");
-  };
 
   const handleProjectionToggle = async () => {
     setMapMode(mapMode != "off" ? "off" : "default");

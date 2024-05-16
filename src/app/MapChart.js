@@ -4,13 +4,9 @@ import React, {  useEffect } from "react";
 import "./MapChart.css";
 import useCountryStore from "./useCountryStore";
 import { Switch } from "@/components/ui/switch";
-import {
-  IconRefresh,
-} from "@tabler/icons-react";
 import ShuffleCountries from "../components/custom/shuffle";
 import TabDiv from "../components/custom/FrameChildren/TabDiv";
 import { MapDiv } from "@/components/custom/FrameChildren/MapDiv";
-import IconButton from "../components/custom/boxbutton";
 import MapFrame from "@/components/custom/FrameMapAndSidebar";
 import { SearchCountry } from "@/components/custom/SearchCountry";
 import useEuCountries from "../utils/eu";
@@ -65,10 +61,7 @@ const RightSidebar = () => {
 };
 
 const LeftSidebar = () => {
-  const { countries } = useCountryStore((state) => ({ countries: state.countries }));
 
-  // Retrieve keys of countries in phase 2
-  const phase2Countries = Object.keys(countries).filter(key => countries[key].phase === 2);
   
   return (
     <div className="flex flex-col justify-evenly  text-sm lg:text-base">
@@ -121,30 +114,13 @@ const PresetPairings = () => {
   );
 };
 
-// refresh button to reset all countries
-const ResetCountries = () => {
-  const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
-  return (
-    <IconButton
-      icon={IconRefresh}
-      size = "medium"
-      onClick={() => {
-        resetAllExcept();
-      }}
-    />
-  );
-};
+
 
 export const MapControls = ({}) => {
   const { mapMode, setMapMode } = useCountryStore((state) => ({
     mapMode: state.mapMode,
     setMapMode: state.setMapMode,
   }));
-
-  const handleSingleModeToggle = async () => {
-    console.log("single mode toggle");
-    setMapMode(mapMode == "single" ? "default" : "single");
-  };
 
   const handleProjectionToggle = async () => {
     setMapMode(mapMode != "off" ? "off" : "default");
