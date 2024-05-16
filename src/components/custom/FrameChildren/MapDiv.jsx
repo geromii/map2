@@ -14,7 +14,6 @@ import { geoRobinson } from "d3-geo-projection";
 import { Tooltip } from "react-tooltip";
 import { getCountryEmoji } from "src/utils/countryEmojis";
 import { IconX } from "@tabler/icons-react";
-import { Suspense } from "react";
 import features from './features.json';
 
 export const MapDiv = ({ mapMode }) => {
@@ -178,7 +177,6 @@ export const MapDiv = ({ mapMode }) => {
             />
             <Sphere stroke="#E4E5E6" strokeWidth={0} className="mapbg" />
             <Graticule stroke="#E4E5E6" strokeWidth={0} />
-            <Suspense fallback={<div>Loading...</div>}>
             <Geographies geography={geographiesData}>
               {({ geographies }) => {
                 const remainingCountries = geographies.filter(
@@ -265,7 +263,6 @@ export const MapDiv = ({ mapMode }) => {
                 );
               }}
             </Geographies>
-            </Suspense>
         </ComposableMap>
       </div>
       {!isMobile && <>
