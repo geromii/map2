@@ -1,7 +1,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { MapInstructions } from "../mapInstructions";
+import { MapInstructions } from "./mapInstructions";
 import MapChart from "./MultiCountry";
 
 export const metadata = {
