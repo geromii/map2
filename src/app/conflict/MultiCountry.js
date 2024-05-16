@@ -76,7 +76,7 @@ const LeftSidebar = () => {
             <ResetCountries />
           </div>
         <h2 className=" font-semibold">Map Controls</h2>
-        <div className="mt-2 pl-5">
+        <div className="mt-2 pl-2 lg:pl-3">
           <MapControls />
         </div>
       </div>
@@ -194,27 +194,27 @@ export const MapControls = ({}) => {
 
   return (
     <div className="view-options-container flex-col overflow-hidden justify-between items-around  text-black font-medium">
-      <div className="block ml-1 lg:ml-0 mt-1 md:my-2 lg:my-2 ">
+      <div className="block ml-0.5 lg:ml-0 mt-1 md:my-2 lg:my-2 ">
         <Switch
           checked={mapMode != "off"}
           onCheckedChange={handleProjectionToggle}
         />
         <label
-          className="toggle-label relative -top-0.5 ml-1"
+          className="toggle-label relative -top-0.5 ml-0.5"
           onClick={handleProjectionToggle}
         >
           {" "}
           Predictions
         </label>
       </div>
-      <div className="block ml-1 lg:ml-0 mt-1 md:mt-2 lg:mt-2">
+      <div className="block ml-0.5 lg:ml-0 mt-1 md:mt-2 lg:mt-2">
         <Switch checked={mapMode == "war"} onCheckedChange={handleWarToggle} />
         <label
-          className="toggle-label relative -top-0.5 whitespace-nowrap justify-center ml-1"
+          className="toggle-label relative -top-0.5 whitespace-nowrap justify-center ml-0.5"
           onClick={handleWarToggle}
         >
           {"  "}
-          War Escalation
+          War 
         </label>
       </div>
     </div>

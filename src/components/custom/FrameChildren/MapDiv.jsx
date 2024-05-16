@@ -53,7 +53,7 @@ export const MapDiv = ({ mapMode }) => {
         tooltipRef1.current?.close();
         tooltipRef2.current?.close();
         tooltipRef3.current?.close();
-        // Optionally reset click location to avoid repeated closings
+        setTimeout(() => setActiveCountry(null), 35)
       }
     };
 

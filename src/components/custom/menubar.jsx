@@ -3,13 +3,28 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { createClient } from "src/utils/supabase/client";
+import { IconX } from "@tabler/icons-react";
 
 const MenuBar = () => {
   const pathname = usePathname();
   const [indicatorStyle, setIndicatorStyle] = useState({});
-  const [environment, setEnvironment] = useState(""); // Add environment state
   const linkRefs = useRef({}); // To store references to link elements
-  const [displayEnvironment, setDisplayEnvironment] = useState(false);
+  const [user, setUser] = useState(null); // Add user state
+  const [loading, setLoading] = useState(true); // Add loading state
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data } = await supabase.auth.getSession(); // Fetch session info
+      if (data?.session?.user) {
+        setUser(data.session.user); // If user exists, set state
+      }
+      setLoading(false); // Set loading state to false once complete
+    }
+
+    fetchUser(); // Invoke the async function to fetch session data
+  }, []);
 
   const updateIndicator = () => {
     const activeLinkRef = linkRefs.current[pathname];
@@ -35,19 +50,6 @@ const MenuBar = () => {
     linkRefs.current[path] = element;
   };
 
-  // Determine environment (localhost or production)
-  useEffect(() => {
-    const hostname = window.location.hostname;
-    if (hostname === "localhost") {
-      setEnvironment("(localhost:3000)");
-      setDisplayEnvironment(true);
-    } else if (hostname === "www.mapdis.com") {
-      setEnvironment("mapdis");
-      setDisplayEnvironment(true);
-    } else {
-      setEnvironment(`Custom Environment (${hostname})`);
-    }
-  }, []);
 
   const linkStyle = "hover:text-neutral-100";
   const listItemStyle = (path) =>
@@ -79,12 +81,13 @@ const MenuBar = () => {
         <div className="hidden text-center m-auto text-xl lg:block font-arvo">
           Global Relations Map
         </div>
-        {/* Display environment */}
-        {displayEnvironment && (
-          <div className="absolute right-0 text-sm text-gray-400 font-arvo">
-            {environment}
-          </div>
-        )}
+        {loading ? (
+        <div className = "absolute right-0"></div>
+      ) : user ? (
+        <div className = "absolute right-0">Logged in</div>
+      ) : (
+        <div className = "absolute right-0"></div>
+      )}
         {/* Indicator bar */}
         <div
           className="absolute h-[3px] bg-yellow-400 transition-all duration-300"
