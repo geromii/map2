@@ -42,9 +42,9 @@ export default function RootLayout({ children }) {
 
         {children}
         <Analytics />
-        <div className = "flex flex-col items-center bg-slate-300 max-w-100vw" >
-        <p className="text-xs  my-2"> Made by Jeremy Russell, 2024. 
-        <br/><a href="https://twitter.com/geromi_" target="_blank" rel="noopener noreferrer" className="text-blue-500  hover:text-blue-700 visited:text-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-300 mx-1">@geromi_</a>on Twitter/X</p>
+        <div className = "flex flex-col items-center bg-slate-200 max-w-100vw" >
+        <p className="text-xs  my-2"> Made by Jeremy Russell, 2024. </p>
+        <p className="text-xs  my-2"> I am an aspiring developer based in London. </p>
         </div>
         <SpeedInsights />
       </body>
