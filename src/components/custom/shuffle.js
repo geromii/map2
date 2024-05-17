@@ -255,6 +255,7 @@ const ShuffleCountries = ({ singleMode = false }) => {
   const [countries, setCountries] = useState({});
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [recentCountries, setRecentCountries] = useState([]); // Track recent selections to improve feeling of randomness
+  const [isShuffling, setIsShuffling] = useState(false);
 
   const gdpFilter = singleMode ? 5000 : 50000;
   const populationFilter = singleMode ? 500000 : 5000000;
@@ -288,6 +289,9 @@ const ShuffleCountries = ({ singleMode = false }) => {
   };
 
   const shuffleCountries = () => {
+    if (isShuffling) return; 
+    setIsShuffling(true);
+
     if (singleMode) {
       resetAllExcept();
     }
@@ -320,6 +324,7 @@ const ShuffleCountries = ({ singleMode = false }) => {
         setCountryPhase(country2, 3);
         updateRecentCountries(country2); // Update the recent list with the second country
       }
+      setIsShuffling(false);
     }, 900);
   };
 
