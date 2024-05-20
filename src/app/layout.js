@@ -44,7 +44,6 @@ export default function RootLayout({ children }) {
         <Analytics />
         <div className = "flex flex-col items-center bg-slate-200 max-w-100vw" >
         <p className="text-xs  my-2"> Made by Jeremy Russell, 2024. </p>
-        <p className="text-xs  my-2"> I am an aspiring developer based in London. </p>
         </div>
         <SpeedInsights />
       </body>
