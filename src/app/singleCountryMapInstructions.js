@@ -1,4 +1,5 @@
 import Image from "next/image";
+import singleImage from "public/singleimage.png"
 
 export const SingleCountryMapInstructions = () => {
   return (
@@ -31,7 +32,7 @@ export const SingleCountryMapInstructions = () => {
             Clicking any country will highlight its network of relationships.
           </p>
           <Image
-            src="/singleimage.png"
+            src={singleImage}
             width={220}
             height={220}
             alt="Picture of the map in the single country state, which Russia selected."

@@ -197,7 +197,7 @@ export const MapDiv = ({ mapMode }) => {
                       const countryState = countries[geo.properties.name];
                       return (
                         <Geography
-                          aria-label={`Heat map data for ${geo.properties.name}, value of ${countryState.probability}`}
+                          aria-label={`Heat map data for ${geo.properties.name}, value of ${countryState.preferenceScore}`}
                           key={geo.rsmKey}
                           geography={geo}
                           onClick={(e) =>
@@ -222,7 +222,7 @@ export const MapDiv = ({ mapMode }) => {
                           className="country cursor-pointer"
                           data-tooltip-id="my-tooltip"
                           data-tooltip-content={geo.properties.name}
-                          data-country-score={`${countryState.probability.toFixed(2)}`}
+                          data-country-score={`${countryState.preferenceScore.toFixed(2)}`}
                           data-tooltip-showscore={true}
                         />
                       );

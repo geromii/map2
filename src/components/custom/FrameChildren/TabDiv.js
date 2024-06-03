@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import useCountryStore from "../../../app/useCountryStore";
 import TabDemographic from "../tabDemographic";
-import TabStats from "../../../app/tabStats";
+import TabStats from "../tabStats";
 import {
   Tabs,
   TabsContent,
@@ -67,11 +67,11 @@ export default function TabDiv({
       );
 
       const sorted = phase0Countries
-        .filter(([_, value]) => value.probability != 0)
-        .sort((a, b) => a[1].probability - b[1].probability)
+        .filter(([_, value]) => value.preferenceScore != 0)
+        .sort((a, b) => a[1].preferenceScore - b[1].preferenceScore)
         .map((entry) => ({
           country: entry[0],
-          probability: entry[1].probability,
+          preferenceScore: entry[1].preferenceScore,
         }));
       const top3 = sorted.slice(0, 4);
       const bottom3 = sorted.slice(-4).reverse();
@@ -89,7 +89,7 @@ export default function TabDiv({
   return (
     <Tabs
       defaultValue="data"
-      className="relative flex flex-col items-center justify-between h-[160px] lg:h-[13.02vw]  w-full md:w-[90%] shadow-sm z-20 rounded-none md:rounded-2xl mb-[-2px] lg:mb-[-12px] md:mt-[20px] bg-card/95 border-2 overflow-hidden  ring-primary data-[tabvisible=false]:h-24 data-[tabvisible=false]:mb-2 transition-all duration-500"
+      className="relative flex flex-col items-center justify-between h-[170px] lg:h-[14.02vw]  w-full md:w-[90%] shadow-sm z-20 rounded-none md:rounded-2xl mb-[-2px] lg:mb-[-12px] md:mt-[20px] bg-card/95 border-2 overflow-hidden  ring-primary data-[tabvisible=false]:h-24 data-[tabvisible=false]:mb-2 transition-all duration-500"
     >
       <div
         data-display={displayStats}

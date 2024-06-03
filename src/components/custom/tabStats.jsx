@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { IconInfoCircle, IconArrowBigDownFilled } from "@tabler/icons-react";
 
-import useCountryStore from "./useCountryStore";
-import { getCountryEmoji } from "../utils/countryEmojis";
+import useCountryStore from "../../app/useCountryStore";
+import { getCountryEmoji } from "../../utils/countryEmojis";
 
 function TabStats({
   pageMode,
@@ -40,7 +40,7 @@ function TabStats({
                 {sortedCountries.slice(-4).map((entry, index) => (
                   <tr key={index}>
                     <td className="w-4/12 md:w-3/12 lg:w-4/12 text-left font-mono truncate">
-                      {entry.probability.toFixed(2)}{" "}
+                      {entry.preferenceScore.toFixed(2)}{" "}
                       {getCountryEmoji(entry.country)}
                       <span className="truncate font-sans">
                         {entry.country}
@@ -55,7 +55,7 @@ function TabStats({
                 {sortedCountries.slice(0, 4).map((entry, index) => (
                   <tr key={index}>
                     <td className="w-4/12 md:w-3/12 lg:w-4/12 text-left font-mono truncate">
-                      {entry.probability.toFixed(2)}{" "}
+                      {entry.preferenceScore.toFixed(2)}{" "}
                       {getCountryEmoji(entry.country)}
                       <span className="truncate font-sans">
                         {entry.country}

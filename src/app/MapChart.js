@@ -101,7 +101,7 @@ const PresetPairings = () => {
   return (
     <div className="w-full h-full flex flex-col justify-start items-center overflow-y-auto ">
               <h2 className=" font-semibold mb-4 pl-3 text-sm lg:text-base">Quick Access</h2>
-        <div className="grid grid-cols-2 mb-2 gap-4">
+        <div className="grid grid-cols-2 mb-2 gap-4 w-full mx-4 px-1">
           <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Palestine')}>Palestine</button>
           <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Israel')}>Israel</button>
           <button className="rounded-md shadow bg-primary text-white p-1 ring-2 ring-yellow-400" onClick={() => handleSingleCountrySelection('Kosovo')}>Kosovo</button>

@@ -16,7 +16,7 @@ const COLOR_MAP = {
   [PHASES.NEUTRAL]: "#646464",
 };
 
-const getColorFromProbability = (number, phase, mapMode) => {
+const getColorFrompreferenceScore = (number, phase, mapMode) => {
   if (phase == PHASES.RED) {return COLOR_MAP[PHASES.RED]}
   if (phase == PHASES.BLUE) {return COLOR_MAP[PHASES.BLUE]}
   if (phase == PHASES.NEUTRAL) {return COLOR_MAP[PHASES.NEUTRAL]}
@@ -25,10 +25,10 @@ const getColorFromProbability = (number, phase, mapMode) => {
 
 
   number = Math.max(-1, Math.min(number, 1));
-  let probability = Math.abs(number) ** 1.6; // turns the probability into a more exponential curve
+  let preferenceScore = Math.abs(number) ** 1.6; // turns the preferenceScore into a more exponential curve
   let hue = number >= 0 ? 240 : 0;
-  let saturation = 100 * probability;
-  let lightness = 78 - 30 * probability;
+  let saturation = 100 * preferenceScore;
+  let lightness = 78 - 30 * preferenceScore;
   return `hsl(${hue}, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
 };
 
@@ -38,7 +38,7 @@ const useCountryStore = create((set, get) => ({
     acc[country] = {
       phase: PHASES.INITIAL,
       color: COLOR_MAP[PHASES.INITIAL],
-      probability: 0,
+      preferenceScore: 0,
       nonInitial: false,
       selectionOrder: 0,
     };
@@ -69,7 +69,7 @@ const useCountryStore = create((set, get) => ({
         [countryName]: {
           ...countryData,
           phase: nextPhase,
-          color: getColorFromProbability(countryData.probability, nextPhase, state.isProjectionActive),
+          color: getColorFrompreferenceScore(countryData.preferenceScore, nextPhase, state.isProjectionActive),
           nonInitial: nextPhase !== PHASES.INITIAL,
           selectionOrder: currentSelectionOrder !== 0 ? currentSelectionOrder : (nextPhase !== PHASES.INITIAL ? maxSelectionOrder + 1 : 0),
         },
@@ -89,7 +89,7 @@ const useCountryStore = create((set, get) => ({
         acc[country] = {
           phase: PHASES.INITIAL,
           color: COLOR_MAP[PHASES.INITIAL],
-          probability: 0,
+          preferenceScore: 0,
           nonInitial: false,
           selectionOrder: 0,
         };
@@ -136,7 +136,7 @@ const useCountryStore = create((set, get) => ({
         [countryName]: {
           ...state.countries[countryName],
           phase: phase,
-          color: getColorFromProbability(state.countries[countryName].probability, phase, state.isProjectionActive),
+          color: getColorFrompreferenceScore(state.countries[countryName].preferenceScore, phase, state.isProjectionActive),
           nonInitial: phase !== PHASES.INITIAL,
           selectionOrder: currentSelectionOrder !== 0 ? currentSelectionOrder : (phase !== PHASES.INITIAL ? maxSelectionOrder + 1 : 0),
         },
@@ -195,11 +195,11 @@ const useCountryStore = create((set, get) => ({
     set((state) => ({
       countries: Object.keys(state.countries).reduce((newCountries, country, index) => {
         const currentCountry = state.countries[country];
-        const probability = (!revealScores) ? 0 : result[index];
+        const preferenceScore = (!revealScores) ? 0 : result[index];
         newCountries[country] = {
           ...currentCountry,
-          probability,
-          color: getColorFromProbability(probability, currentCountry.phase, mapMode),
+          preferenceScore,
+          color: getColorFrompreferenceScore(preferenceScore, currentCountry.phase, mapMode),
         };
         return newCountries;
       }, {}),
