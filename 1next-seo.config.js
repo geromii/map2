@@ -9,13 +9,13 @@ const seoConfig = {
       description: 'Interactive geopolitics map maker',
       images: [
         {
-          url: 'https://www.yourwebsite.com/thumbnail.jpg',
+          url: 'https://www.mapdis.com/singleimage.png',
           width: 800,
           height: 600,
-          alt: 'Thumbnail Alt Text',
+          alt: 'Global Relations Interactive Map',
         },
       ],
-      site_name: 'Your Website Name',
+      site_name: 'Mapdis',
     },
 };
 
