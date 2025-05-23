@@ -21,6 +21,27 @@ const fontArvo = FontArvo({
 export const metadata = {
   title: "Global Relations Map - Mapdis",
   description: "Explore the world's diplomatic relationships and alliances through an interactive map. Create scenarios to see maps of how the world reacts to potential conflicts and wars.",
+  keywords: "geopolitics, world map, international relations, diplomacy, conflicts, alliances, global politics, interactive map",
+  canonical: "https://www.mapdis.com",
+  openGraph: {
+    title: "Global Relations Map - Mapdis",
+    description: "Interactive geopolitics map maker",
+    url: "https://www.mapdis.com",
+    siteName: "Mapdis",
+    images: [{
+      url: "https://www.mapdis.com/singleimage.png",
+      width: 800,
+      height: 600,
+      alt: "Global Relations Interactive Map",
+    }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Global Relations Map - Mapdis",
+    description: "Interactive geopolitics map maker",
+    images: ["https://www.mapdis.com/singleimage.png"],
+  },
 };
 
 // Explore the world's diplomatic relationships and alliances through an interactive map. Dive into the net relationship scores of every country and visualize theoretical conflict scenarios that reveal potential global alliances. A captivating platform for the well-read, curious minds interested in global politics and international relations.
