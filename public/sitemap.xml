@@ -10,12 +10,6 @@
     <loc>https://www.mapdis.com/conflict</loc>
     <lastmod>2024-12-01</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.mapdis.com/ww3simulator</loc>
-    <lastmod>2024-12-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>1.0</priority>
   </url>
 </urlset>
