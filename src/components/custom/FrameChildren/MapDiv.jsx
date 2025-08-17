@@ -16,7 +16,7 @@ import { getCountryEmoji } from "src/utils/countryEmojis";
 import { IconX } from "@tabler/icons-react";
 import features from './features.json';
 
-export const MapDiv = ({ mapMode }) => {
+const MapDivComponent = ({ mapMode }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [activeCountry, setActiveCountry] = useState(null)
 
@@ -485,4 +485,6 @@ export const MapDiv = ({ mapMode }) => {
     </div>
   );
 };
+
+export const MapDiv = React.memo(MapDivComponent);
 
