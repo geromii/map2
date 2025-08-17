@@ -45,6 +45,7 @@ export default function MapFrame({
             <button
               onClick={() => setLeftSidebarVisible(!leftSidebarVisible)}
               className=""
+              aria-label="Shrink left sidebar"
             >
               {leftSidebarVisible ? (
                 <IconArrowsDiagonalMinimize2 />
@@ -71,6 +72,7 @@ export default function MapFrame({
                 setLeftSidebarVisible(false);
                 setRightSidebarVisible(false);
               }}
+              aria-label="Expand map"
             >
               <IconArrowsMaximize color="white" size={28} />
             </button>
@@ -93,6 +95,7 @@ export default function MapFrame({
               <button
                 onClick={() => setRightSidebarVisible(!rightSidebarVisible)}
                 className=""
+                aria-label="Shrink right sidebar"
               >
                 {rightSidebarVisible ? (
                   <IconArrowsDiagonalMinimize />

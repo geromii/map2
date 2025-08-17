@@ -197,7 +197,6 @@ export const MapDiv = ({ mapMode }) => {
                       const countryState = countries[geo.properties.name];
                       return (
                         <Geography
-                          aria-label={`Heat map data for ${geo.properties.name}, value of ${countryState.preferenceScore}`}
                           key={geo.rsmKey}
                           geography={geo}
                           onClick={(e) =>
@@ -293,6 +292,9 @@ export const MapDiv = ({ mapMode }) => {
         }}
         render={({ content, activeAnchor }) => (
           <div
+            role="button"
+            tabIndex={0}
+            aria-label="Set as opponent"
             onClick={() => {
               setCountryPhase(content, 3);
               tooltipRef1.current?.close()
@@ -322,6 +324,9 @@ export const MapDiv = ({ mapMode }) => {
         }}
         render={({ content, activeAnchor }) => (
           <div
+            role="button"
+            tabIndex={0}
+            aria-label="Set as ally"
             onClick={() => {
               setCountryPhase(content, 2);
               tooltipRef1.current?.close()
@@ -353,6 +358,9 @@ export const MapDiv = ({ mapMode }) => {
         render={({ content, activeAnchor }) => (
           <div className="flex">
             <div
+              role="button"
+              tabIndex={0}
+              aria-label="Reset"
               onClick={() => {
                 setCountryPhase(content, 0);
                 tooltipRef1.current?.close()
@@ -365,6 +373,9 @@ export const MapDiv = ({ mapMode }) => {
               <IconX className = ""/>
             </div>
             <div
+              role="button"
+              tabIndex={0}
+              aria-label="Set as neutral"
               onClick={() => {
                 setCountryPhase(content, 1);
                 tooltipRef1.current?.close()

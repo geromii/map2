@@ -103,8 +103,8 @@ export default function TabDiv({
         />
       </div>
           <TabsList className=" mt-2 justify-center w-[95%] md:w-[70%] grid grid-cols-2 shadow-inner mb-0 z-10">
-            <TabsTrigger value="data">For/Against</TabsTrigger>
-            <TabsTrigger value="demographics">Demographics</TabsTrigger>
+            <TabsTrigger value="data" className="data-[state=inactive]:text-gray-700">For/Against</TabsTrigger>
+            <TabsTrigger value="demographics" className="data-[state=inactive]:text-gray-700">Demographics</TabsTrigger>
           </TabsList>
 
           <TabsContent
