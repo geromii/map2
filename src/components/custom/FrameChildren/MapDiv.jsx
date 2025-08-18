@@ -35,7 +35,7 @@ const MapDivComponent = ({ mapMode }) => {
           1.8* Math.pow(event.clientY - (clickLocation.y + 5), 2)
       );
 
-      if (distance > 70 ) {
+      if (distance > 200 ) {
         // Close the tooltip if the distance is more than 50px
         tooltipRef1.current?.close();
         tooltipRef2.current?.close();

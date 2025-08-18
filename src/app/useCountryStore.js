@@ -213,7 +213,7 @@ async function fetchScoresMatrix() {
   if (storedMatrix) {
     return JSON.parse(storedMatrix);
   } else {
-    const response = await fetch('/map_design.json');
+    const response = await fetch('/map_design_2025_08.json');
     const matrix = await response.json();
     sessionStorage.setItem('mapDesign', JSON.stringify(matrix));
     return matrix;
