@@ -2,6 +2,7 @@
 import React from "react";
 import { MapInstructions } from "./mapInstructions";
 import MapChart from "./MultiCountry";
+import { DataUpdateBanner } from "../components/DataUpdateBanner";
 
 export const metadata = {
   title: "Conflict Mapper - Mapdis",
@@ -11,6 +12,7 @@ export const metadata = {
 export default function Home() {
   return (
     <div className="transition ease-in-out whole-container h-full w-screen">
+      <DataUpdateBanner />
       <div>
         <MapChart /></div>
       <MapInstructions />

@@ -75,7 +75,7 @@ export const SingleCountryMapInstructions = () => {
           Data Source
         </h2>
         <p className="text-gray-600 mt-3 lg:ml-2">
-        The underlying dataset is AI-generated synethic data using GPT-3.5 and GPT-4 to produce a summary, and a score, of each relationship. The results are averaged across runs to produce the final score.
+        The underlying dataset is AI-generated synthetic data originating from GPT-5, generated on August 18, 2025. The data includes summaries and scores of each relationship, with results averaged across runs to produce the final score.
         </p>
       </section>
     </article>
