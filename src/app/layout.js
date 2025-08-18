@@ -57,6 +57,8 @@ export default function RootLayout({ children }) {
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon.png" />
         <link rel="manifest" href="/favicon/site.webmanifest" />
         
+        <link rel="preload" href="/map_design_2025_08.json" as="fetch" crossOrigin="anonymous" />
+        
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-KSKH6FD6PY"></script>
         <script
           dangerouslySetInnerHTML={{

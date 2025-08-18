@@ -213,10 +213,34 @@ async function fetchScoresMatrix() {
   if (storedMatrix) {
     return JSON.parse(storedMatrix);
   } else {
-    const response = await fetch('/map_design_2025_08.json');
-    const matrix = await response.json();
-    sessionStorage.setItem('mapDesign', JSON.stringify(matrix));
-    return matrix;
+    // Use optimized fetching with error handling
+    try {
+      const response = await fetch('/map_design_2025_08.json', {
+        // Enable compression
+        headers: {
+          'Accept-Encoding': 'gzip, deflate, br'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const matrix = await response.json();
+      
+      // Only cache if we have space
+      try {
+        sessionStorage.setItem('mapDesign', JSON.stringify(matrix));
+      } catch (e) {
+        console.warn('SessionStorage full, skipping cache');
+      }
+      
+      return matrix;
+    } catch (error) {
+      console.error('Failed to fetch matrix data:', error);
+      // Return a fallback empty matrix to prevent app crash
+      return Array(200).fill().map(() => Array(200).fill(0));
+    }
   }
 }
 
