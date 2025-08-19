@@ -341,6 +341,7 @@ const ShuffleCountries = ({ singleMode = false }) => {
       <IconButton
         icon={IconArrowsShuffle}
         size="medium"
+        aria-label="Shuffle countries - select random countries"
         onClick={shuffleCountries}
       />
       <ShufflePopup isVisible={isPopupVisible} singleMode={singleMode} />

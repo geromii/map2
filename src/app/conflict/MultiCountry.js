@@ -112,6 +112,7 @@ const PresetPairings = () => {
 
         <select
           className="rounded shadow bg-primary-foreground text-wh mb-1 mt-0.5 w-40"
+          aria-label="Select a country pairing preset"
           onChange={handlePairingSelection}
         >
           <option value="">Select a pairing</option>
@@ -146,6 +147,7 @@ const ResetCountries = () => {
     <IconButton
       icon={IconRefresh}
       size = "medium"
+      aria-label="Clear map - reset all countries"
       onClick={() => {
         resetAllExcept();
       }}
@@ -174,6 +176,7 @@ export const MapControls = ({}) => {
         <Switch
           checked={mapMode != "off"}
           onCheckedChange={handleProjectionToggle}
+          aria-label="Toggle predictions display"
         />
         <label
           className="toggle-label relative -top-0.5 ml-0.5"
@@ -184,7 +187,7 @@ export const MapControls = ({}) => {
         </label>
       </div>
       <div className="block ml-0.5 lg:ml-0 mt-1 md:mt-2 lg:mt-2">
-        <Switch checked={mapMode == "war"} onCheckedChange={handleWarToggle} />
+        <Switch checked={mapMode == "war"} onCheckedChange={handleWarToggle} aria-label="Toggle war mode" />
         <label
           className="toggle-label relative -top-0.5 whitespace-nowrap justify-center ml-0.5"
           onClick={handleWarToggle}
