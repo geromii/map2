@@ -2,6 +2,13 @@ import { create } from "zustand";
 import countries from "./countries.json"; 
 import * as math from "mathjs";
 
+// Pre-parse matrix after initial load
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    fetchScoresMatrix().catch(console.error);
+  }, 0);
+}
+
 const PHASES = {
   INITIAL: 0,
   NEUTRAL: 1,

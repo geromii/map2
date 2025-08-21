@@ -34,7 +34,7 @@ export const DataUpdateBanner = () => {
           <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">
             Data last updated: 
             <span className="ml-1 font-bold text-blue-900 dark:text-blue-100">
-              August 18, 2025
+              August, 2025
             </span>
           </p>
         </div>
