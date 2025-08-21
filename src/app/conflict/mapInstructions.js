@@ -6,15 +6,14 @@ export const MapInstructions = () => {
         <section>
           <header className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 lg:text-4xl">
-              How to use the Geopolitics Map
+              Diplomatic Conflicts Map & WW3 Map Simulator
             </h1>
           </header>
           <p className="mb-8 text-gray-600">
-            Click countries on the map until you have at least one country on the{" "}
-            <span className="text-blue-800">Blue side</span>, and at
-            least one country on the{" "}
-            <span className="text-red-800">Red side</span>. You
-            will then see a global opinion map.
+            Create diplomatic conflict scenarios on this interactive map. Select countries for the{" "}
+            <span className="text-blue-800">Blue side</span> and{" "}
+            <span className="text-red-800">Red side</span> to visualize global diplomatic alignments. 
+            Enable War Escalation Mode to transform this into a WW3 map showing potential World War 3 alliances.
           </p>
         </section>
         <section className="mb-8 lg:mb-12">
@@ -62,24 +61,21 @@ export const MapInstructions = () => {
         </section>
         <section>
           <h2 className="text-2xl font-semibold text-gray-700">
-            <span className="font-bold">War Outbreak (WW3) Mode</span>:
+            <span className="font-bold">War Escalation Mode - WW3 Map & World War 3 Scenarios</span>:
           </h2>
           <div className = "flex flex-col lg:flex-row mx-2 lg:mx-10 my-2 ">
           <Image src="/warimage.png" width={200} height={200} alt="An image of the map with Saudi Arabia (blue) and Iran (red), with war mode turned on, showing most of Europe now shaded blue." className = "rounded-full border-2 border-gray-300 shadow-lg self-center" priority={true}/>
           <p className="text-gray-600 mt-2 p-1 lg:p-4">
-            When <span className="font-bold">War Outbreak Mode</span> is on the
-            calculation gets more complex. Instead, the countries in the undecided
-            state now receive a predicted side according to what their allies
-            think about the conflict (the second order relationship). For example,{" "}
-            <span className="color-transition font-medium">Germany</span> may not
-            initially take a side if{" "}
+            Activate <span className="font-bold">War Escalation Mode</span> to transform the diplomatic conflict map into a 
+            WW3 map showing potential World War 3 scenarios. This World War 3 map simulator predicts how nations 
+            would align based on alliance networks and second-order relationships. For instance, in a WW3 scenario between{" "}
             <span className="text-blue-800">Saudi Arabia</span> and{" "}
-            <span className="text-red-800">Iran</span> go to war, but when all of
-            its major allies side with{" "}
-            <span className="text-blue-800">Saudi Arabia</span>, they are much more
-            inclined to do the same. However, if an ally is in the{" "}
-            <span className="text-gray-800 font-medium">Neutral</span> state then
-            that country will be excluded from the calculation.
+            <span className="text-red-800">Iran</span>, <span className="color-transition font-medium">Germany</span> might 
+            initially remain neutral, but would likely join <span className="text-blue-800">Saudi Arabia's</span> side if 
+            its major allies do so. This WW3 map mode reveals how regional conflicts could escalate into World War 3 
+            through alliance obligations. Countries marked as{" "}
+            <span className="text-gray-800 font-medium">Neutral</span> are excluded from alliance calculations 
+            in these World War 3 scenarios.
           </p>
           </div>
         </section>

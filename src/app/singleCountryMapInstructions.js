@@ -7,24 +7,23 @@ export const SingleCountryMapInstructions = () => {
       <section>
         <header className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 lg:text-4xl">
-            How to use the Geopolitics Map
+            Interactive Geopolitics Map & Diplomacy Map
           </h1>
         </header>
         <div className="flex">
           <p className="mb-8 text-gray-600">
-            Click any country on the map to view its diplomatic relationships
-            with other nations. Friendly relationships will appear in{" "}
-            <span className="text-blue-800">blue</span>, while less favorable
-            relationships will be shown in{" "}
-            <span className="text-red-800">red</span>. You can quickly switch
-            between countries by clicking another nation to see its geopolitical
-            relationship map.
+            Explore our interactive geopolitics map and diplomacy map to understand global relationships. 
+            Click any country to visualize its diplomatic ties and international relations. 
+            Friendly diplomatic relationships appear in{" "}
+            <span className="text-blue-800">blue</span>, while strained diplomatic relations show in{" "}
+            <span className="text-red-800">red</span>. Navigate the geopolitics map by clicking different nations 
+            to compare their diplomatic networks and alliances.
           </p>
         </div>
       </section>
       <section className="mb-6 lg:mb-8">
         <h2 className="ml-4 text-2xl font-semibold text-gray-800 lg:text-3xl">
-          Understanding Relationship Scores
+          Understanding Diplomatic Relationship Scores on the Geopolitics Map
         </h2>
         <div className="lg:grid lg:grid-cols-3 mt-2 ">
           <p className="mt-6 text-gray-700 lg:text-base text-left lg:text-center lg:ml-10 lg:p-4">
@@ -62,12 +61,12 @@ export const SingleCountryMapInstructions = () => {
       </section>
       <section className="mb-6">
         <h2 className="text-2xl lg:text-3xl ml-4 font-bold text-gray-700">
-          Map Navigation
+          Navigating the Diplomacy Map
         </h2>
         <p className="text-gray-600 mt-3 lg:ml-2">
-          Click a country to view its direct relationship map. You can click on
-          different countries to compare how each one&apos;s relationships
-          change across different regions and contexts.
+          Navigate this interactive diplomacy map by clicking any country to reveal its geopolitical relationships. 
+          Compare diplomatic ties across nations by selecting different countries on the geopolitics map 
+          to understand how international relations vary by region and political context.
         </p>
       </section>
       <section className="mb-6">
