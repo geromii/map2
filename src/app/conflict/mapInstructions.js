@@ -71,7 +71,7 @@ export const MapInstructions = () => {
             would align based on alliance networks and second-order relationships. For instance, in a WW3 scenario between{" "}
             <span className="text-blue-800">Saudi Arabia</span> and{" "}
             <span className="text-red-800">Iran</span>, <span className="color-transition font-medium">Germany</span> might 
-            initially remain neutral, but would likely join <span className="text-blue-800">Saudi Arabia's</span> side if 
+            initially remain neutral, but would likely join <span className="text-blue-800">Saudi Arabia&apos;s</span> side if 
             its major allies do so. This WW3 map mode reveals how regional conflicts could escalate into World War 3 
             through alliance obligations. Countries marked as{" "}
             <span className="text-gray-800 font-medium">Neutral</span> are excluded from alliance calculations 
