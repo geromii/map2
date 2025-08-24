@@ -15,9 +15,9 @@ const IconButton = ({ icon: Icon, size = 'medium', ...props }) => {
   return (
     <Button
       {...props}
-      className={`inline-flex justify-center shadow border-2 border-yellow-400 items-center p-0 m-0  ${buttonSizeClass} ${props.className || ''}`}
+      className={`inline-flex justify-center shadow border-2 border-yellow-400 items-center p-0 m-0 transition-all duration-150 hover:shadow-lg hover:border-yellow-500 active:scale-95 active:shadow-sm active:border-yellow-600 ${buttonSizeClass} ${props.className || ''}`}
     >
-      {Icon && <Icon className={iconSizeClass}/>}
+      {Icon && <Icon className={`${iconSizeClass} transition-transform duration-150`}/>}
     </Button>
   );
 };
