@@ -7,7 +7,7 @@ import useCountryStore from "../useCountryStore";
 import { SearchBox } from "@/components/custom/SearchBox";
 import { Switch } from "@/components/ui/switch";
 import {
-  IconRefresh,
+  IconTrash,
 } from "@tabler/icons-react";
 import ShuffleCountries from "../../components/custom/shuffle";
 import TabDiv from "../../components/custom/FrameChildren/TabDiv";
@@ -71,14 +71,13 @@ const LeftSidebar = () => {
   return (
     <div className="flex flex-col justify-evenly  mb-3  ">
       <div className="h-1/3 p-2 border-muted">
-          <div className="flex justify-evenly mb-4">
-            <ShuffleCountries />
-            <ResetCountries />
-          </div>
-        <h2 className=" font-semibold">Map Controls</h2>
         <div className="mt-2 pl-2 lg:pl-3">
           <MapControls />
         </div>
+          <div className="flex justify-evenly mb-4 mt-4">
+            <ShuffleCountries />
+            <ResetCountries />
+          </div>
       </div>
 
       <div className="h-1/3 p-1 border-muted w-full">
@@ -140,12 +139,12 @@ const PresetPairings = () => {
   );
 };
 
-// refresh button to reset all countries
+// clear button to reset all countries
 const ResetCountries = () => {
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   return (
     <IconButton
-      icon={IconRefresh}
+      icon={IconTrash}
       size = "medium"
       aria-label="Clear map - reset all countries"
       onClick={() => {
@@ -171,7 +170,17 @@ export const MapControls = ({}) => {
   };
 
   return (
-    <div className="view-options-container flex-col overflow-hidden justify-between items-around  text-black font-medium">
+    <div className="view-options-container flex-col overflow-hidden justify-between items-around text-black font-medium">
+      <div className="block ml-0.5 lg:ml-0 mt-1 md:mt-2 lg:mt-2">
+        <Switch checked={mapMode == "war"} onCheckedChange={handleWarToggle} aria-label="Toggle war mode" />
+        <label
+          className="toggle-label relative -top-0.5 whitespace-nowrap justify-center ml-0.5 font-bold"
+          onClick={handleWarToggle}
+        >
+          {"  "}
+          War Mode
+        </label>
+      </div>
       <div className="block ml-0.5 lg:ml-0 mt-1 md:my-2 lg:my-2 ">
         <Switch
           checked={mapMode != "off"}
@@ -184,16 +193,6 @@ export const MapControls = ({}) => {
         >
           {" "}
           Predictions
-        </label>
-      </div>
-      <div className="block ml-0.5 lg:ml-0 mt-1 md:mt-2 lg:mt-2">
-        <Switch checked={mapMode == "war"} onCheckedChange={handleWarToggle} aria-label="Toggle war mode" />
-        <label
-          className="toggle-label relative -top-0.5 whitespace-nowrap justify-center ml-0.5"
-          onClick={handleWarToggle}
-        >
-          {"  "}
-          War 
         </label>
       </div>
     </div>
