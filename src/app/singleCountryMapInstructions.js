@@ -36,7 +36,8 @@ export const SingleCountryMapInstructions = () => {
             height={220}
             alt="Picture of the map in the single country state, which Russia selected."
             className="rounded-full mx-auto my-3 border-2 border-gray-300 shadow-lg align-middle justify-center hidden lg:block"
-            priority={true}
+            sizes="220px"
+            loading="lazy"
           />
           <ul className="mt-4 list-disc list-inside bg-white p-6 rounded-lg shadow space-y-3 lg:p-8 my-auto">
             <li className="text-blue-800 font-medium lg:text-lg">
@@ -55,7 +56,8 @@ export const SingleCountryMapInstructions = () => {
             height={220}
             alt="Picture of the map in the single country state, which Russia selected."
             className="rounded-full mx-auto my-3 border-2 border-gray-300 shadow-lg align-middle justify-center lg:hidden"
-            priority={true}
+            sizes="(max-width: 768px) 216px, 220px"
+            loading="lazy"
           />
         </div>
       </section>
