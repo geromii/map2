@@ -18,6 +18,7 @@ const MapDivComponent = ({ mapMode }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [activeCountry, setActiveCountry] = useState(null);
   const [features, setFeatures] = useState(null);
+  const [showLoading, setShowLoading] = useState(true);
 
 
   const mapRef = useRef(null);
@@ -89,6 +90,11 @@ const MapDivComponent = ({ mapMode }) => {
         const featuresModule = await import('./features.json');
         setFeatures(featuresModule.default);
         setGeographiesData(featuresModule.default);
+        
+        // Hide loading indicator half a second after map loads
+        setTimeout(() => {
+          setShowLoading(false);
+        }, 500);
       } catch (error) {
         console.error('Failed to load map features:', error);
       }
@@ -270,6 +276,37 @@ const MapDivComponent = ({ mapMode }) => {
                 );
               }}
             </Geographies>}
+            {showLoading && (
+              <g>
+                <defs>
+                  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="rgba(0,0,0,0.3)"/>
+                  </filter>
+                </defs>
+                <rect
+                  x="290"
+                  y="450"
+                  width="220"
+                  height="40"
+                  rx="8"
+                  fill="rgba(0, 0, 0, 0.6)"
+                  stroke="rgba(255, 255, 255, 0.2)"
+                  strokeWidth="1"
+                />
+                <text
+                  x="400"
+                  y="475"
+                  textAnchor="middle"
+                  fill="#94a3b8"
+                  fontSize="14"
+                  fontFamily="system-ui, -apple-system"
+                  fontWeight="400"
+                  fontStyle="italic"
+                >
+                  🌍 Loading map...
+                </text>
+              </g>
+            )}
         </ComposableMap>
       </div>
       {!isMobile && <>
