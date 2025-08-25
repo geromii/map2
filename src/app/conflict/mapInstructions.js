@@ -43,7 +43,7 @@ export const MapInstructions = () => {
             <span className="font-bold">Geopolitics Mode</span>:
           </h2>
           <div className = "flex flex-col lg:flex-row mx-2 lg:mx-10 my-2 ">
-          <Image src="/conflictimage.png" width={200} height={200} alt="An image of the map with Saudi Arabia (blue) and Iran (red) selected, display most of Europe as neutral but the UK shaded blue and Russia shaded red." className = "rounded-full border-2 border-gray-300 shadow-lg self-center" priority={true}/>
+          <Image src="/conflictimage.png" width={200} height={200} alt="An image of the map with Saudi Arabia (blue) and Iran (red) selected, display most of Europe as neutral but the UK shaded blue and Russia shaded red." className = "rounded-full border-2 border-gray-300 shadow-lg self-center" sizes="(max-width: 768px) 196px, 200px" priority={true}/>
           <p className="text-gray-600 mt-2 p-1 lg:p-4">
             When <span className="font-bold">Predictions</span> are on and
             there is at least one country in each of{" "}
@@ -64,7 +64,7 @@ export const MapInstructions = () => {
             <span className="font-bold">War Escalation Mode - WW3 Map & World War 3 Scenarios</span>:
           </h2>
           <div className = "flex flex-col lg:flex-row mx-2 lg:mx-10 my-2 ">
-          <Image src="/warimage.png" width={200} height={200} alt="An image of the map with Saudi Arabia (blue) and Iran (red), with war mode turned on, showing most of Europe now shaded blue." className = "rounded-full border-2 border-gray-300 shadow-lg self-center" priority={true}/>
+          <Image src="/warimage.png" width={200} height={200} alt="An image of the map with Saudi Arabia (blue) and Iran (red), with war mode turned on, showing most of Europe now shaded blue." className = "rounded-full border-2 border-gray-300 shadow-lg self-center" sizes="(max-width: 768px) 196px, 200px" priority={true}/>
           <p className="text-gray-600 mt-2 p-1 lg:p-4">
             Activate <span className="font-bold">War Escalation Mode</span> to transform the diplomatic conflict map into a 
             WW3 map showing potential World War 3 scenarios. This World War 3 map simulator predicts how nations 

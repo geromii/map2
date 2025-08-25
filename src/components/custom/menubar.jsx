@@ -3,32 +3,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createClient } from "src/utils/supabase/client";
 
 const MenuBar = () => {
   const pathname = usePathname();
   const [indicatorStyle, setIndicatorStyle] = useState({});
   const linkRefs = useRef({ desktop: {}, mobile: {} }); // Separate refs for desktop and mobile
-  const [user, setUser] = useState(null); // Add user state
-  const [loading, setLoading] = useState(true); // Add loading state
-  const supabase = createClient();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  useEffect(() => {
-    async function fetchUser() {
-      const { data } = await supabase.auth.getSession(); // Fetch session info
-      if (data?.session?.user) {
-        setUser(data.session.user); // If user exists, set state
-      }
-      setLoading(false); // Set loading state to false once complete
-    }
-
-    fetchUser(); // Invoke the async function to fetch session data
-  }, []);
 
   const updateIndicator = () => {
     const isMobile = window.innerWidth < 1024;
@@ -78,7 +63,6 @@ const MenuBar = () => {
           </div>
         </div>
         <div className="hidden text-center m-auto text-xl lg:block font-arvo">Global Relations Map</div>
-        {loading ? <div className="absolute right-0"></div> : user ? <div className="absolute right-0">Logged in</div> : <div className="absolute right-0"></div>}
         {/* Indicator bar */}
         <div
           className="absolute h-[3px] bg-yellow-400 transition-all duration-300"
