@@ -14,11 +14,10 @@ import { geoRobinson } from "d3-geo-projection";
 import { Tooltip } from "react-tooltip";
 import { getCountryEmoji } from "src/utils/countryEmojis";
 import { IconX } from "@tabler/icons-react";
-import features from './features.json';
-
 const MapDivComponent = ({ mapMode }) => {
   const [isMobile, setIsMobile] = useState(false);
-  const [activeCountry, setActiveCountry] = useState(null)
+  const [activeCountry, setActiveCountry] = useState(null);
+  const [features, setFeatures] = useState(null);
 
 
   const mapRef = useRef(null);
@@ -85,8 +84,17 @@ const MapDivComponent = ({ mapMode }) => {
 
 
   useEffect(() => {
-    const geometries = features.objects.world.geometries;
-    setGeographiesData(features);
+    const loadFeatures = async () => {
+      try {
+        const featuresModule = await import('./features.json');
+        setFeatures(featuresModule.default);
+        setGeographiesData(featuresModule.default);
+      } catch (error) {
+        console.error('Failed to load map features:', error);
+      }
+    };
+    
+    loadFeatures();
   }, []);
 
 
@@ -177,7 +185,7 @@ const MapDivComponent = ({ mapMode }) => {
             />
             <Sphere stroke="#E4E5E6" strokeWidth={0} className="mapbg" />
             <Graticule stroke="#E4E5E6" strokeWidth={0} />
-            <Geographies geography={geographiesData}>
+            {features && <Geographies geography={geographiesData}>
               {({ geographies }) => {
                 const remainingCountries = geographies.filter(
                   (geo) =>
@@ -261,7 +269,7 @@ const MapDivComponent = ({ mapMode }) => {
                   </>
                 );
               }}
-            </Geographies>
+            </Geographies>}
         </ComposableMap>
       </div>
       {!isMobile && <>
