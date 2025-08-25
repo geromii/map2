@@ -5,7 +5,7 @@ import MapChart from "./MultiCountry";
 import { DataUpdateBanner } from "../components/DataUpdateBanner";
 
 export const metadata = {
-  title: "Diplomatic Conflicts & WW3 Map - World War 3 Scenarios | Mapdis",
+  title: "Geopolitical Conflict & WW3 Map | Mapdis",
   description: "Interactive diplomatic conflict map with WW3 map mode. Analyze international disputes and tensions, or activate War Escalation Mode to explore potential World War 3 scenarios. Visualize how diplomatic conflicts could escalate into global war on our interactive map.",
   keywords: "diplomatic conflicts, ww3 map, world war 3 map, conflict map, international disputes, war escalation, ww3 scenarios, world war 3 simulation, geopolitical tensions, diplomatic crisis map, global conflict analysis",
   alternates: {

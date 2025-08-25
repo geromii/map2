@@ -5,7 +5,7 @@ import { SingleCountryMapInstructions } from "./singleCountryMapInstructions";
 import { DataUpdateBanner } from "./components/DataUpdateBanner";
 
 export const metadata = {
-  title: "Geopolitics Map & Diplomacy Map - Interactive Global Relations | Mapdis",
+  title: "Global Relations Map - Geopolitics & Diplomacy | Mapdis",
   description: "Explore the world's geopolitics map and diplomacy map with our interactive tool. Visualize international relations, diplomatic ties, alliances, and global political dynamics. Perfect for understanding geopolitical relationships worldwide.",
   keywords: "geopolitics map, diplomacy map, interactive geopolitics map, global diplomacy map, world geopolitics map, international relations map, diplomatic relations map, political map, alliance map, global politics visualization",
   alternates: {
