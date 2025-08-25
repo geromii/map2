@@ -10,10 +10,10 @@ export const MapInstructions = () => {
             </h1>
           </header>
           <p className="mb-8 text-gray-600">
-            Create diplomatic conflict scenarios on this interactive map. Select countries for the{" "}
-            <span className="text-blue-800">Blue side</span> and{" "}
-            <span className="text-red-800">Red side</span> to visualize global diplomatic alignments. 
-            Enable War Escalation Mode to transform this into a WW3 map showing potential World War 3 alliances.
+            Build hypothetical conflict scenarios using this interactive map. Choose which countries join the{" "}
+            <span className="text-blue-800">Blue side</span> or{" "}
+            <span className="text-red-800">Red side</span> to see how diplomatic alignments might play out globally. 
+            Turn on War Escalation Mode to explore how this could become a WW3 map with potential World War 3 alliance patterns.
           </p>
         </section>
         <section className="mb-8 lg:mb-12">
@@ -66,16 +66,16 @@ export const MapInstructions = () => {
           <div className = "flex flex-col lg:flex-row mx-2 lg:mx-10 my-2 ">
           <Image src="/warimage.png" width={200} height={200} alt="An image of the map with Saudi Arabia (blue) and Iran (red), with war mode turned on, showing most of Europe now shaded blue." className = "rounded-full border-2 border-gray-300 shadow-lg self-center" sizes="(max-width: 768px) 196px, 200px" loading="lazy"/>
           <p className="text-gray-600 mt-2 p-1 lg:p-4">
-            Activate <span className="font-bold">War Escalation Mode</span> to transform the diplomatic conflict map into a 
-            WW3 map showing potential World War 3 scenarios. This World War 3 map simulator predicts how nations 
-            would align based on alliance networks and second-order relationships. For instance, in a WW3 scenario between{" "}
+            When you enable <span className="font-bold">War Escalation Mode</span>, the diplomatic conflict map becomes a 
+            WW3 map simulator that shows how potential World War 3 scenarios might unfold. The system predicts 
+            how nations would likely choose sides based on their existing alliances and friendships. Take a conflict between{" "}
             <span className="text-blue-800">Saudi Arabia</span> and{" "}
-            <span className="text-red-800">Iran</span>, <span className="color-transition font-medium">Germany</span> might 
-            initially remain neutral, but would likely join <span className="text-blue-800">Saudi Arabia&apos;s</span> side if 
-            its major allies do so. This WW3 map mode reveals how regional conflicts could escalate into World War 3 
-            through alliance obligations. Countries marked as{" "}
-            <span className="text-gray-800 font-medium">Neutral</span> are excluded from alliance calculations 
-            in these World War 3 scenarios.
+            <span className="text-red-800">Iran</span> – countries like <span className="color-transition font-medium">Germany</span> might 
+            start neutral but eventually join <span className="text-blue-800">Saudi Arabia&apos;s</span> side if 
+            their key allies do the same. This WW3 map mode shows how local disputes could grow into World War 3 
+            as countries honor their alliance commitments. Nations you mark as{" "}
+            <span className="text-gray-800 font-medium">Neutral</span> won&apos;t be factored into these 
+            World War 3 alliance calculations.
           </p>
           </div>
         </section>

@@ -12,12 +12,12 @@ export const SingleCountryMapInstructions = () => {
         </header>
         <div className="flex">
           <p className="mb-8 text-gray-600">
-            Explore our interactive geopolitics map and diplomacy map to understand global relationships. 
-            Click any country to visualize its diplomatic ties and international relations. 
-            Friendly diplomatic relationships appear in{" "}
-            <span className="text-blue-800">blue</span>, while strained diplomatic relations show in{" "}
-            <span className="text-red-800">red</span>. Navigate the geopolitics map by clicking different nations 
-            to compare their diplomatic networks and alliances.
+            This interactive geopolitics map lets you explore diplomatic relationships between countries worldwide. 
+            Simply click on any nation to see its international relations visualized through color-coded connections. 
+            Countries with strong ties appear in{" "}
+            <span className="text-blue-800">blue</span>, while those with tensions show in{" "}
+            <span className="text-red-800">red</span>. You can navigate the diplomacy map by selecting different countries 
+            to compare how their diplomatic networks and alliances differ.
           </p>
         </div>
       </section>
@@ -66,9 +66,9 @@ export const SingleCountryMapInstructions = () => {
           Navigating the Diplomacy Map
         </h2>
         <p className="text-gray-600 mt-3 lg:ml-2">
-          Navigate this interactive diplomacy map by clicking any country to reveal its geopolitical relationships. 
-          Compare diplomatic ties across nations by selecting different countries on the geopolitics map 
-          to understand how international relations vary by region and political context.
+          Click on any country to see its web of international relationships unfold on this diplomacy map. 
+          You can compare how different nations relate to the world by selecting various countries, 
+          which helps reveal how geography and politics shape global geopolitical connections.
         </p>
       </section>
       <section className="mb-6">
