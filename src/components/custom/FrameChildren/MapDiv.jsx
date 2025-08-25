@@ -97,10 +97,19 @@ const MapDivComponent = ({ mapMode }) => {
         }, 500);
       } catch (error) {
         console.error('Failed to load map features:', error);
+        // Hide loading indicator even on error
+        setShowLoading(false);
       }
     };
     
+    // Failsafe: hide loading indicator after 10 seconds regardless
+    const failsafe = setTimeout(() => {
+      setShowLoading(false);
+    }, 10000);
+    
     loadFeatures();
+    
+    return () => clearTimeout(failsafe);
   }, []);
 
 

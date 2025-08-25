@@ -8,6 +8,9 @@ const nextConfig = {
     return config;
   },
   
+  // Enable source maps for production
+  productionBrowserSourceMaps: true,
+  
   // Enable compression for better performance
   compress: true,
   
