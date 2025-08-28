@@ -2,16 +2,17 @@ import React, { useState, useEffect } from "react";
 import useCountryStore from "../../app/useCountryStore";
 import { CardContent } from "@/components/ui/card";
 import { Switch } from "../ui/switch";
+import { demographics } from "../../data/appData";
 
 function TabDemographic({ phase2Countries, phase3Countries, pageMode, displayStats }) {
   const [aggregatedData, setAggregatedData] = useState({
     phase2: { countries: [], GDP: 0, GDP_PPP: 0, Population: 0, Area: 0 },
     phase3: { countries: [], GDP: 0, GDP_PPP: 0, Population: 0, Area: 0 },
   });
-  const [demographics, setDemographics] = useState(null);
+  const [demographicsData] = useState(demographics);
   const countries = useCountryStore((state) => state.countries);
   const [includeAllies, setIncludeAllies] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [phase2AlliesArray, setPhase2AlliesArray] = useState(0);
   const [phase3AlliesArray, setPhase3AlliesArray] = useState(0);
   const [allyThreshold, setAllyThreshold] = useState(1);
@@ -24,32 +25,12 @@ function TabDemographic({ phase2Countries, phase3Countries, pageMode, displaySta
   }, [pageMode]);
 
   useEffect(() => {
-    setIsLoading(true);
-    fetch("/demographics.json")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setDemographics(data);
-      })
-      .catch((error) => {
-        console.error("There was a problem with the fetch operation:", error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (!demographics) return; // Skip processing if data is not fetched yet
+    if (!demographicsData) return; // Skip processing if data is not loaded yet
 
     let phase2Allies = [];
     let phase3Allies = [];
 
-    const aggregation = demographics.reduce(
+    const aggregation = demographicsData.reduce(
       (acc, item) => {
         const phase = countries[item.Country]?.phase;
         const preferenceScore = countries[item.Country]?.preferenceScore;
@@ -89,7 +70,7 @@ function TabDemographic({ phase2Countries, phase3Countries, pageMode, displaySta
     setPhase2AlliesArray(phase2Allies);
     setPhase3AlliesArray(phase3Allies);
     setAggregatedData(aggregation);
-  }, [demographics, countries, includeAllies, allyThreshold]);
+  }, [demographicsData, countries, includeAllies, allyThreshold]);
 
   const formatMoney = (value) => {
     const trillion = value / 1e6; // Convert to trillion

@@ -1,4 +1,4 @@
-import emojis from '/public/emojis.json';
+import { emojis } from '../data/appData';
 
 export function getCountryEmoji(countryName) {
   const country = emojis.find(([name]) => name === countryName);

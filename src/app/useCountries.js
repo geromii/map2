@@ -1,18 +1,14 @@
 import { useState, useEffect } from "react";
+import { countries } from "../data/appData";
 
 export function useCountries(searchValue) {
   const [allCountries, setAllCountries] = useState([]);
   const [filteredCountries, setFilteredCountries] = useState([]);
   const [sortedFilteredCountries, setSortedFilteredCountries] = useState([]);
 
-  // Fetch and sort all countries initially
+  // Load and sort all countries initially
   useEffect(() => {
-    fetch("/countries.json")
-      .then((response) => response.json())
-      .then((data) => {
- 
-        setAllCountries(data.sort((a, b) => a.localeCompare(b)));
-      });
+    setAllCountries(countries.sort((a, b) => a.localeCompare(b)));
   }, []);
 
 
