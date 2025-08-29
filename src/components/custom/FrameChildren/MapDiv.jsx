@@ -165,12 +165,55 @@ const MapDivComponent = ({ mapMode }) => {
     >
             <div
         data-mapmode={mapMode}
-        className="data-[mapmode=multi]:hidden w-full lg:text-xl"
+        className="w-full lg:text-xl"
       >
         <p className="font-semibold font-serif text-lg text-center h-8 bg-slate-100 border-2">
-          {phase2Countries
-            .map((country) => `${getCountryEmoji(country)} ${country}`)
-            .join(", ")}
+          {mapMode === "multi" ? (
+            (() => {
+              const phase3Countries = Object.keys(countries).filter(
+                (key) => countries[key].phase === 3
+              );
+              const phase2CountriesCount = phase2Countries.length;
+              const phase3CountriesCount = phase3Countries.length;
+              
+              // Show nothing if we don't have at least one blue and one red country
+              if (phase2CountriesCount === 0 || phase3CountriesCount === 0) {
+                return "";
+              }
+              
+              if (phase3CountriesCount === 1 && phase2CountriesCount === 1) {
+                return (
+                  <>
+                    <span className="text-blue-600">{getCountryEmoji(phase2Countries[0])} {phase2Countries[0]}</span>
+                    <span> vs </span>
+                    <span className="text-red-600">{getCountryEmoji(phase3Countries[0])} {phase3Countries[0]}</span>
+                  </>
+                );
+              } else if (phase3CountriesCount + phase2CountriesCount <= 5) {
+                const blueEmojis = phase2Countries.map(country => getCountryEmoji(country)).join(" ");
+                const redEmojis = phase3Countries.map(country => getCountryEmoji(country)).join(" ");
+                return (
+                  <>
+                    <span>{blueEmojis}</span>
+                    <span> vs </span>
+                    <span>{redEmojis}</span>
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    <span className="text-blue-600">{phase2CountriesCount} countries</span>
+                    <span> vs </span>
+                    <span className="text-red-600">{phase3CountriesCount} countries</span>
+                  </>
+                );
+              }
+            })()
+          ) : (
+            phase2Countries
+              .map((country) => `${getCountryEmoji(country)} ${country}`)
+              .join(", ")
+          )}
         </p>
       </div>
 
