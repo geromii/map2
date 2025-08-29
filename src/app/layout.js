@@ -67,6 +67,8 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+        
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3730086764138490" crossOrigin="anonymous"></script>
       </head>
       <body
         className={cn(

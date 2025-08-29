@@ -71,8 +71,8 @@ export default function TabDiv({
           country: entry[0],
           preferenceScore: entry[1].preferenceScore,
         }));
-      const top3 = sorted.slice(0, 4);
-      const bottom3 = sorted.slice(-4).reverse();
+      const top3 = sorted.slice(0, 5);
+      const bottom3 = sorted.slice(-5).reverse();
 
       setSortedCountries([...top3, ...bottom3]);
     }
@@ -87,15 +87,18 @@ export default function TabDiv({
   return (
     <div className="relative flex flex-col items-center w-full z-20 bg-gradient-to-b from-background to-background/80">
 
-      <div className="w-full space-y-2 py-4">
-        {/* Demographics Accordion */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+      <div className="w-full">
+        <div className="bg-white dark:bg-gray-900">
+          {/* Demographics Accordion */}
+          <div>
           <button
             onClick={() => setDemographicsExpanded(!demographicsExpanded)}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between text-sm font-medium"
+            className="w-full pl-5 pr-2 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-base font-medium text-gray-900 dark:text-gray-100 transition-all duration-200 group"
           >
             <span>Demographics</span>
-            {demographicsExpanded ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
+            <div className="ml-2 transition-all duration-300 group-hover:scale-110 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+              {demographicsExpanded ? <IconChevronUp size={18} className="text-gray-500 dark:text-gray-400" /> : <IconChevronDown size={18} className="text-gray-500 dark:text-gray-400" />}
+            </div>
           </button>
           {demographicsExpanded && (
             <div className="p-4">
@@ -109,28 +112,31 @@ export default function TabDiv({
           )}
         </div>
 
-        {/* For/Against Accordion */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-          <button
-            onClick={() => setForAgainstExpanded(!forAgainstExpanded)}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between text-sm font-medium"
-          >
-            <span>For/Against</span>
-            {forAgainstExpanded ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
-          </button>
-          {forAgainstExpanded && (
-            <div className="p-2">
-              <TabStats
-                pageMode={pageMode}
-                sortedCountries={sortedCountries}
-                phase2Countries={phase2Countries}
-                phase3Countries={phase3Countries}
-                phase2exists={phase2exists}
-                phase3exists={phase3exists}
-                displayStats={displayStats}
-              />
-            </div>
-          )}
+          {/* For/Against Accordion */}
+          <div>
+            <button
+              onClick={() => setForAgainstExpanded(!forAgainstExpanded)}
+              className="w-full pl-5 pr-2 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-base font-medium text-gray-900 dark:text-gray-100 transition-all duration-200 group"
+            >
+              <span>For/Against</span>
+              <div className="ml-2 transition-all duration-300 group-hover:scale-110 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                {forAgainstExpanded ? <IconChevronUp size={18} className="text-gray-500 dark:text-gray-400" /> : <IconChevronDown size={18} className="text-gray-500 dark:text-gray-400" />}
+              </div>
+            </button>
+            {forAgainstExpanded && (
+              <div className="p-2">
+                <TabStats
+                  pageMode={pageMode}
+                  sortedCountries={sortedCountries}
+                  phase2Countries={phase2Countries}
+                  phase3Countries={phase3Countries}
+                  phase2exists={phase2exists}
+                  phase3exists={phase3exists}
+                  displayStats={displayStats}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

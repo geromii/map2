@@ -148,7 +148,7 @@ const MapDivComponent = ({ mapMode }) => {
     phase2Countries = ["European Union"];
   }
 
-  const scale = "180";
+  const scale = "190";
   const rotation = [-12.5];
 
   const width = 800;
@@ -163,6 +163,16 @@ const MapDivComponent = ({ mapMode }) => {
       ref={mapRef}
       className="relative map-container w-full h-full select-none transition"
     >
+            <div
+        data-mapmode={mapMode}
+        className="data-[mapmode=multi]:hidden w-full lg:text-xl"
+      >
+        <p className="font-semibold font-serif text-lg text-center h-8 bg-slate-100 border-2">
+          {phase2Countries
+            .map((country) => `${getCountryEmoji(country)} ${country}`)
+            .join(", ")}
+        </p>
+      </div>
 
       <div className=" bg-slate-500  lg:rounded  shadow-sm   ">
         <ComposableMap
@@ -170,7 +180,7 @@ const MapDivComponent = ({ mapMode }) => {
           projection={projection}
           projectionConfig={{
             rotate: rotation,
-            scale: 195,
+            scale: 210,
           }}
         >
           <defs>
@@ -526,16 +536,7 @@ const MapDivComponent = ({ mapMode }) => {
       </>}
 
 
-      <div
-        data-mapmode={mapMode}
-        className="data-[mapmode=multi]:hidden w-full lg:text-lg"
-      >
-        <p className="font-semibold font-serif text-lg text-center h-8 bg-slate-100 border-2">
-          {phase2Countries
-            .map((country) => `${getCountryEmoji(country)} ${country}`)
-            .join(", ")}
-        </p>
-      </div>
+
     </div>
   );
 };

@@ -10,7 +10,7 @@ const NoCountrySelected = ({
   phase3Exists = false,
 }) => {
   return pageMode === "single" ? (
-    <div className="flex justify-around align-top w-full translate-y-3 items-center drop-shadow">
+    <div className="flex justify-around align-top w-full translate-y-1 items-center drop-shadow">
       <div className="flex p-1 lg:p-2 border-2 border-yellow-400 bg-yellow-300 rounded-full shadow-lg font-medium items-center ">
         <IconInfoCircle size={22} className="text-primary drop-shadow" />
         {"  "}
