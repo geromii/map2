@@ -23,17 +23,13 @@ const NoCountrySelected = ({
         data-phase2exists={phase2Exists}
         className="flex p-1 lg:p-2 border-[3px] border-blue-500 bg-blue-100 rounded-full shadow-lg font-medium items-center data-[phase2exists=true]:opacity-0 data-[phase2exists=true]:translate-y-8 transition-all delay-100 duration-500 mr-1 text-center md:whitespace-nowrap text-xs md:text-sm min-w-[110px]"
       >
-        <IconInfoCircle className="text-primary drop-shadow" size={16} /> Select a blue country...
+        <IconArrowBigDownLines className="text-primary drop-shadow" size={16} /> Select a blue country...
       </div>
-      <IconArrowBigDownLines
-        size={24}
-        className="text-primary drop-shadow self-center mx-1 md:mx-1 md:size-[30px]"
-      />
       <div
         data-phase3exists={phase3Exists}
         className="flex p-1 lg:p-2 border-[3px] border-red-500 bg-red-100 rounded-full shadow-lg font-medium items-center data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-8 transition-all delay-100 duration-500 ml-1 text-center md:whitespace-nowrap text-xs md:text-sm min-w-[110px]"
       >
-        <IconInfoCircle className="text-primary drop-shadow" size={16} /> Select a red country...
+        <IconArrowBigDownLines className="text-primary drop-shadow" size={16} /> Select a red country...
       </div>
     </div>
   );
