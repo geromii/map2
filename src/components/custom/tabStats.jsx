@@ -1,6 +1,7 @@
 import React from "react";
 import { getCountryEmoji } from "../../utils/countryEmojis";
 import { abbreviateCountry } from "../../utils/abbreviateCountry";
+import useCountryStore from "../../app/useCountryStore";
 
 function TabStats({
   pageMode,
@@ -11,6 +12,10 @@ function TabStats({
   phase3exists,
   displayStats,
 }) {
+  const { setCountryPhase, resetAllExcept } = useCountryStore((state) => ({
+    setCountryPhase: state.setCountryPhase,
+    resetAllExcept: state.resetAllExcept,
+  }));
   // Always maintain 5 rows for consistent height
   const positiveCountries = displayStats && sortedCountries.length > 0 
     ? sortedCountries.slice(-5) 
@@ -20,6 +25,13 @@ function TabStats({
     : [];
 
   // Create placeholder rows to maintain consistent height
+  const handleCountryClick = (country) => {
+    if (pageMode === "single") {
+      resetAllExcept();
+      setCountryPhase(country, "blue");
+    }
+  };
+
   const createPlaceholderRows = (data, side) => {
     const rows = [];
     for (let i = 0; i < 5; i++) {
@@ -30,6 +42,8 @@ function TabStats({
             country={data[i].country}
             score={data[i].preferenceScore}
             align="left"
+            onClick={handleCountryClick}
+            pageMode={pageMode}
           />
         );
       } else {
@@ -64,10 +78,15 @@ function TabStats({
 }
 
 // Reusable component for country rows
-function CountryRow({ country, score, align = "left" }) {
+function CountryRow({ country, score, align = "left", onClick, pageMode }) {
   const isPositive = score > 0;
+  const isClickable = pageMode === "single";
+  
   return (
-    <div className={`flex items-center ${align === "right" ? "flex-row-reverse" : ""}`}>
+    <div 
+      className={`flex items-center ${align === "right" ? "flex-row-reverse" : ""} ${isClickable ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded px-1 transition-colors" : ""}`}
+      onClick={isClickable ? () => onClick(country) : undefined}
+    >
       <span className={`font-mono text-sm md:text-base tabular-nums font-medium ${isPositive ? 'text-blue-700 dark:text-blue-400' : 'text-red-700 dark:text-red-400'}`}>
         {score.toFixed(2)}
       </span>

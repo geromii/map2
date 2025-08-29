@@ -124,7 +124,7 @@ export default function TabDiv({
               </div>
             </button>
             {forAgainstExpanded && (
-              <div className="p-2">
+              <div className="p-0.5 sm:p-1 lgp-2">
                 <TabStats
                   pageMode={pageMode}
                   sortedCountries={sortedCountries}
