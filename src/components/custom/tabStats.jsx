@@ -34,10 +34,10 @@ function TabStats({
         );
       } else {
         rows.push(
-          <div key={`${side}-placeholder-${i}`} className="flex items-center gap-2 opacity-30">
+          <div key={`${side}-placeholder-${i}`} className="flex items-center opacity-30">
             <span className="font-mono text-sm md:text-base tabular-nums text-gray-400">0.00</span>
-            <span className="text-lg md:text-xl text-gray-400">🌍</span>
-            <span className="text-sm md:text-base truncate max-w-[150px] md:max-w-[200px] text-gray-400">Country</span>
+            <span className="text-lg md:text-xl text-gray-400 ml-1">🌍</span>
+            <span className="text-sm md:text-base truncate max-w-[150px] md:max-w-[200px] text-gray-400 ml-0 sm:ml-2">Country</span>
           </div>
         );
       }
@@ -67,14 +67,14 @@ function TabStats({
 function CountryRow({ country, score, align = "left" }) {
   const isPositive = score > 0;
   return (
-    <div className={`flex items-center gap-2 ${align === "right" ? "flex-row-reverse" : ""}`}>
+    <div className={`flex items-center ${align === "right" ? "flex-row-reverse" : ""}`}>
       <span className={`font-mono text-sm md:text-base tabular-nums font-medium ${isPositive ? 'text-blue-700 dark:text-blue-400' : 'text-red-700 dark:text-red-400'}`}>
         {score.toFixed(2)}
       </span>
-      <span className="text-lg md:text-xl">
+      <span className="text-lg md:text-xl ml-1">
         {getCountryEmoji(country)}
       </span>
-      <span className="text-sm md:text-base truncate max-w-[120px] md:max-w-[160px] font-medium text-gray-800 dark:text-gray-200">
+      <span className="text-sm md:text-base truncate max-w-[120px] md:max-w-[160px] font-medium text-gray-800 dark:text-gray-200 ml-0 sm:ml-2">
         {abbreviateCountry(country)}
       </span>
     </div>
