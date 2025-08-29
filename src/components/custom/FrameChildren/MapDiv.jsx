@@ -528,7 +528,7 @@ const MapDivComponent = ({ mapMode }) => {
 
       <div
         data-mapmode={mapMode}
-        className="lg:hidden data-[mapmode=multi]:hidden w-full"
+        className="data-[mapmode=multi]:hidden w-full lg:text-lg"
       >
         <p className="font-semibold font-serif text-lg text-center h-8 bg-slate-100 border-2">
           {phase2Countries

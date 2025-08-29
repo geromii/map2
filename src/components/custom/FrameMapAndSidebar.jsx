@@ -42,10 +42,10 @@ export default function MapFrame({
   return (
     <div className="w-screen flex flex-row">
       {/* Left Ad Space - Desktop Only */}
-      <div className="hidden lg:block w-[200px] xl:w-[250px] 2xl:w-[300px] bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600">
-        <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 h-[600px] flex items-center justify-center text-sm">
-            Ad Space
+      <div className="hidden lg:block w-[160px] bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 w-[160px] h-[600px] flex items-center justify-center text-xs">
+            Wide Skyscraper<br/>160x600
           </div>
         </div>
       </div>
@@ -76,11 +76,11 @@ export default function MapFrame({
         </div>
 
         {/* Country Name Display - Below Map */}
-        <CountryNameDisplay 
+        {/* <CountryNameDisplay 
           phase2Countries={phase2Countries} 
           phase3Countries={phase3Countries} 
           pageMode={pageMode} 
-        />
+        /> */}
 
         {/* Sidebar Content - Below Map */}
         <div className="flex h-[300px] divide-x-2 mt-4">
@@ -94,10 +94,10 @@ export default function MapFrame({
       </div>
 
       {/* Right Ad Space - Desktop Only */}
-      <div className="hidden lg:block w-[200px] xl:w-[250px] 2xl:w-[300px] bg-gray-100 dark:bg-gray-800 border-l border-gray-300 dark:border-gray-600">
-        <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 h-[600px] flex items-center justify-center text-sm">
-            Ad Space
+      <div className="hidden lg:block w-[160px] bg-gray-100 dark:bg-gray-800 border-l border-gray-300 dark:border-gray-600">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 w-[160px] h-[600px] flex items-center justify-center text-xs">
+            Wide Skyscraper<br/>160x600
           </div>
         </div>
       </div>

@@ -127,8 +127,8 @@ const ShuffleCountries = ({ singleMode = false }) => {
 
 
   return singleMode ? (
-    <div className = "grid grid-cols-2 bg-red-500 w-full mx-4">
-      <button className="col-span-2 flex h-full w-full rounded text-primary-foreground bg-primary shadow  p-1 text-center items-center justify-center ring-2 ring-yellow-400 " onClick={shuffleCountries}>
+    <div className = "grid grid-cols-2 w-full mx-4">
+      <button className="col-span-2 flex h-full w-full rounded text-primary-foreground bg-primary shadow  p-1 text-center items-center justify-center ring-2 ring-yellow-400 max-w-48 mx-auto" onClick={shuffleCountries}>
         <IconArrowsShuffle size={28} className="mr-2" /> <p className="font-medium text-sm lg:text-base">Random </p>
       </button>
       <ShufflePopup isVisible={isPopupVisible} singleMode={singleMode} />
