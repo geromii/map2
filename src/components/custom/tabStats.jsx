@@ -1,5 +1,6 @@
 import React from "react";
 import { getCountryEmoji } from "../../utils/countryEmojis";
+import { abbreviateCountry } from "../../utils/abbreviateCountry";
 
 function TabStats({
   pageMode,
@@ -74,7 +75,7 @@ function CountryRow({ country, score, align = "left" }) {
         {getCountryEmoji(country)}
       </span>
       <span className="text-sm md:text-base truncate max-w-[120px] md:max-w-[160px] font-medium text-gray-800 dark:text-gray-200">
-        {country}
+        {abbreviateCountry(country)}
       </span>
     </div>
   );

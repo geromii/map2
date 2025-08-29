@@ -13,6 +13,7 @@ import {
 import { geoRobinson } from "d3-geo-projection";
 import { Tooltip } from "react-tooltip";
 import { getCountryEmoji } from "src/utils/countryEmojis";
+import { abbreviateCountry } from "../../../utils/abbreviateCountry";
 import { IconX } from "@tabler/icons-react";
 const MapDivComponent = ({ mapMode }) => {
   const [isMobile, setIsMobile] = useState(false);
@@ -184,9 +185,9 @@ const MapDivComponent = ({ mapMode }) => {
               if (phase3CountriesCount === 1 && phase2CountriesCount === 1) {
                 return (
                   <>
-                    <span className="text-blue-600">{getCountryEmoji(phase2Countries[0])} {phase2Countries[0]}</span>
+                    <span className="text-blue-600">{getCountryEmoji(phase2Countries[0])} {abbreviateCountry(phase2Countries[0])}</span>
                     <span> vs </span>
-                    <span className="text-red-600">{getCountryEmoji(phase3Countries[0])} {phase3Countries[0]}</span>
+                    <span className="text-red-600">{getCountryEmoji(phase3Countries[0])} {abbreviateCountry(phase3Countries[0])}</span>
                   </>
                 );
               } else if (phase3CountriesCount + phase2CountriesCount <= 5) {

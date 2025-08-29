@@ -4,6 +4,7 @@ import * as React from "react";
 import { SearchCountry } from "./SearchCountry";
 import useCountryStore from "@/app/useCountryStore";
 import { IconSquareX } from "@tabler/icons-react";
+import { abbreviateCountry } from "../../utils/abbreviateCountry";
 
 export function SearchBox() {
   const { setCountryPhase, countries } = useCountryStore((state) => ({
@@ -59,7 +60,7 @@ export function SearchBox() {
                     style={{ color: phaseColorMap[country.phase] }}
                     title={countryName}
                   >
-                    {countryName}
+                    {abbreviateCountry(countryName)}
                   </div>
                 </div>
               )
