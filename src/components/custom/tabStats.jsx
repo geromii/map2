@@ -48,14 +48,14 @@ function TabStats({
   return (
     <div className="flex items-start justify-center w-full min-h-[120px] overflow-hidden pt-2">
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 md:gap-8 lg:gap-12 max-w-2xl w-full px-4">
+      <div className="grid grid-cols-2 gap-1 sm:gap-4 lg:gap-8 max-w-2xl w-full px-1 sm:px-2 lg:px-4">
         {/* Positive Scores Column */}
-        <div className="space-y-0.5 bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+        <div className="space-y-0.5 bg-blue-50 dark:bg-blue-950/20 p-1 sm:p-2 lg:p-3 rounded-lg">
           {createPlaceholderRows(positiveCountries, 'pos')}
         </div>
 
         {/* Negative Scores Column */}
-        <div className="space-y-0.5 bg-red-50 dark:bg-red-950/20 p-3 rounded-lg">
+        <div className="space-y-0.5 bg-red-50 dark:bg-red-950/20 p-1 sm:p-2 lg:p-3 rounded-lg">
           {createPlaceholderRows(negativeCountries, 'neg')}
         </div>
       </div>
