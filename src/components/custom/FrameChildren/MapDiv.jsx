@@ -165,9 +165,9 @@ const MapDivComponent = ({ mapMode }) => {
     >
             <div
         data-mapmode={mapMode}
-        className="w-full lg:text-xl"
+        className="w-full lg:text-xl overflow-hidden"
       >
-        <p className="font-semibold font-serif text-lg text-center h-8 bg-slate-100 border-2">
+        <p className="font-semibold font-serif text-lg text-center h-8 bg-slate-100 border-2 overflow-hidden text-ellipsis whitespace-nowrap px-2 max-w-full">
           {mapMode === "multi" ? (
             (() => {
               const phase3Countries = Object.keys(countries).filter(

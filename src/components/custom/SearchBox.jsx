@@ -39,12 +39,12 @@ export function SearchBox() {
               ) => (
                 <div
                   key={countryName} // Use countryName as the key
-                  className="flex space-x-1 items-center whitespace-nowrap font-semibold border-b-1 mt-[-2px] border-accent"
+                  className="flex space-x-1 items-center whitespace-nowrap font-semibold border-b-1 mt-[-2px] border-accent overflow-hidden"
                 >
-                  <div className="flex relative shadow-sm space items-center">
+                  <div className="flex relative shadow-sm space items-center flex-shrink-0">
                   <button
                       onClick={() => handleClose(countryName)} // Pass countryName handleClose function
-                      className="flex text-red-500"
+                      className="flex text-red-500 flex-shrink-0"
                     >
                       <IconSquareX  size = {19} />
                     </button>
@@ -55,7 +55,7 @@ export function SearchBox() {
                   </div>
                   <div className=""></div>
                   <div
-                    className="truncate text-sm"
+                    className="truncate text-sm max-w-[100px] sm:max-w-[120px] lg:max-w-[150px]"
                     style={{ color: phaseColorMap[country.phase] }}
                     title={countryName}
                   >

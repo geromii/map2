@@ -50,9 +50,9 @@ export default function MapChart() {
 
 const RightSidebar = () => {
   return (
-    <div className="h-[60%] w-full flex items-start justify-center px-0 pt-2 xl:px-0.5 sm:pt-2 xl:pt-2">
-              <div className="h-1/3 p-1 lg:p-[1.5px] xl:p-2 border-muted w-full text-sm lg:text-base">
-        <div className=" overflow-hidden">
+    <div className="h-full w-full flex items-start justify-center px-0 pt-2 xl:px-0.5 sm:pt-2 xl:pt-2 overflow-hidden">
+              <div className="h-full p-1 lg:p-[1.5px] xl:p-2 border-muted w-full text-sm lg:text-base overflow-hidden">
+        <div className="overflow-hidden">
           <PresetPairings />
         </div>
       </div>

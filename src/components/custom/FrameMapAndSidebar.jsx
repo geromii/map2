@@ -40,7 +40,7 @@ export default function MapFrame({
     setPhase3Countries(replaceEuIfAllPresent(phase3));
   }, [countries, euCountries]);
   return (
-    <div className="w-screen flex flex-row">
+    <div className="w-full max-w-full overflow-x-hidden flex flex-row">
       {/* Left Ad Space - Desktop Only */}
       <div className="hidden lg:block w-[160px] pt-10 dark:bg-gray-800   dark:border-gray-600">
         <div className="text-center text-gray-500 dark:text-gray-400">

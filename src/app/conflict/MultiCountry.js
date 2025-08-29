@@ -58,10 +58,12 @@ export default function MapChart() {
 
 const RightSidebar = () => {
   return (
-    <div className="h-[60%] w-full flex items-start justify-center px-1  pt-4 sm:pt-2 xl:pt-4">
-      <div className="w-full">
-        <h2 className=" font-semibold mb-2 pl-3">Country Search</h2>
-        <SearchBox />
+    <div className="h-full w-full flex items-start justify-center px-1 pt-4 sm:pt-2 xl:pt-4 overflow-hidden">
+      <div className="w-full h-full flex flex-col">
+        <h2 className=" font-semibold mb-2 pl-3 flex-shrink-0">Country Search</h2>
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <SearchBox />
+        </div>
       </div>
     </div>
   );
