@@ -42,7 +42,7 @@ export default function MapFrame({
   return (
     <div className="w-screen flex flex-row">
       {/* Left Ad Space - Desktop Only */}
-      <div className="hidden lg:block w-[160px] pt-10 dark:bg-gray-800 border-r  dark:border-gray-600">
+      <div className="hidden lg:block w-[160px] pt-10 dark:bg-gray-800   dark:border-gray-600">
         <div className="text-center text-gray-500 dark:text-gray-400">
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function MapFrame({
       </div>
 
       {/* Right Ad Space - Desktop Only */}
-      <div className="hidden lg:block w-[160px] pt-10 dark:bg-gray-800 border-l dark:border-gray-600">
+      <div className="hidden lg:block w-[160px] pt-10 dark:bg-gray-800 dark:border-gray-600">
         <div className="text-center text-gray-500 dark:text-gray-400">
         </div>
       </div>
