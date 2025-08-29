@@ -181,20 +181,20 @@ function TabDemographic({ phase2Countries, phase3Countries, pageMode, displaySta
           </div>
         </div>
       ) : null}
-      <div data-pagemode={pageMode} className="w-full h-full">
-        <table data-hidedemographics={hideStats} className="w-full table-auto">
+      <div data-pagemode={pageMode} className="w-full h-full overflow-x-auto">
+        <table data-hidedemographics={hideStats} className="w-full table-auto min-w-[280px]">
           <thead className="text-center text-xs md:text-sm lg:text-base">
             <tr>
-              <th className="px-2 py-1 min-w-[120px]">Countries</th>
-              <th className="px-2 py-1 min-w-[80px]">GDP</th>
-              <th className="px-2 py-1 min-w-[80px]">GDP PPP</th>
-              <th className="px-2 py-1 min-w-[80px]">Population</th>
-              <th className="px-2 py-1 min-w-[80px]">Area (km²)</th>
+              <th className="px-1 py-1 min-w-[60px] sm:min-w-[120px] text-xs sm:text-sm">Countries</th>
+              <th className="px-1 py-1 min-w-[45px] sm:min-w-[80px] text-xs sm:text-sm">GDP</th>
+              <th className="px-1 py-1 min-w-[45px] sm:min-w-[80px] text-xs sm:text-sm">PPP</th>
+              <th className="px-1 py-1 min-w-[40px] sm:min-w-[80px] text-xs sm:text-sm">Pop</th>
+              <th className="px-1 py-1 min-w-[45px] sm:min-w-[80px] text-xs sm:text-sm">Area</th>
             </tr>
           </thead>
           <tbody className="text-right text-xs md:text-sm lg:text-base">
             <tr>
-              <td className="px-2 py-2 text-blue-700 text-left">
+              <td className="px-1 py-2 text-blue-700 text-left text-xs sm:text-sm">
                 {displayStats && phase2Countries.length > 0 ? (
                   pageMode == "single" ? (
                     <div className="overflow-auto">{phase2Countries.join(", ")}</div>
@@ -217,21 +217,21 @@ function TabDemographic({ phase2Countries, phase3Countries, pageMode, displaySta
                   </div>
                 )}
               </td>
-              <td className="px-2 py-2">
+              <td className="px-1 py-2 text-xs sm:text-sm">
                 {displayStats && phase2Data.GDP > 0 ? formatMoney(phase2Data.GDP) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">$0.00 trillion</span>}
               </td>
-              <td className="px-2 py-2">
+              <td className="px-1 py-2 text-xs sm:text-sm">
                 {displayStats && phase2Data.GDP_PPP > 0 ? formatMoney(phase2Data.GDP_PPP) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">$0.00 trillion</span>}
               </td>
-              <td className="px-2 py-2">
+              <td className="px-1 py-2 text-xs sm:text-sm">
                 {displayStats && phase2Data.Population > 0 ? formatPopulation(phase2Data.Population) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 million</span>}
               </td>
-              <td className="px-2 py-2">
+              <td className="px-1 py-2 text-xs sm:text-sm">
                 {displayStats && phase2Data.Area > 0 ? formatArea(phase2Data.Area) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 km²</span>}
               </td>
             </tr>
             <tr data-pagemode={pageMode} className="data-[pagemode=single]:hidden">
-              <td className="px-2 py-2 text-red-700 text-left">
+              <td className="px-1 py-2 text-xs sm:text-sm text-red-700 text-left">
                 {displayStats && phase3Countries.length > 0 ? (
                   <div className="overflow-auto font-medium">
                     <span className="text-red-800 font-bold">Red Side</span>{" "}
@@ -248,16 +248,16 @@ function TabDemographic({ phase2Countries, phase3Countries, pageMode, displaySta
                   <div className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">Red Side</div>
                 )}
               </td>
-              <td className="px-2 py-2">
+              <td className="px-1 py-2 text-xs sm:text-sm">
                 {displayStats && phase3Data.GDP > 0 ? formatMoney(phase3Data.GDP) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">$0.00 trillion</span>}
               </td>
-              <td className="px-2 py-2">
+              <td className="px-1 py-2 text-xs sm:text-sm">
                 {displayStats && phase3Data.GDP_PPP > 0 ? formatMoney(phase3Data.GDP_PPP) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">$0.00 trillion</span>}
               </td>
-              <td className="px-2 py-2">
+              <td className="px-1 py-2 text-xs sm:text-sm">
                 {displayStats && phase3Data.Population > 0 ? formatPopulation(phase3Data.Population) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 million</span>}
               </td>
-              <td className="px-2 py-2">
+              <td className="px-1 py-2 text-xs sm:text-sm">
                 {displayStats && phase3Data.Area > 0 ? formatArea(phase3Data.Area) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 km²</span>}
               </td>
             </tr>
