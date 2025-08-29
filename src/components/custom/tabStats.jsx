@@ -49,7 +49,7 @@ function TabStats({
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4 md:gap-8 lg:gap-12 max-w-2xl w-full px-4">
         {/* Positive Scores Column */}
-        <div className="space-y-0.5 bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">
+        <div className="space-y-0.5 bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
           {createPlaceholderRows(positiveCountries, 'pos')}
         </div>
 
@@ -67,7 +67,7 @@ function CountryRow({ country, score, align = "left" }) {
   const isPositive = score > 0;
   return (
     <div className={`flex items-center gap-2 ${align === "right" ? "flex-row-reverse" : ""}`}>
-      <span className={`font-mono text-sm md:text-base tabular-nums font-medium ${isPositive ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+      <span className={`font-mono text-sm md:text-base tabular-nums font-medium ${isPositive ? 'text-blue-700 dark:text-blue-400' : 'text-red-700 dark:text-red-400'}`}>
         {score.toFixed(2)}
       </span>
       <span className="text-lg md:text-xl">
