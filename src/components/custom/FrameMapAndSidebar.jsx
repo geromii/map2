@@ -1,12 +1,9 @@
 // frame for map
-import { useState } from "react";
-import {
-  IconArrowsDiagonalMinimize2,
-  IconArrowsDiagonal,
-  IconArrowsDiagonalMinimize,
-  IconArrowsDiagonal2,
-  IconArrowsMaximize,
-} from "@tabler/icons-react";
+import CountryNameDisplay from "./CountryNameDisplay";
+import NoCountrySelected from "./NoCountrySelected";
+import { useState, useEffect } from "react";
+import useCountryStore from "../../app/useCountryStore";
+import useEuCountries from "../../utils/eu";
 
 export default function MapFrame({
   LeftSidebar,
@@ -15,105 +12,93 @@ export default function MapFrame({
   MapDiv,
   pageMode,
 }) {
-  const [leftSidebarVisible, setLeftSidebarVisible] = useState(true);
-  const [rightSidebarVisible, setRightSidebarVisible] = useState(true);
+  const euCountries = useEuCountries();
+  const countries = useCountryStore((state) => state.countries);
+  const [phase2Countries, setPhase2Countries] = useState([]);
+  const [phase3Countries, setPhase3Countries] = useState([]);
 
-  const sidebarFull = 15;
-  const sidebarSmall = 3.5;
+  useEffect(() => {
+    const phase2 = Object.entries(countries)
+      .filter(([_, value]) => value.phase === 2)
+      .map(([key, _]) => key);
+    const phase3 = Object.entries(countries)
+      .filter(([_, value]) => value.phase === 3)
+      .map(([key, _]) => key);
 
-  const leftSidebarWidth = leftSidebarVisible ? sidebarFull : sidebarSmall;
-  const rightSidebarWidth = rightSidebarVisible ? sidebarFull : sidebarSmall;
-  const marginRightSidebar =
-    (rightSidebarVisible ? -8 : 0) + (leftSidebarVisible ? 0 : 4);
-  const marginLeftSidebar =
-    (leftSidebarVisible ? -8 : 0) + (rightSidebarVisible ? 0 : 4);
+    const replaceEuIfAllPresent = (phase) => {
+      const allEuCountriesPresent = euCountries.every((country) =>
+        phase.includes(country)
+      );
+      return allEuCountriesPresent
+        ? ["European Union"].concat(
+            phase.filter((country) => !euCountries.includes(country))
+          )
+        : phase;
+    };
 
-  const sidebarClasses = ` self-center  rounded-xl shadow-xl border-[1.5px]  ring-primary z-20 min-h-[55%] lg:min-h-[40%] bg-card hidden lg:block w-full`;
+    setPhase2Countries(replaceEuIfAllPresent(phase2));
+    setPhase3Countries(replaceEuIfAllPresent(phase3));
+  }, [countries, euCountries]);
   return (
-    <div className=" pt-1 w-screen flex flex-col lg:flex-row justify-between  mt-0.5 xl:mt-1 lg:my-1 pb-[20px] lg:pb-[70px] border-b-4  min-h-[60vw]">
-      {LeftSidebar && <div
-        style={{
-          width: `${leftSidebarWidth}vw`,
-          minWidth: `${leftSidebarWidth}vw`,
-          maxWidth: `${leftSidebarWidth}vw`,
-          marginRight: `${marginLeftSidebar}px`,
-        }}
-        className="self-stretch transition-all duration-300  flex"
-      >
-        <div className={sidebarClasses + ` rounded-l-none border-l-0`}>
-          <div className="w-full flex justify-end p-1 pb-0">
-            <button
-              onClick={() => setLeftSidebarVisible(!leftSidebarVisible)}
-              className=""
-              aria-label="Shrink left sidebar"
-            >
-              {leftSidebarVisible ? (
-                <IconArrowsDiagonalMinimize2 />
-              ) : (
-                <IconArrowsDiagonal />
-              )}
-            </button>
+    <div className="w-screen flex flex-row">
+      {/* Left Ad Space - Desktop Only */}
+      <div className="hidden lg:block w-[200px] xl:w-[250px] 2xl:w-[300px] bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600">
+        <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 h-[600px] flex items-center justify-center text-sm">
+            Ad Space
           </div>
-          {leftSidebarVisible && <LeftSidebar />}
-        </div>
-      </div>}
-
-      <div
-        className="map relative w-full lg:w-[88%]  row-start-1 transition-all duration-300  h-full"
-      >
-        <div className=" flex flex-col items-center  bg-transparent md:scale-[1.00] w-full h-full ">
-          <TabDiv pageMode={pageMode}/>
-          <MapDiv mapMode={pageMode} />
-        </div>
-        <div className="hidden lg:block absolute bottom-0 left-0.5 z-30">
-          {(leftSidebarVisible || rightSidebarVisible) && (
-            <button
-              onClick={() => {
-                setLeftSidebarVisible(false);
-                setRightSidebarVisible(false);
-              }}
-              aria-label="Expand map"
-            >
-              <IconArrowsMaximize color="white" size={28} />
-            </button>
-          )}
         </div>
       </div>
 
-      {RightSidebar && (
-        <div
-          style={{
-            width: `${rightSidebarWidth}vw`,
-            minWidth: `${rightSidebarWidth}vw`,
-            maxWidth: `${rightSidebarWidth}vw`,
-            marginLeft: `${marginRightSidebar}px`,
-          }}
-          className="self-stretch transition-all duration-300 flex "
-        >
-          <div className={sidebarClasses + ` rounded-r-none  border-r-0`}>
-            <div className="w-full flex justify-start p-1 pb-0 ">
-              <button
-                onClick={() => setRightSidebarVisible(!rightSidebarVisible)}
-                className=""
-                aria-label="Shrink right sidebar"
-              >
-                {rightSidebarVisible ? (
-                  <IconArrowsDiagonalMinimize />
-                ) : (
-                  <IconArrowsDiagonal2 />
-                )}
-              </button>
-            </div>
-            {rightSidebarVisible && <RightSidebar />}
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Info/Tab Area - Full Width */}
+        <TabDiv pageMode={pageMode}/>
+        
+        {/* Map Content */}
+        <div className="map relative w-full">
+          {/* NoCountrySelected Indicator - positioned over map */}
+          <div 
+            data-display={((phase2Countries.length > 0 || phase3Countries.length > 0) && (pageMode === "single" ? phase2Countries.length > 0 || phase3Countries.length > 0 : phase2Countries.length > 0 && phase3Countries.length > 0))}
+            data-pagemode={pageMode}
+            className="absolute top-0 -translate-y-6 left-1/2 transform -translate-x-1/2 data-[display=true]:opacity-0 data-[display=true]:translate-y-4 transition-all duration-500 data-[pagemode=single]:duration-500 data-[pagemode=multi]:duration-500 z-30 text-xs sm:text-sm lg:text-base"
+          >
+            <NoCountrySelected
+              pageMode={pageMode}
+              phase2Exists={phase2Countries.length > 0}
+              phase3Exists={phase3Countries.length > 0}
+            />
+          </div>
+          
+          <div className="flex flex-col items-center bg-transparent md:scale-[1.00] w-full">
+            <MapDiv mapMode={pageMode} />
           </div>
         </div>
-      )}
-      <div className="mobile view flex h-[300px] lg:hidden divide-x-2">
-        <div className="pl-1 w-1/2">
-          <LeftSidebar />
+
+        {/* Country Name Display - Below Map */}
+        <CountryNameDisplay 
+          phase2Countries={phase2Countries} 
+          phase3Countries={phase3Countries} 
+          pageMode={pageMode} 
+        />
+
+        {/* Sidebar Content - Below Map */}
+        <div className="flex h-[300px] divide-x-2 mt-4">
+          <div className="pl-1 w-1/2">
+            <LeftSidebar />
+          </div>
+          <div className="pl-1 w-1/2">
+            {RightSidebar && <RightSidebar />}
+          </div>
         </div>
-        <div className="pl-1 w-1/2">
-          {RightSidebar && <RightSidebar />}
+      </div>
+
+      {/* Right Ad Space - Desktop Only */}
+      <div className="hidden lg:block w-[200px] xl:w-[250px] 2xl:w-[300px] bg-gray-100 dark:bg-gray-800 border-l border-gray-300 dark:border-gray-600">
+        <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 h-[600px] flex items-center justify-center text-sm">
+            Ad Space
+          </div>
         </div>
       </div>
     </div>

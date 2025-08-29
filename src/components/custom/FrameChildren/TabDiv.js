@@ -5,14 +5,10 @@ import useCountryStore from "../../../app/useCountryStore";
 import TabDemographic from "../tabDemographic";
 import TabStats from "../tabStats";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs.jsx";
-import {
   IconInfoCircle,
   IconArrowBigDownLines,
+  IconChevronDown,
+  IconChevronUp,
 } from "@tabler/icons-react";
 import useEuCountries from "src/utils/eu";
 
@@ -23,6 +19,8 @@ export default function TabDiv({
   const [phase2Countries, setPhase2Countries] = useState([]);
   const [phase3Countries, setPhase3Countries] = useState([]);
   const [displayStats, setDisplayStats] = useState(false);
+  const [forAgainstExpanded, setForAgainstExpanded] = useState(false);
+  const [demographicsExpanded, setDemographicsExpanded] = useState(false);
   const euCountries = useEuCountries();
   const countries = useCountryStore((state) => state.countries);
 
@@ -87,31 +85,20 @@ export default function TabDiv({
   const phase3exists = phase3Countries.length > 0;
 
   return (
-    <Tabs
-      defaultValue="data"
-      className="relative flex flex-col items-center justify-between h-[180px] lg:h-[14.02vw]  w-full md:w-[90%] shadow-sm z-20 rounded-none md:rounded-2xl mb-[-2px] lg:mb-[-12px] md:mt-[20px] bg-card/95 border-2 overflow-hidden  ring-primary data-[tabvisible=false]:h-24 data-[tabvisible=false]:mb-2 transition-all duration-500"
-    >
-      <div
-        data-display={displayStats}
-        data-pagemode={pageMode}
-        className="absolute top-[60%] data-[display=true]:opacity-0  data-[display=true]:translate-y-10 transition-all duration-500 data-[pagemode=single]:duration-500 data-[pagemode=multi]:duration-500 w-[95%] lg:w-[70%] text-xs sm:text-sm lg:text-base z-30"
-      >
-        <NoCountrySelected
-          pageMode={pageMode}
-          phase2Exists={phase2exists}
-          phase3Exists={phase3exists}
-        />
-      </div>
-          <TabsList className=" mt-2 justify-center w-[95%] md:w-[70%] grid grid-cols-2 shadow-inner mb-0 z-10">
-            <TabsTrigger value="data" className="data-[state=inactive]:text-gray-700">For/Against</TabsTrigger>
-            <TabsTrigger value="demographics" className="data-[state=inactive]:text-gray-700">Demographics</TabsTrigger>
-          </TabsList>
+    <div className="relative flex flex-col items-center w-full z-20 bg-gradient-to-b from-background to-background/80">
 
-          <TabsContent
-            value="demographics"
-            className="flex justify-center w-full h-[180px] lg:h-[14.02vw]"
+      <div className="w-full space-y-2 py-4">
+        {/* Demographics Accordion */}
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <button
+            onClick={() => setDemographicsExpanded(!demographicsExpanded)}
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between text-sm font-medium"
           >
-            <div className="w-full">
+            <span>Demographics</span>
+            {demographicsExpanded ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
+          </button>
+          {demographicsExpanded && (
+            <div className="p-4">
               <TabDemographic
                 phase2Countries={phase2Countries}
                 phase3Countries={phase3Countries}
@@ -119,58 +106,34 @@ export default function TabDiv({
                 displayStats={displayStats}
               />
             </div>
-          </TabsContent>
-          <TabsContent
-            value="data"
-            className="flex justify-center w-full h-[130px] lg:h-[10.02vw]"
+          )}
+        </div>
+
+        {/* For/Against Accordion */}
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <button
+            onClick={() => setForAgainstExpanded(!forAgainstExpanded)}
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between text-sm font-medium"
           >
-            <TabStats
-              pageMode={pageMode}
-              sortedCountries={sortedCountries}
-              phase2Countries={phase2Countries}
-              phase3Countries={phase3Countries}
-              phase2exists={phase2exists}
-              phase3exists={phase3exists}
-              displayStats={displayStats}
-            />
-          </TabsContent>
-    </Tabs>
+            <span>For/Against</span>
+            {forAgainstExpanded ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
+          </button>
+          {forAgainstExpanded && (
+            <div className="p-2">
+              <TabStats
+                pageMode={pageMode}
+                sortedCountries={sortedCountries}
+                phase2Countries={phase2Countries}
+                phase3Countries={phase3Countries}
+                phase2exists={phase2exists}
+                phase3exists={phase3exists}
+                displayStats={displayStats}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
-const NoCountrySelected = ({
-  pageMode = "single",
-  phase2Exists = false,
-  phase3Exists = false,
-}) => {
-  return pageMode === "single" ? (
-    <div className="flex justify-around align-top w-full translate-y-3 items-center drop-shadow">
-      <div className="flex p-1 lg:p-2 border-2 border-yellow-400 bg-yellow-300 rounded-full shadow-lg font-medium items-center ">
-        <IconInfoCircle size={22} className="text-primary drop-shadow" />
-        {"  "}
-        Select a country below...
-      </div>
-    </div>
-  ) : (
-    <div className="flex justify-center translate-y-2 w-full ">
-      <div
-        data-phase2exists={phase2Exists}
-        className="flex p-1 lg:p-2 border-[3px] border-blue-500 bg-blue-100 rounded-full shadow-lg font-medium items-center  data-[phase2exists=true]:opacity-0 data-[phase2exists=true]:translate-y-8 transition-all delay-100 duration-500 mr-1 text-center"
-      >
-        <IconInfoCircle className="text-primary drop-shadow" /> Select a blue
-        country...
-      </div>
-      <IconArrowBigDownLines
-        size={30}
-        className="text-primary drop-shadow self-center mx-1 md:mx-1"
-      />
-      <div
-        data-phase3exists={phase3Exists}
-        className="flex p-1 lg:p-2 border-[3px] border-red-500 bg-red-100 rounded-full shadow-lg font-medium items-center data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-8 transition-all delay-100 duration-500 ml-1 text-center"
-      >
-        <IconInfoCircle className="text-primary drop-shadow" /> Select a red
-        country...
-      </div>
-    </div>
-  );
-};

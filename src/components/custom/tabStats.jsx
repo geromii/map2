@@ -1,7 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { IconInfoCircle, IconArrowBigDownFilled } from "@tabler/icons-react";
-
-import useCountryStore from "../../app/useCountryStore";
+import React from "react";
 import { getCountryEmoji } from "../../utils/countryEmojis";
 
 function TabStats({
@@ -13,77 +10,71 @@ function TabStats({
   phase3exists,
   displayStats,
 }) {
+  // Always maintain 4 rows for consistent height
+  const positiveCountries = displayStats && sortedCountries.length > 0 
+    ? sortedCountries.slice(-4) 
+    : [];
+  const negativeCountries = displayStats && sortedCountries.length > 0 
+    ? sortedCountries.slice(0, 4) 
+    : [];
+
+  // Create placeholder rows to maintain consistent height
+  const createPlaceholderRows = (data, side) => {
+    const rows = [];
+    for (let i = 0; i < 4; i++) {
+      if (data[i]) {
+        rows.push(
+          <CountryRow 
+            key={`${side}-${i}`}
+            country={data[i].country}
+            score={data[i].preferenceScore}
+            align="left"
+          />
+        );
+      } else {
+        rows.push(
+          <div key={`${side}-placeholder-${i}`} className="flex items-center gap-2 opacity-30">
+            <span className="font-mono text-sm md:text-base tabular-nums text-gray-400">0.00</span>
+            <span className="text-lg md:text-xl text-gray-400">🌍</span>
+            <span className="text-sm md:text-base truncate max-w-[150px] md:max-w-[200px] text-gray-400">Country</span>
+          </div>
+        );
+      }
+    }
+    return rows;
+  };
+
   return (
-    <div className="flex items-center justify-around w-full h-[130px] lg:h-[10.02vw] -translate-y-2">
-      <div
-        data-display={displayStats}
-        className="text-center w-full transition data-[display=false]:opacity-0 duration-200 "
-      >
-        <div className="text-sm xl:text-base 2xl:text-lg flex justify-around w-full  items-center align-middle pb-1">
-          <div className="hidden lg:flex w-2/6 justify-center ml-5 overflow-auto">
-            <div
-              data-pagemode={pageMode}
-              className="data-[pagemode=single]:text-2xl data-[pagemode=single]:font-serif text-xl data-[pagemode=single]:text-black font-semibold text-blue-800 overflow-auto"
-            >
-              <div className="text-left w-full">
-                {phase2Countries.map((country, index) => (
-                  <div key={index} className="inline-block mr-2">
-                    {getCountryEmoji(country)} {country}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex w-full lg:w-6/12 items-center align-center justify-between h-full ">
-            <table className="w-full table-fixed ">
-              <tbody>
-                {sortedCountries.slice(-4).map((entry, index) => (
-                  <tr key={index}>
-                    <td className="w-4/12 md:w-3/12 lg:w-4/12 text-left font-mono truncate">
-                      {entry.preferenceScore.toFixed(2)}{" "}
-                      {getCountryEmoji(entry.country)}
-                      <span className="truncate font-sans">
-                        {entry.country}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <table className="w-full table-fixed ">
-              <tbody>
-                {sortedCountries.slice(0, 4).map((entry, index) => (
-                  <tr key={index}>
-                    <td className="w-4/12 md:w-3/12 lg:w-4/12 text-left font-mono truncate">
-                      {entry.preferenceScore.toFixed(2)}{" "}
-                      {getCountryEmoji(entry.country)}
-                      <span className="truncate font-sans">
-                        {entry.country}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {pageMode != "single" ? (
-            <div className="hidden lg:flex w-2/6 justify-center ml-5 overflow-auto ">
-            <div
-              data-pagemode={pageMode}
-              className="data-[pagemode=single]:text-2xl text-xl data-[pagemode=single]:text-black font-semibold text-red-800 overflow-auto"
-            >
-              <div className="text-left w-full space-y-">
-                {phase3Countries.map((country, index) => (
-                  <div key={index} className="inline-block mr-2">
-                    {getCountryEmoji(country)} {country}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          ) : null}
+    <div className="flex items-start justify-center w-full min-h-[120px] overflow-hidden pt-2">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 md:gap-8 lg:gap-12 max-w-2xl w-full px-4">
+        {/* Positive Scores Column */}
+        <div className="space-y-0.5">
+          {createPlaceholderRows(positiveCountries, 'pos')}
+        </div>
+
+        {/* Negative Scores Column */}
+        <div className="space-y-0.5">
+          {createPlaceholderRows(negativeCountries, 'neg')}
         </div>
       </div>
+    </div>
+  );
+}
+
+// Reusable component for country rows
+function CountryRow({ country, score, align = "left" }) {
+  return (
+    <div className={`flex items-center gap-2 ${align === "right" ? "flex-row-reverse" : ""}`}>
+      <span className="font-mono text-sm md:text-base tabular-nums">
+        {score.toFixed(2)}
+      </span>
+      <span className="text-lg md:text-xl">
+        {getCountryEmoji(country)}
+      </span>
+      <span className="text-sm md:text-base truncate max-w-[150px] md:max-w-[200px]">
+        {country}
+      </span>
     </div>
   );
 }

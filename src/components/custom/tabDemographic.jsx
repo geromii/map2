@@ -181,80 +181,84 @@ function TabDemographic({ phase2Countries, phase3Countries, pageMode, displaySta
           </div>
         </div>
       ) : null}
-      <div data-pagemode={pageMode} className="w-full h-full data-[pagemode=single]:translate-y-6">
-        <table data-hidedemographics={hideStats} className="w-full h-full">
-          <thead className="text-center text-xs md:text-sm xl:text-base">
-            <tr style={{ height: "10%" }}>
-              <th style={{ width: "30%" }}>Countries</th>
-              <th style={{ width: "15%" }}>GDP</th>
-              <th style={{ width: "15%" }}>GDP PPP</th>
-              <th style={{ width: "15%" }}>Population</th>
-              <th style={{ width: "15%" }}>Area (km²)</th>
+      <div data-pagemode={pageMode} className="w-full h-full">
+        <table data-hidedemographics={hideStats} className="w-full table-auto">
+          <thead className="text-center text-xs md:text-sm lg:text-base">
+            <tr>
+              <th className="px-2 py-1 min-w-[120px]">Countries</th>
+              <th className="px-2 py-1 min-w-[80px]">GDP</th>
+              <th className="px-2 py-1 min-w-[80px]">GDP PPP</th>
+              <th className="px-2 py-1 min-w-[80px]">Population</th>
+              <th className="px-2 py-1 min-w-[80px]">Area (km²)</th>
             </tr>
           </thead>
-          <tbody className="text-end text-xs md:text-sm xl:text-base">
-            {/* Ensure you apply the same styling for each td element as their corresponding th */}
+          <tbody className="text-right text-xs md:text-sm lg:text-base">
             <tr>
-              <td style={{ width: "20%" }} className="text-blue-700 h-full w-full">
-                {" "}
-                {pageMode == "single" ? (
-                  <div className=" overflow-auto h-8 xl:h-8">{phase2Countries.join(", ")}</div>
+              <td className="px-2 py-2 text-blue-700 text-left">
+                {displayStats && phase2Countries.length > 0 ? (
+                  pageMode == "single" ? (
+                    <div className="overflow-auto">{phase2Countries.join(", ")}</div>
+                  ) : (
+                    <div className="overflow-auto font-medium">
+                      <span className="text-blue-800 font-bold">Blue Side</span>{" "}
+                      {includeAllies && (
+                        <span>
+                          and{" "}
+                          <span title={phase2AlliesTooltip}>
+                            {phase2AlliesArray.length} {phase2AlliesArray.length == 1 ? "Ally" : "Allies"}
+                          </span>
+                        </span>
+                      )}
+                    </div>
+                  )
                 ) : (
-                  <div className=" overflow-auto h-8 xl:h-8 font-medium">
-                    {" "}
-                    <span className="text-blue-800 font-bold"> Blue Side</span>{" "}
+                  <div className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">
+                    {pageMode == "single" ? "Select country..." : "Blue Side"}
+                  </div>
+                )}
+              </td>
+              <td className="px-2 py-2">
+                {displayStats && phase2Data.GDP > 0 ? formatMoney(phase2Data.GDP) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">$0.00 trillion</span>}
+              </td>
+              <td className="px-2 py-2">
+                {displayStats && phase2Data.GDP_PPP > 0 ? formatMoney(phase2Data.GDP_PPP) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">$0.00 trillion</span>}
+              </td>
+              <td className="px-2 py-2">
+                {displayStats && phase2Data.Population > 0 ? formatPopulation(phase2Data.Population) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 million</span>}
+              </td>
+              <td className="px-2 py-2">
+                {displayStats && phase2Data.Area > 0 ? formatArea(phase2Data.Area) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 km²</span>}
+              </td>
+            </tr>
+            <tr data-pagemode={pageMode} className="data-[pagemode=single]:hidden">
+              <td className="px-2 py-2 text-red-700 text-left">
+                {displayStats && phase3Countries.length > 0 ? (
+                  <div className="overflow-auto font-medium">
+                    <span className="text-red-800 font-bold">Red Side</span>{" "}
                     {includeAllies && (
                       <span>
                         and{" "}
-                        <span title={phase2AlliesTooltip}>
-                          {" "}
-                          {phase2AlliesArray.length} {phase2AlliesArray.length == 1 ? "Ally" : "Allies"}{" "}
+                        <span title={phase3AlliesTooltip}>
+                          {phase3AlliesArray.length} {phase3AlliesArray.length == 1 ? "Ally" : "Allies"}
                         </span>
                       </span>
                     )}
                   </div>
-                )}{" "}
+                ) : (
+                  <div className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">Red Side</div>
+                )}
               </td>
-              <td style={{ width: "20%" }} className="align-top">
-                {formatMoney(phase2Data.GDP)}
+              <td className="px-2 py-2">
+                {displayStats && phase3Data.GDP > 0 ? formatMoney(phase3Data.GDP) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">$0.00 trillion</span>}
               </td>
-              <td style={{ width: "20%" }} className="align-top">
-                {formatMoney(phase2Data.GDP_PPP)}
+              <td className="px-2 py-2">
+                {displayStats && phase3Data.GDP_PPP > 0 ? formatMoney(phase3Data.GDP_PPP) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">$0.00 trillion</span>}
               </td>
-              <td style={{ width: "15%" }} className="align-top">
-                {formatPopulation(phase2Data.Population)}
+              <td className="px-2 py-2">
+                {displayStats && phase3Data.Population > 0 ? formatPopulation(phase3Data.Population) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 million</span>}
               </td>
-              <td style={{ width: "15%" }} className="align-top">
-                {formatArea(phase2Data.Area)}
-              </td>
-            </tr>
-            <tr data-pagemode={pageMode} className="data-[pagemode=single]:hidden">
-              <td style={{ width: "20%" }} className="text-red-700 h-full">
-                {" "}
-                <div className="h-6 xl:h-8 overflow-auto font-medium">
-                  <span className="text-red-800 font-bold"> Red Side</span> {" "}
-                  {includeAllies && (
-                    <span>
-                       and{" "}
-                      <span title={phase3AlliesTooltip}>
-                        {" "}
-                        {`${phase3AlliesArray.length}`} {phase3AlliesArray.length == 1 ? "Ally" : "Allies"}
-                      </span>
-                    </span>
-                  )}
-                </div>
-              </td>
-              <td style={{ width: "20%" }} className="align-top">
-                {formatMoney(phase3Data.GDP)}
-              </td>
-              <td style={{ width: "20%" }} className="align-top">
-                {formatMoney(phase3Data.GDP_PPP)}
-              </td>
-              <td style={{ width: "15%" }} className="align-top">
-                {formatPopulation(phase3Data.Population)}
-              </td>
-              <td style={{ width: "15%" }} className="align-top">
-                {formatArea(phase3Data.Area)}
+              <td className="px-2 py-2">
+                {displayStats && phase3Data.Area > 0 ? formatArea(phase3Data.Area) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 km²</span>}
               </td>
             </tr>
           </tbody>
