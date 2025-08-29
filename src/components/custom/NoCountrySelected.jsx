@@ -18,16 +18,16 @@ const NoCountrySelected = ({
       </div>
     </div>
   ) : (
-    <div className="flex justify-center translate-y-2 w-full ">
+    <div className="flex justify-center translate-y-3 w-full ">
       <div
         data-phase2exists={phase2Exists}
-        className="flex p-1 lg:p-2 border-[3px] border-blue-500 bg-blue-100 rounded-full shadow-lg font-medium items-center data-[phase2exists=true]:opacity-0 data-[phase2exists=true]:translate-y-8 transition-all delay-100 duration-500 mr-1 text-center md:whitespace-nowrap text-xs md:text-sm min-w-[110px]"
+        className="flex p-1 lg:p-2 border-[3px] border-blue-500 bg-blue-100 rounded-full shadow-lg font-medium items-center data-[phase2exists=true]:opacity-0 data-[phase2exists=true]:translate-y-8 transition-all delay-100 duration-500 mr-1 text-center whitespace-nowrap text-xs md:text-sm "
       >
         <IconArrowBigDownLines className="text-primary drop-shadow" size={16} /> Select a blue country...
       </div>
       <div
         data-phase3exists={phase3Exists}
-        className="flex p-1 lg:p-2 border-[3px] border-red-500 bg-red-100 rounded-full shadow-lg font-medium items-center data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-8 transition-all delay-100 duration-500 ml-1 text-center md:whitespace-nowrap text-xs md:text-sm min-w-[110px]"
+        className="flex p-1 lg:p-2 border-[3px] border-red-500 bg-red-100 rounded-full shadow-lg font-medium items-center data-[phase3exists=true]:opacity-0 data-[phase3exists=true]:translate-y-8 transition-all delay-100 duration-500 ml-1 text-center whitespace-nowrap text-xs md:text-sm"
       >
         <IconArrowBigDownLines className="text-primary drop-shadow" size={16} /> Select a red country...
       </div>
