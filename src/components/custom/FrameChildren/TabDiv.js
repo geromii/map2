@@ -93,11 +93,11 @@ export default function TabDiv({
           <div>
           <button
             onClick={() => setDemographicsExpanded(!demographicsExpanded)}
-            className="w-full pl-5 pr-2 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-base font-medium text-gray-900 dark:text-gray-100 transition-all duration-200 group"
+            className="w-full pl-5 pr-2 py-2 bg-primary hover:bg-primary/90 flex items-center justify-center text-base font-medium text-primary-foreground transition-all duration-200 group border-b-2 border-secondary/20"
           >
             <span>Demographics</span>
-            <div className="ml-2 transition-all duration-300 group-hover:scale-110 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-              {demographicsExpanded ? <IconChevronUp size={18} className="text-gray-500 dark:text-gray-400" /> : <IconChevronDown size={18} className="text-gray-500 dark:text-gray-400" />}
+            <div className="ml-2 transition-all duration-300 group-hover:scale-110 group-hover:text-secondary">
+              {demographicsExpanded ? <IconChevronUp size={18} className="text-secondary" /> : <IconChevronDown size={18} className="text-secondary" />}
             </div>
           </button>
           {demographicsExpanded && (
@@ -116,11 +116,11 @@ export default function TabDiv({
           <div>
             <button
               onClick={() => setForAgainstExpanded(!forAgainstExpanded)}
-              className="w-full pl-5 pr-2 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-base font-medium text-gray-900 dark:text-gray-100 transition-all duration-200 group"
+              className="w-full pl-5 pr-2 py-2 bg-primary hover:bg-primary/90 flex items-center justify-center text-base font-medium text-primary-foreground transition-all duration-200 group border-b-2 border-secondary/20"
             >
               <span>For/Against</span>
-              <div className="ml-2 transition-all duration-300 group-hover:scale-110 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                {forAgainstExpanded ? <IconChevronUp size={18} className="text-gray-500 dark:text-gray-400" /> : <IconChevronDown size={18} className="text-gray-500 dark:text-gray-400" />}
+              <div className="ml-2 transition-all duration-300 group-hover:scale-110 group-hover:text-secondary">
+                {forAgainstExpanded ? <IconChevronUp size={18} className="text-secondary" /> : <IconChevronDown size={18} className="text-secondary" />}
               </div>
             </button>
             {forAgainstExpanded && (

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react";
 import MenuBar from "@/components/custom/menubar";
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import Script from "next/script";
 
 // Import the Inter font (default)
 const fontSans = FontSans({
@@ -56,17 +57,18 @@ export default function RootLayout({ children }) {
         
         <link rel="preload" href="/map_design_2025_08.json" as="fetch" crossOrigin="anonymous" />
         
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-KSKH6FD6PY"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-KSKH6FD6PY');
-            `,
-          }}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-KSKH6FD6PY"
+          strategy="afterInteractive"
         />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-KSKH6FD6PY');
+          `}
+        </Script>
         
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3730086764138490" crossOrigin="anonymous"></script>
       </head>
