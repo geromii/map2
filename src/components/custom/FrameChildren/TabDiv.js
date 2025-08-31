@@ -19,8 +19,6 @@ export default function TabDiv({
   const [phase2Countries, setPhase2Countries] = useState([]);
   const [phase3Countries, setPhase3Countries] = useState([]);
   const [displayStats, setDisplayStats] = useState(false);
-  const [forAgainstExpanded, setForAgainstExpanded] = useState(false);
-  const [demographicsExpanded, setDemographicsExpanded] = useState(false);
   const euCountries = useEuCountries();
   const countries = useCountryStore((state) => state.countries);
 
@@ -89,53 +87,17 @@ export default function TabDiv({
 
       <div className="w-full">
         <div className="bg-white dark:bg-gray-900">
-          {/* Demographics Accordion */}
-          <div>
-          <button
-            onClick={() => setDemographicsExpanded(!demographicsExpanded)}
-            className="w-full pl-5 pr-2 py-2 bg-primary hover:bg-primary/90 flex items-center justify-center text-base font-medium text-primary-foreground transition-all duration-200 group border-b-2 border-secondary/20"
-          >
-            <span>Demographics</span>
-            <div className="ml-2 transition-all duration-300 group-hover:scale-110 group-hover:text-secondary">
-              {demographicsExpanded ? <IconChevronUp size={18} className="text-secondary" /> : <IconChevronDown size={18} className="text-secondary" />}
-            </div>
-          </button>
-          {demographicsExpanded && (
-            <div className="p-4">
-              <TabDemographic
-                phase2Countries={phase2Countries}
-                phase3Countries={phase3Countries}
-                pageMode={pageMode}
-                displayStats={displayStats}
-              />
-            </div>
-          )}
-        </div>
-
-          {/* For/Against Accordion */}
-          <div>
-            <button
-              onClick={() => setForAgainstExpanded(!forAgainstExpanded)}
-              className="w-full pl-5 pr-2 py-2 bg-primary hover:bg-primary/90 flex items-center justify-center text-base font-medium text-primary-foreground transition-all duration-200 group border-b-2 border-secondary/20"
-            >
-              <span>For/Against</span>
-              <div className="ml-2 transition-all duration-300 group-hover:scale-110 group-hover:text-secondary">
-                {forAgainstExpanded ? <IconChevronUp size={18} className="text-secondary" /> : <IconChevronDown size={18} className="text-secondary" />}
-              </div>
-            </button>
-            {forAgainstExpanded && (
-              <div className="p-0.5 sm:p-1 lgp-2">
-                <TabStats
-                  pageMode={pageMode}
-                  sortedCountries={sortedCountries}
-                  phase2Countries={phase2Countries}
-                  phase3Countries={phase3Countries}
-                  phase2exists={phase2exists}
-                  phase3exists={phase3exists}
-                  displayStats={displayStats}
-                />
-              </div>
-            )}
+          {/* Stats Section - Always Open */}
+          <div className="p-0.5 sm:p-1 lgp-2">
+            <TabStats
+              pageMode={pageMode}
+              sortedCountries={sortedCountries}
+              phase2Countries={phase2Countries}
+              phase3Countries={phase3Countries}
+              phase2exists={phase2exists}
+              phase3exists={phase3exists}
+              displayStats={displayStats}
+            />
           </div>
         </div>
       </div>

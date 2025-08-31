@@ -4,6 +4,7 @@ import NoCountrySelected from "./NoCountrySelected";
 import { useState, useEffect } from "react";
 import useCountryStore from "../../app/useCountryStore";
 import useEuCountries from "../../utils/eu";
+import DemographicsSection from "./FrameChildren/DemographicsSection";
 
 export default function MapFrame({
   LeftSidebar,
@@ -88,6 +89,18 @@ export default function MapFrame({
             {RightSidebar && <RightSidebar />}
           </div>
         </div>
+
+        {/* Demographics Section - At the Bottom */}
+        <DemographicsSection
+          phase2Countries={phase2Countries}
+          phase3Countries={phase3Countries}
+          pageMode={pageMode}
+          displayStats={
+            pageMode === "single"
+              ? phase2Countries.length > 0 || phase3Countries.length > 0
+              : phase2Countries.length > 0 && phase3Countries.length > 0
+          }
+        />
       </div>
 
       {/* Right Ad Space - Desktop Only */}

@@ -166,9 +166,9 @@ const MapDivComponent = ({ mapMode }) => {
     >
             <div
         data-mapmode={mapMode}
-        className="w-full lg:text-xl overflow-hidden"
+        className="w-full lg:text-xl overflow-hidden max-w-full"
       >
-        <p className="font-semibold font-serif text-lg text-center h-8 bg-slate-100 border-2 overflow-hidden text-ellipsis whitespace-nowrap px-2 max-w-full">
+        <div className="font-semibold font-serif text-md sm:text-lg lg:text-xl text-center h-10 lg:h-12 bg-slate-100 rounded-t-lg overflow-hidden px-1 lg:px-4 max-w-full flex items-center justify-center border-2 mt-1">
           {mapMode === "multi" ? (
             (() => {
               const phase3Countries = Object.keys(countries).filter(
@@ -184,41 +184,43 @@ const MapDivComponent = ({ mapMode }) => {
               
               if (phase3CountriesCount === 1 && phase2CountriesCount === 1) {
                 return (
-                  <>
-                    <span className="text-blue-600">{getCountryEmoji(phase2Countries[0])} {abbreviateCountry(phase2Countries[0])}</span>
-                    <span> vs </span>
-                    <span className="text-red-600">{getCountryEmoji(phase3Countries[0])} {abbreviateCountry(phase3Countries[0])}</span>
-                  </>
+                  <div className="flex items-center justify-center w-full">
+                    <span className="text-blue-600 truncate max-w-[60%] text-right">{getCountryEmoji(phase2Countries[0])} {abbreviateCountry(phase2Countries[0])}</span>
+                    <span className="mx-3 flex-shrink-0"> vs </span>
+                    <span className="text-red-600 truncate max-w-[60%] text-left">{getCountryEmoji(phase3Countries[0])} {abbreviateCountry(phase3Countries[0])}</span>
+                  </div>
                 );
               } else if (phase3CountriesCount + phase2CountriesCount <= 5) {
                 const blueEmojis = phase2Countries.map(country => getCountryEmoji(country)).join(" ");
                 const redEmojis = phase3Countries.map(country => getCountryEmoji(country)).join(" ");
                 return (
-                  <>
-                    <span>{blueEmojis}</span>
-                    <span> vs </span>
-                    <span>{redEmojis}</span>
-                  </>
+                  <div className="flex items-center justify-center w-full">
+                    <span className="truncate max-w-[40%] text-right">{blueEmojis}</span>
+                    <span className="mx-3 flex-shrink-0"> vs </span>
+                    <span className="truncate max-w-[40%] text-left">{redEmojis}</span>
+                  </div>
                 );
               } else {
                 return (
-                  <>
+                  <div className="flex items-center justify-center w-full">
                     <span className="text-blue-600">{phase2CountriesCount} countries</span>
-                    <span> vs </span>
+                    <span className="mx-3 flex-shrink-0"> vs </span>
                     <span className="text-red-600">{phase3CountriesCount} countries</span>
-                  </>
+                  </div>
                 );
               }
             })()
           ) : (
-            phase2Countries
-              .map((country) => `${getCountryEmoji(country)} ${country}`)
-              .join(", ")
+            <div className="truncate w-full">
+              {phase2Countries
+                .map((country) => `${getCountryEmoji(country)} ${country}`)
+                .join(", ")}
+            </div>
           )}
-        </p>
+        </div>
       </div>
 
-      <div className=" bg-slate-500  lg:rounded  shadow-sm   ">
+      <div className=" bg-slate-500  shadow-sm   ">
         <ComposableMap
           viewBox="-80 -10 1000 540"
           projection={projection}
