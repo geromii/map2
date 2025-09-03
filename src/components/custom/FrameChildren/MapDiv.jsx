@@ -184,20 +184,20 @@ const MapDivComponent = ({ mapMode }) => {
               
               if (phase3CountriesCount === 1 && phase2CountriesCount === 1) {
                 return (
-                  <div className="flex items-center justify-center w-full">
-                    <span className="text-blue-600 truncate max-w-[60%] text-right">{getCountryEmoji(phase2Countries[0])} {abbreviateCountry(phase2Countries[0])}</span>
-                    <span className="mx-3 flex-shrink-0"> vs </span>
-                    <span className="text-red-600 truncate max-w-[60%] text-left">{getCountryEmoji(phase3Countries[0])} {abbreviateCountry(phase3Countries[0])}</span>
+                  <div className="grid grid-cols-[1fr,auto,1fr] items-center w-full">
+                    <span className="text-blue-600 truncate text-right pr-1">{getCountryEmoji(phase2Countries[0])} {abbreviateCountry(phase2Countries[0])}</span>
+                    <span className="px-1"> vs </span>
+                    <span className="text-red-600 truncate text-left pl-1">{getCountryEmoji(phase3Countries[0])} {abbreviateCountry(phase3Countries[0])}</span>
                   </div>
                 );
               } else if (phase3CountriesCount + phase2CountriesCount <= 5) {
                 const blueEmojis = phase2Countries.map(country => getCountryEmoji(country)).join(" ");
                 const redEmojis = phase3Countries.map(country => getCountryEmoji(country)).join(" ");
                 return (
-                  <div className="flex items-center justify-center w-full">
-                    <span className="truncate max-w-[40%] text-right">{blueEmojis}</span>
-                    <span className="mx-3 flex-shrink-0"> vs </span>
-                    <span className="truncate max-w-[40%] text-left">{redEmojis}</span>
+                  <div className="grid grid-cols-[1fr,auto,1fr] items-center w-full">
+                    <span className="truncate text-right pr-1">{blueEmojis}</span>
+                    <span className="px-1"> vs </span>
+                    <span className="truncate text-left pl-1">{redEmojis}</span>
                   </div>
                 );
               } else {
