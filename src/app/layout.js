@@ -69,8 +69,6 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-KSKH6FD6PY');
           `}
         </Script>
-        
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3730086764138490" crossOrigin="anonymous"></script>
       </head>
       <body
         className={cn(
