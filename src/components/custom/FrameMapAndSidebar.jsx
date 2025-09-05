@@ -82,10 +82,10 @@ export default function MapFrame({
 
         {/* Sidebar Content - Below Map */}
         <div className="flex h-[300px] divide-x-2 mt-4 justify-center">
-          <div className="pl-1 w-1/2 max-w-[300px]">
+          <div className="w-1/2 max-w-[300px]">
             <LeftSidebar />
           </div>
-          <div className="pl-1 w-1/2 max-w-[300px]">
+          <div className="w-1/2 max-w-[300px]">
             {RightSidebar && <RightSidebar />}
           </div>
         </div>
