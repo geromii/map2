@@ -1,6 +1,23 @@
 import { create } from "zustand";
 import countries from "./countries.json"; 
-import * as math from "mathjs";
+// Matrix operation functions to replace mathjs
+function matrixVectorMultiply(matrix, vector) {
+  return matrix.map(row => 
+    row.reduce((sum, val, i) => sum + val * vector[i], 0)
+  );
+}
+
+function matrixMap(matrix, fn) {
+  return matrix.map(row => row.map(fn));
+}
+
+function vectorAdd(a, b) {
+  return a.map((val, i) => val + b[i]);
+}
+
+function vectorDivide(vector, scalar) {
+  return vector.map(val => val / scalar);
+}
 
 // Pre-parse matrix after initial load
 if (typeof window !== 'undefined') {
@@ -179,7 +196,7 @@ const useCountryStore = create((set, get) => ({
     if (revealScores) {
       let scoresMatrix = await fetchScoresMatrix();
       let stateArray = transformStateToNumericArray(countries, scalar);
-      result = math.multiply(scoresMatrix, stateArray);
+      result = matrixVectorMultiply(scoresMatrix, stateArray);
   
       Object.keys(countries).forEach((country, index) => {
         if (countries[country].phase === 1) {
@@ -188,9 +205,9 @@ const useCountryStore = create((set, get) => ({
       });
   
       if (mapMode == "war") {
-        const modifiedScoresMatrix = math.map(scoresMatrix, (value) => Math.pow(Math.abs(value), 4) * 1 * value);
-        const secondOrderResult = math.multiply(modifiedScoresMatrix, result);
-        result = math.divide(math.add(result, secondOrderResult), 2); // Averaging the result with the second-order result
+        const modifiedScoresMatrix = matrixMap(scoresMatrix, (value) => Math.pow(Math.abs(value), 4) * 1 * value);
+        const secondOrderResult = matrixVectorMultiply(modifiedScoresMatrix, result);
+        result = vectorDivide(vectorAdd(result, secondOrderResult), 2); // Averaging the result with the second-order result
       }
     } else {
       // Handle the case where either case1Exists or case2Exists is false

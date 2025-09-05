@@ -19,7 +19,7 @@ const nextConfig = {
   
   // Optimize JSON imports
   experimental: {
-    optimizePackageImports: ['mathjs']
+    optimizePackageImports: []
   },
   
   // Add headers for static assets
