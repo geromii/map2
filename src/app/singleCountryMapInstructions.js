@@ -73,10 +73,18 @@ export const SingleCountryMapInstructions = () => {
       </section>
       <section className="mb-6">
         <h2 className="text-2xl lg:text-3xl ml-4 font-bold text-gray-700">
-          Data Source
+          How This Works
         </h2>
         <p className="text-gray-600 mt-3 lg:ml-2">
-        The underlying dataset is AI-generated synthetic data originating from GPT-5, generated on August 18, 2025. The data includes summaries and scores of each relationship, with results averaged across runs to produce the final score.
+          This map is created by querying GPT-5 five times for all country pairs (20,000 pairs in total). 
+          GPT-5 is asked to summarize the relationships between the two countries, then conclude with a 
+          numeric score that represents the relationship. We do this five times, extract the scores, and 
+          average the results to produce the final relationship score you see visualized on the map.
+        </p>
+        <p className="text-gray-600 mt-3 lg:ml-2">
+          The underlying dataset is AI-generated synthetic data originating from GPT-5, generated on August 18, 2025. 
+          The data includes summaries and scores of each relationship, with results averaged across runs to produce 
+          the final score.
         </p>
       </section>
     </article>
