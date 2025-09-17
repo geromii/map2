@@ -78,13 +78,13 @@ export const SingleCountryMapInstructions = () => {
         <p className="text-gray-600 mt-3 lg:ml-2">
           This map is created by querying GPT-5 five times for all country pairs (20,000 pairs in total). 
           GPT-5 is asked to summarize the relationships between the two countries, then conclude with a 
-          numeric score that represents the relationship. We do this five times, extract the scores, and 
+          numeric score that represents the relationship. I do this five times, extract the scores, and 
           average the results to produce the final relationship score you see visualized on the map.
         </p>
         <p className="text-gray-600 mt-3 lg:ml-2">
           The underlying dataset is AI-generated synthetic data originating from GPT-5, generated on August 18, 2025. 
-          GPT-5's knowledge cutoff is September 30, 2024, significant events occurring after that date, such as 
-          Trump's election or Syria's regime change, are included by providing GPT-5 with the relevant information. 
+          GPT-5&apos;s knowledge cutoff is September 30, 2024, significant events occurring after that date, such as 
+          Trump&apos;s election or Syria&apos;s regime change, are included by providing GPT-5 with the relevant information. 
           Although I make every effort to stay on top of relevant events, some events may have been omitted. 
           Future versions will take a more systematic approach to handling this.
         </p>
