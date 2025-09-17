@@ -83,8 +83,10 @@ export const SingleCountryMapInstructions = () => {
         </p>
         <p className="text-gray-600 mt-3 lg:ml-2">
           The underlying dataset is AI-generated synthetic data originating from GPT-5, generated on August 18, 2025. 
-          The data includes summaries and scores of each relationship, with results averaged across runs to produce 
-          the final score.
+          GPT-5's knowledge cutoff is September 30, 2024, significant events occurring after that date, such as 
+          Trump's election or Syria's regime change, are included by providing GPT-5 with the relevant information. 
+          Although I make every effort to stay on top of relevant events, some events may have been omitted. 
+          Future versions will take a more systematic approach to handling this.
         </p>
       </section>
     </article>
