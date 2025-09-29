@@ -36,7 +36,7 @@ export default function MapChart() {
   useEffect(() => {
     resetAllExcept();
     setMapMode("single");
-  }, []);
+  }, [resetAllExcept, setMapMode]);
   return (
     <MapFrame
       LeftSidebar={LeftSidebar}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,10 +15,10 @@ const MenuBar = () => {
   };
 
 
-  const updateIndicator = () => {
+  const updateIndicator = useCallback(() => {
     const isMobile = window.innerWidth < 1024;
     const activeLinkRef = isMobile ? linkRefs.current.mobile[pathname] : linkRefs.current.desktop[pathname];
-    
+
     if (activeLinkRef) {
       // Calculate the position and width of the active link
       const { offsetLeft, offsetWidth, offsetTop, offsetHeight } = activeLinkRef;
@@ -29,14 +29,14 @@ const MenuBar = () => {
         top: `${offsetTop + offsetHeight + 2}px`,
       });
     }
-  };
+  }, [pathname]);
 
   // Update the indicator on pathname changes and window resize
   useEffect(() => {
     updateIndicator();
     window.addEventListener('resize', updateIndicator);
     return () => window.removeEventListener('resize', updateIndicator);
-  }, [pathname]);
+  }, [pathname, updateIndicator]);
 
   // Function to store references for links
   const storeLinkRef = (path, isMobile) => (element) => {

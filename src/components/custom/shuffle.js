@@ -73,7 +73,7 @@ const ShuffleCountries = ({ singleMode = false }) => {
     };
 
     loadCountries();
-  }, []);
+  }, [gdpFilter, populationFilter]);
 
   const updateRecentCountries = (newCountry) => {
     setRecentCountries((prev) => {
