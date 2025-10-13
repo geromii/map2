@@ -41,8 +41,11 @@
    - ✅ Fixed import paths for /diplomacy components
    - ✅ Verified robots.txt and API routes have no URL dependencies
 
-2. **Phase 2 - Redirect Implementation (1-2 weeks after Phase 1)**
-   - Implement 301 redirect from `/` to `/diplomacy`
+2. **Phase 2 - Redirect Implementation** ✅ COMPLETED (2025-09-29)
+   - ✅ Implemented 301 redirect from `/` to `/diplomacy` via middleware
+   - ✅ Removed duplicate root page.js file
+   - ✅ Updated sitemap.xml to remove root URL entry
+   - ✅ Fixed React useEffect dependency warnings
    - Submit changes to Google Search Console
    - Monitor traffic and rankings
 

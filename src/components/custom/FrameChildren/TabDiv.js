@@ -16,6 +16,7 @@ export default function TabDiv({
   pageMode = "single",
 }) {
   const [sortedCountries, setSortedCountries] = useState([]);
+  const [fullSortedList, setFullSortedList] = useState([]);
   const [phase2Countries, setPhase2Countries] = useState([]);
   const [phase3Countries, setPhase3Countries] = useState([]);
   const [displayStats, setDisplayStats] = useState(false);
@@ -63,16 +64,23 @@ export default function TabDiv({
       );
 
       const sorted = phase0Countries
-        .filter(([_, value]) => value.preferenceScore != 0)
-        .sort((a, b) => a[1].preferenceScore - b[1].preferenceScore)
+        .sort((a, b) => b[1].preferenceScore - a[1].preferenceScore)
         .map((entry) => ({
           country: entry[0],
           preferenceScore: entry[1].preferenceScore,
         }));
+
+      // Store full sorted list for modal
+      setFullSortedList(sorted);
+
       const top3 = sorted.slice(0, 5);
       const bottom3 = sorted.slice(-5).reverse();
 
       setSortedCountries([...top3, ...bottom3]);
+    } else {
+      // Clear the lists when there's no data
+      setFullSortedList([]);
+      setSortedCountries([]);
     }
 
     // Update displayStats based on the updated phase2 and phase3 countries
@@ -92,6 +100,7 @@ export default function TabDiv({
             <TabStats
               pageMode={pageMode}
               sortedCountries={sortedCountries}
+              fullSortedList={fullSortedList}
               phase2Countries={phase2Countries}
               phase3Countries={phase3Countries}
               phase2exists={phase2exists}
