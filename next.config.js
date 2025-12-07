@@ -4,19 +4,21 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const nextConfig = {
-  webpack: (config) => {
-    config.resolve.alias['@/components'] = path.join(__dirname, 'src/components');
-    config.resolve.alias['@/lib/utils'] = path.join(__dirname, 'src/lib/utils');
-    config.resolve.alias['@/app'] = path.join(__dirname, 'src/app');  // Add this line
-    return config;
+  // Turbopack configuration for path aliases
+  turbopack: {
+    resolveAlias: {
+      '@/components': './src/components',
+      '@/lib/utils': './src/lib/utils',
+      '@/app': './src/app',
+    },
   },
-  
+
   // Enable source maps for production
   productionBrowserSourceMaps: true,
-  
+
   // Enable compression for better performance
   compress: true,
-  
+
   // Optimize JSON imports
   experimental: {
     optimizePackageImports: []

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export function middleware(request) {
+export function proxy(request) {
   if (request.nextUrl.pathname === '/') {
     const url = request.nextUrl.clone();
     url.pathname = '/diplomacy';
