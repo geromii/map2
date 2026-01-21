@@ -19,14 +19,8 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/components/*": [
-        "src/components/*"
-      ],
-      "@/lib/utils/*": [
-        "src/lib/utils/*"
-      ],
-      "@/app/*": [
-        "src/app/*"
+      "@/*": [
+        "src/*"
       ]
     },
     "plugins": [
