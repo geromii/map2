@@ -61,9 +61,9 @@ export default function LandingPage() {
             <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-16">
               {/* Diplomacy Card */}
               <Link href="/diplomacy" className="group">
-                <div className="relative h-full p-8 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 hover:border-[hsl(48,96%,53%)]/50 transition-all duration-500 hover:shadow-[0_0_60px_-15px_hsl(48,96%,53%)] overflow-hidden">
+                <div className="relative h-full p-8 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 hover:border-[hsl(48,96%,53%)]/50 transition-colors duration-300 overflow-hidden">
                   {/* Glow effect on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[hsl(48,96%,53%)]/0 to-[hsl(48,96%,53%)]/0 group-hover:from-[hsl(48,96%,53%)]/5 group-hover:to-transparent transition-all duration-500 rounded-2xl" />
+                  <div className="absolute inset-0 bg-[hsl(48,96%,53%)]/0 group-hover:bg-[hsl(48,96%,53%)]/5 transition-colors duration-300 rounded-2xl" />
 
                   <div className="relative z-10">
                     <div className="flex items-center gap-4 mb-6">
@@ -90,9 +90,9 @@ export default function LandingPage() {
 
               {/* Conflict Card */}
               <Link href="/conflict" className="group">
-                <div className="relative h-full p-8 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 hover:border-[hsl(48,96%,53%)]/50 transition-all duration-500 hover:shadow-[0_0_60px_-15px_hsl(48,96%,53%)] overflow-hidden">
+                <div className="relative h-full p-8 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 hover:border-[hsl(48,96%,53%)]/50 transition-colors duration-300 overflow-hidden">
                   {/* Glow effect on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[hsl(48,96%,53%)]/0 to-[hsl(48,96%,53%)]/0 group-hover:from-[hsl(48,96%,53%)]/5 group-hover:to-transparent transition-all duration-500 rounded-2xl" />
+                  <div className="absolute inset-0 bg-[hsl(48,96%,53%)]/0 group-hover:bg-[hsl(48,96%,53%)]/5 transition-colors duration-300 rounded-2xl" />
 
                   <div className="relative z-10">
                     <div className="flex items-center gap-4 mb-6">
@@ -124,7 +124,7 @@ export default function LandingPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-3">
                   <MapPin className="w-5 h-5 text-[hsl(48,96%,53%)]" />
                 </div>
-                <p className="text-sm text-gray-400">195+ Countries</p>
+                <p className="text-sm text-gray-400">All Countries</p>
               </div>
               <div className="text-center p-4">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-3">
@@ -136,7 +136,7 @@ export default function LandingPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-3">
                   <BarChart3 className="w-5 h-5 text-[hsl(48,96%,53%)]" />
                 </div>
-                <p className="text-sm text-gray-400">Live Visualization</p>
+                <p className="text-sm text-gray-400">August 2025 Data</p>
               </div>
             </div>
           </div>
