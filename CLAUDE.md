@@ -21,6 +21,10 @@
 - Run development: `npm run dev`
 - Lint/typecheck commands: Ask user for specific commands if needed
 
+## TypeScript Migration
+- New files should be written in TypeScript (.ts/.tsx)
+- Existing JavaScript files should be converted to TypeScript when making significant changes to them
+
 ## Convex Database Integration
 
 Backend database added via Convex (2026-01-21). Provider set up in `src/app/ConvexClientProvider.js`.

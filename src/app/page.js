@@ -63,7 +63,7 @@ export default function LandingPage() {
               <Link href="/diplomacy" className="group">
                 <div className="relative h-full p-8 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 hover:border-[hsl(48,96%,53%)]/50 transition-colors duration-300 overflow-hidden">
                   {/* Glow effect on hover */}
-                  <div className="absolute inset-0 bg-[hsl(48,96%,53%)]/0 group-hover:bg-[hsl(48,96%,53%)]/5 transition-colors duration-300 rounded-2xl" />
+                  <div className="absolute inset-0 bg-[hsl(48,96%,53%)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
 
                   <div className="relative z-10">
                     <div className="flex items-center gap-4 mb-6">
@@ -80,9 +80,9 @@ export default function LandingPage() {
                       Select any country to explore its relationships with every nation. Discover allies, rivals, and neutral stances on an interactive world map.
                     </p>
 
-                    <div className="flex items-center text-[hsl(48,96%,53%)] font-semibold group-hover:gap-3 gap-2 transition-all">
+                    <div className="flex items-center text-[hsl(48,96%,53%)] font-semibold gap-2">
                       <span>Explore Countries</span>
-                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
                     </div>
                   </div>
                 </div>
@@ -92,7 +92,7 @@ export default function LandingPage() {
               <Link href="/conflict" className="group">
                 <div className="relative h-full p-8 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 hover:border-[hsl(48,96%,53%)]/50 transition-colors duration-300 overflow-hidden">
                   {/* Glow effect on hover */}
-                  <div className="absolute inset-0 bg-[hsl(48,96%,53%)]/0 group-hover:bg-[hsl(48,96%,53%)]/5 transition-colors duration-300 rounded-2xl" />
+                  <div className="absolute inset-0 bg-[hsl(48,96%,53%)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
 
                   <div className="relative z-10">
                     <div className="flex items-center gap-4 mb-6">
@@ -109,9 +109,9 @@ export default function LandingPage() {
                       Define opposing sides of a hypothetical conflict and visualize predicted global alliances. See which countries would support each faction.
                     </p>
 
-                    <div className="flex items-center text-[hsl(48,96%,53%)] font-semibold group-hover:gap-3 gap-2 transition-all">
+                    <div className="flex items-center text-[hsl(48,96%,53%)] font-semibold gap-2">
                       <span>View Conflicts</span>
-                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
                     </div>
                   </div>
                 </div>
