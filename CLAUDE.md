@@ -21,40 +21,28 @@
 - Run development: `npm run dev`
 - Lint/typecheck commands: Ask user for specific commands if needed
 
-## SEO Migration Plan (URL Structure Change)
+## Convex Database Integration
 
-### Current Structure
-- `/` - Single country mode (current home page)
-- `/conflict` - Multi-country mode
+Backend database added via Convex (2026-01-21). Provider set up in `src/app/ConvexClientProvider.js`.
 
-### Target Structure
-- `/` - Landing page (future)
-- `/diplomacy` - Single country mode (moved from home)
-- `/conflict` - Multi-country mode (unchanged)
+### Feature 1: Daily Geopolitics Headlines (Public)
+- **Auth**: No login required (pre-generated data)
+- **Goal**: Daily scan for major geopolitics news, generate country positions
+- **UX**: User selects from ~4 current major geopolitical issues, sees map for each
+- **Process**:
+  1. Background job scans news sources daily for geopolitics headlines
+  2. AI selects ~4 most significant issues
+  3. For each issue, generate for/against scores for every country
+  4. Store results in Convex
+  5. Frontend displays selectable list of issues with corresponding maps
+- **Status**: Planning
 
-### Migration Strategy (Phased Approach)
-1. **Phase 1 - Immediate Actions** ✅ COMPLETED
-   - ✅ Created `/diplomacy` page with exact copy of current home page content
-   - ✅ Updated all internal navigation links in menubar and 404 page
-   - ✅ Updated sitemap.xml to include /diplomacy
-   - ✅ Updated canonical URLs in /diplomacy/page.js
-   - ✅ Fixed import paths for /diplomacy components
-   - ✅ Verified robots.txt and API routes have no URL dependencies
-
-2. **Phase 2 - Redirect Implementation** ✅ COMPLETED (2025-09-29)
-   - ✅ Implemented 301 redirect from `/` to `/diplomacy` via middleware
-   - ✅ Removed duplicate root page.js file
-   - ✅ Updated sitemap.xml to remove root URL entry
-   - ✅ Fixed React useEffect dependency warnings
-   - Submit changes to Google Search Console
-   - Monitor traffic and rankings
-
-3. **Phase 3 - Landing Page Creation (4-6 weeks after Phase 2)**
-   - After SEO equity transfers, create new landing page at `/`
-   - Remove redirect
-   - Landing page can promote both map modes
-
-### Why This Approach
-- 301 redirects preserve 90-99% of SEO value
-- Phased approach allows monitoring and rollback if needed
-- Maintains user experience during transition
+### Feature 2: Custom Prompt Scenario Generator (Authenticated)
+- **Auth**: Requires login
+- **Goal**: Allow users to input custom prompts (e.g., "China invades Taiwan")
+- **Process**:
+  1. User submits a custom prompt
+  2. AI parses the prompt into distinct for/against sides
+  3. AI queries each country's likely position on each side
+  4. Results displayed on the conflict map
+- **Status**: Planning

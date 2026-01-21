@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import MenuBar from "@/components/custom/menubar";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import Script from "next/script";
+import ConvexClientProvider from "./ConvexClientProvider";
 
 // Import the Inter font (default)
 const fontSans = FontSans({
@@ -71,27 +72,29 @@ export default function RootLayout({ children }) {
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable, 
+          fontSans.variable,
           fontArvo.variable
         )}
       >
-        <div className="">
-          <MenuBar />
-        </div>
+        <ConvexClientProvider>
+          <div className="">
+            <MenuBar />
+          </div>
 
-        {children}
-        <Analytics />
-        <div className = "flex flex-col items-center bg-slate-200 max-w-100vw" >
-        <p className="text-xs  my-2"> 
-          Made by Jeremy Russell (<a href="https://twitter.com/geromi_" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">X/Twitter</a>, <a href="https://www.reddit.com/user/RagtagJack" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">Reddit</a>), 2024. 
-        </p>
-        <p className="text-xs mb-2">
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLScCY1IVKzNa9fM46kAcJUWT0zvLA99NnbDozmU1qZ8ZhwYg0w/viewform" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">
-            Please share your feedback (takes 15 seconds)
-          </a>
-        </p>
-        </div>
-        <SpeedInsights />
+          {children}
+          <Analytics />
+          <div className = "flex flex-col items-center bg-slate-200 max-w-100vw" >
+          <p className="text-xs  my-2">
+            Made by Jeremy Russell (<a href="https://twitter.com/geromi_" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">X/Twitter</a>, <a href="https://www.reddit.com/user/RagtagJack" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">Reddit</a>), 2024.
+          </p>
+          <p className="text-xs mb-2">
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScCY1IVKzNa9fM46kAcJUWT0zvLA99NnbDozmU1qZ8ZhwYg0w/viewform" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">
+              Please share your feedback (takes 15 seconds)
+            </a>
+          </p>
+          </div>
+          <SpeedInsights />
+        </ConvexClientProvider>
       </body>
     </html>
   );

@@ -189,7 +189,7 @@ function TabDemographic({ phase2Countries, phase3Countries, pageMode, displaySta
               <th className="px-1 py-1 min-w-[45px] sm:min-w-[80px] text-xs sm:text-sm">GDP</th>
               <th className="px-1 py-1 min-w-[45px] sm:min-w-[80px] text-xs sm:text-sm">PPP</th>
               <th className="px-1 py-1 min-w-[40px] sm:min-w-[80px] text-xs sm:text-sm">Pop</th>
-              <th className="px-1 py-1 min-w-[45px] sm:min-w-[80px] text-xs sm:text-sm">Area</th>
+              <th className="px-1 py-1 min-w-[45px] sm:min-w-[80px] text-xs sm:text-sm">Area (km²)</th>
             </tr>
           </thead>
           <tbody className="text-right text-xs md:text-sm lg:text-base">
@@ -227,7 +227,7 @@ function TabDemographic({ phase2Countries, phase3Countries, pageMode, displaySta
                 {displayStats && phase2Data.Population > 0 ? formatPopulation(phase2Data.Population) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 million</span>}
               </td>
               <td className="px-1 py-2 text-xs sm:text-sm">
-                {displayStats && phase2Data.Area > 0 ? formatArea(phase2Data.Area) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 km²</span>}
+                {displayStats && phase2Data.Area > 0 ? formatArea(phase2Data.Area) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0</span>}
               </td>
             </tr>
             <tr data-pagemode={pageMode} className="data-[pagemode=single]:hidden">
@@ -258,7 +258,7 @@ function TabDemographic({ phase2Countries, phase3Countries, pageMode, displaySta
                 {displayStats && phase3Data.Population > 0 ? formatPopulation(phase3Data.Population) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 million</span>}
               </td>
               <td className="px-1 py-2 text-xs sm:text-sm">
-                {displayStats && phase3Data.Area > 0 ? formatArea(phase3Data.Area) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0 km²</span>}
+                {displayStats && phase3Data.Area > 0 ? formatArea(phase3Data.Area) : <span className="text-gray-400 opacity-30 text-xs md:text-sm lg:text-base">0</span>}
               </td>
             </tr>
           </tbody>

@@ -13,12 +13,12 @@ export default function DemographicsSection({
   const [demographicsExpanded, setDemographicsExpanded] = useState(false);
 
   return (
-    <div className="w-full bg-white dark:bg-gray-900 mt-4 max-w-3xl mx-auto">
+    <div className="w-full bg-white dark:bg-gray-900 mt-10 mb-12 max-w-xl mx-auto px-4">
       {/* Demographics Accordion */}
       <div>
         <button
           onClick={() => setDemographicsExpanded(!demographicsExpanded)}
-          className="w-full pl-5 pr-2 py-2 bg-primary hover:bg-primary/90 flex items-center justify-center text-base font-medium text-primary-foreground transition-all duration-200 group border-b-2 rounded-lg border-2 border-secondary "
+          className="w-full px-6 py-3 bg-primary hover:bg-primary/90 flex items-center justify-center text-base font-medium text-primary-foreground transition-all duration-200 group rounded-lg border-2 border-secondary"
         >
           <span>Demographics</span>
           <div className="ml-2 transition-all duration-300 group-hover:scale-110 group-hover:text-secondary">
@@ -30,7 +30,7 @@ export default function DemographicsSection({
           </div>
         </button>
         {demographicsExpanded && (
-          <div className="p-4">
+          <div className="p-4 border-2 border-t-0 border-secondary rounded-b-lg bg-gray-50 dark:bg-gray-800">
             <TabDemographic
               phase2Countries={phase2Countries}
               phase3Countries={phase3Countries}

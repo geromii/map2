@@ -124,7 +124,7 @@ export default function LandingPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-3">
                   <MapPin className="w-5 h-5 text-[hsl(48,96%,53%)]" />
                 </div>
-                <p className="text-sm text-gray-400">Every Country</p>
+                <p className="text-sm text-gray-400">195+ Countries</p>
               </div>
               <div className="text-center p-4">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-3">
@@ -136,7 +136,7 @@ export default function LandingPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-3">
                   <BarChart3 className="w-5 h-5 text-[hsl(48,96%,53%)]" />
                 </div>
-                <p className="text-sm text-gray-400">August 2025 Data</p>
+                <p className="text-sm text-gray-400">Live Visualization</p>
               </div>
             </div>
           </div>
