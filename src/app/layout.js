@@ -71,19 +71,19 @@ export default function RootLayout({ children }) {
       </head>
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased",
+          "min-h-screen bg-background font-sans antialiased flex flex-col",
           fontSans.variable,
           fontArvo.variable
         )}
       >
         <ConvexClientProvider>
-          <div className="">
-            <MenuBar />
-          </div>
+          <MenuBar />
 
-          {children}
+          <main className="flex-1 flex flex-col">
+            {children}
+          </main>
           <Analytics />
-          <div className = "flex flex-col items-center bg-slate-200 max-w-100vw" >
+          <footer className="flex flex-col items-center bg-slate-200 mt-auto">
           <p className="text-xs  my-2">
             Made by Jeremy Russell (<a href="https://twitter.com/geromi_" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">X/Twitter</a>, <a href="https://www.reddit.com/user/RagtagJack" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">Reddit</a>), 2024.
           </p>
@@ -92,7 +92,7 @@ export default function RootLayout({ children }) {
               Please share your feedback (takes 15 seconds)
             </a>
           </p>
-          </div>
+          </footer>
           <SpeedInsights />
         </ConvexClientProvider>
       </body>

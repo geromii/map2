@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useConvexAuth } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 const navItems = [
   { href: "/diplomacy", label: "Single Country", shortLabel: "Single" },
@@ -13,6 +15,8 @@ const navItems = [
 
 const MenuBar = () => {
   const pathname = usePathname();
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { signOut } = useAuthActions();
 
   return (
     <nav className="bg-primary text-primary-foreground border-b-2 border-yellow-400/80">
@@ -53,12 +57,23 @@ const MenuBar = () => {
             </Link>
           </div>
 
-          {/* Right: Login area (hidden for now) */}
+          {/* Right: Login area */}
           <div className="flex items-center gap-2 justify-end">
-            {/* Login button will go here */}
-            {/* <button className="px-4 py-2 text-sm font-medium bg-yellow-400 text-primary rounded-md hover:bg-yellow-300 transition-colors">
-              Sign In
-            </button> */}
+            {isLoading ? null : isAuthenticated ? (
+              <button
+                onClick={() => signOut()}
+                className="px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="px-3 py-1.5 text-sm font-medium bg-yellow-400 text-primary rounded-md hover:bg-yellow-300 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </div>
