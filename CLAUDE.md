@@ -27,7 +27,14 @@
 
 ## Convex Database Integration
 
-Backend database added via Convex (2026-01-21). Provider set up in `src/app/ConvexClientProvider.js`.
+Backend database added via Convex (2026-01-21). Provider set up in `src/app/ConvexClientProvider.tsx`.
+
+### Authentication Setup (2026-01-22)
+- **Convex Auth** configured with Email/Password and Google OAuth
+- Auth files: `convex/auth.ts`, `convex/auth.config.ts`, `convex/http.ts`
+- Schema with auth tables: `convex/schema.ts`
+- UI components: `src/components/custom/SignIn.tsx`, `src/components/custom/UserButton.tsx`
+- Google OAuth requires environment variables: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`
 
 ### Feature 1: Daily Geopolitics Headlines (Public)
 - **Auth**: No login required (pre-generated data)
