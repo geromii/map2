@@ -176,7 +176,7 @@ const useCountryStore = create((set, get) => ({
 
   calculateProbabilities: async () => {
     const { mapMode, countries } = get();
-  
+
 
     // Check if both phase 2 and phase 3 exist
     const blueExists = Object.values(countries).some(({ phase }) => phase === 2);
