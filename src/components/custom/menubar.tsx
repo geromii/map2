@@ -13,6 +13,8 @@ const navItems = [
   { href: "/conflict", label: "Conflict Mode", shortLabel: "Conflict" },
 ];
 
+const authEnabled = process.env.NEXT_PUBLIC_AUTH_ENABLED === "true";
+
 const MenuBar = () => {
   const pathname = usePathname();
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -59,20 +61,22 @@ const MenuBar = () => {
 
           {/* Right: Login area */}
           <div className="flex items-center gap-2 justify-end">
-            {isLoading ? null : isAuthenticated ? (
-              <button
-                onClick={() => signOut()}
-                className="px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 rounded-md transition-colors"
-              >
-                Sign Out
-              </button>
-            ) : (
-              <Link
-                href="/login"
-                className="px-3 py-1.5 text-sm font-medium bg-yellow-400 text-primary rounded-md hover:bg-yellow-300 transition-colors"
-              >
-                Sign In
-              </Link>
+            {authEnabled && (
+              isLoading ? null : isAuthenticated ? (
+                <button
+                  onClick={() => signOut()}
+                  className="px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  className="px-3 py-1.5 text-sm font-medium bg-yellow-400 text-primary rounded-md hover:bg-yellow-300 transition-colors"
+                >
+                  Sign In
+                </Link>
+              )
             )}
           </div>
         </div>
