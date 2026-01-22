@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Eye, EyeOff } from "lucide-react";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -29,22 +30,116 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+function PasswordInput({
+  id,
+  name,
+  placeholder,
+  className,
+  minLength,
+}: {
+  id: string;
+  name: string;
+  placeholder: string;
+  className: string;
+  minLength?: number;
+}) {
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        name={name}
+        type={showPassword ? "text" : "password"}
+        placeholder={placeholder}
+        required
+        minLength={minLength}
+        className={`${className} pr-10`}
+      />
+      <button
+        type="button"
+        onClick={() => setShowPassword(!showPassword)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+        tabIndex={-1}
+      >
+        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+    </div>
+  );
+}
+
 type Flow = "signIn" | "signUp" | "reset" | "reset-verification";
 
 export function SignIn() {
   const { signIn } = useAuthActions();
   const [flow, setFlow] = useState<Flow>("signIn");
   const [error, setError] = useState<string | null>(null);
+  const [suggestGoogle, setSuggestGoogle] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+
+  const parseError = (message: string): { text: string; suggestGoogle: boolean } => {
+    const lowerMessage = message.toLowerCase();
+
+    // User signed up with Google, trying to use email/password
+    if (
+      lowerMessage.includes("already exists") ||
+      lowerMessage.includes("duplicate") ||
+      lowerMessage.includes("account exists")
+    ) {
+      return {
+        text: "An account with this email already exists. Try signing in with Google instead.",
+        suggestGoogle: true,
+      };
+    }
+
+    // User trying to sign in but no password account exists (Google-only user)
+    if (
+      lowerMessage.includes("not found") ||
+      lowerMessage.includes("no account") ||
+      lowerMessage.includes("invalid credentials") ||
+      lowerMessage.includes("incorrect") ||
+      lowerMessage.includes("wrong password")
+    ) {
+      return {
+        text: "Invalid email or password. If you signed up with Google, use that instead.",
+        suggestGoogle: true,
+      };
+    }
+
+    // Password reset for non-existent password account
+    if (
+      lowerMessage.includes("no password") ||
+      lowerMessage.includes("cannot reset")
+    ) {
+      return {
+        text: "No password account found for this email. If you signed up with Google, use that to sign in.",
+        suggestGoogle: true,
+      };
+    }
+
+    return { text: message, suggestGoogle: false };
+  };
 
   const handlePasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setSuggestGoogle(false);
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
     formData.set("flow", flow);
+
+    // Validate password confirmation on sign up
+    if (flow === "signUp") {
+      const password = formData.get("password") as string;
+      const confirmPassword = formData.get("confirmPassword") as string;
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+        setLoading(false);
+        return;
+      }
+    }
 
     try {
       await signIn("password", formData);
@@ -54,12 +149,9 @@ export function SignIn() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Authentication failed";
-      // Check for duplicate email (signed up with Google)
-      if (message.includes("already exists") || message.includes("duplicate")) {
-        setError("An account with this email already exists. Try signing in with Google instead.");
-      } else {
-        setError(message);
-      }
+      const parsed = parseError(message);
+      setError(parsed.text);
+      setSuggestGoogle(parsed.suggestGoogle);
     } finally {
       setLoading(false);
     }
@@ -67,6 +159,7 @@ export function SignIn() {
 
   const handleGoogleSignIn = async () => {
     setError(null);
+    setSuggestGoogle(false);
     try {
       await signIn("google");
     } catch (err) {
@@ -105,7 +198,20 @@ export function SignIn() {
             />
           </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && (
+            <div className="text-sm text-red-500">
+              {error}
+              {suggestGoogle && (
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  className="block w-full mt-2 text-[hsl(222.2,47.4%,11.2%)] font-medium hover:text-[hsl(222.2,47.4%,25%)] underline"
+                >
+                  Sign in with Google
+                </button>
+              )}
+            </div>
+          )}
 
           <Button type="submit" disabled={loading} className={primaryBtnClass}>
             {loading ? "Sending..." : "Send reset code"}
@@ -116,7 +222,11 @@ export function SignIn() {
           <button
             type="button"
             className="text-[hsl(222.2,47.4%,11.2%)] hover:text-[hsl(222.2,47.4%,25%)] underline underline-offset-2 font-medium"
-            onClick={() => setFlow("signIn")}
+            onClick={() => {
+              setFlow("signIn");
+              setError(null);
+              setSuggestGoogle(false);
+            }}
           >
             Back to sign in
           </button>
@@ -155,12 +265,10 @@ export function SignIn() {
             <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
               New password
             </Label>
-            <Input
+            <PasswordInput
               id="newPassword"
               name="newPassword"
-              type="password"
               placeholder="Enter new password"
-              required
               minLength={8}
               className={inputClass}
             />
@@ -238,28 +346,45 @@ export function SignIn() {
               {flow === "signIn" && (
                 <button
                   type="button"
-                  onClick={() => setFlow("reset")}
+                  onClick={() => {
+                    setFlow("reset");
+                    setError(null);
+                    setSuggestGoogle(false);
+                  }}
                   className="text-xs text-gray-500 hover:text-gray-700"
                 >
                   Forgot password?
                 </button>
               )}
             </div>
-            <Input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               placeholder="Enter your password"
-              required
               minLength={8}
               className={inputClass}
             />
           </div>
 
+          {flow === "signUp" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                Confirm password
+              </Label>
+              <PasswordInput
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="Confirm your password"
+                minLength={8}
+                className={inputClass}
+              />
+            </div>
+          )}
+
           {error && (
             <div className="text-sm text-red-500">
               {error}
-              {error.includes("Google") && (
+              {suggestGoogle && (
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
@@ -285,6 +410,7 @@ export function SignIn() {
           onClick={() => {
             setFlow(flow === "signIn" ? "signUp" : "signIn");
             setError(null);
+            setSuggestGoogle(false);
           }}
         >
           {flow === "signIn" ? "Sign up" : "Sign in"}

@@ -57,3 +57,35 @@ Backend database added via Convex (2026-01-21). Provider set up in `src/app/Conv
   3. AI queries each country's likely position on each side
   4. Results displayed on the conflict map
 - **Status**: Planning
+
+### Shared AI Map Data Generation Pipeline
+Features 1 and 2 use the same underlying pipeline to generate country position data.
+
+**Scoring Modes**:
+
+1. **Basic Binary**: Two opposing sides with scores from -1 to 1
+   - Example: "US Annexation of Greenland" → "Supports" vs "Opposes"
+   - Score: -1 (strongly opposes) to 1 (strongly supports)
+   - Simple two-color gradient visualization
+
+2. **Advanced Multi-Position** (future): Multiple categories that must sum to 1
+   - Example with neutral: `{ "Approve": 0.4, "Disapprove": 0.3, "Neutral": 0.3 }`
+   - Example multi-party: `{ "USA": 0.5, "China": 0.3, "Russia": 0.1, "Neutral": 0.1 }`
+   - Handles complex issues that aren't purely binary
+   - AI proposes categories when parsing the issue
+   - Map shows dominant position color with intensity based on strength
+
+**Implementation Plan**: Start with Basic Binary mode. Design data structures and APIs with Advanced mode in mind to avoid costly refactors later.
+
+**Generation Modes**:
+
+1. **High-Accuracy Mode** (for current events / Feature 1):
+   - Queries AI with web search for each country individually
+   - Higher cost but more accurate for breaking news
+   - Best for daily headlines where real-time information matters
+
+2. **Batch Mode** (for hypothetical scenarios / Feature 2):
+   - Groups countries into batches of ~20 (randomized order)
+   - AI returns JSON with justification + score for each country
+   - Run 3 times and average results (potentially across different AI models)
+   - Lower cost, suitable for non-current-event scenarios
