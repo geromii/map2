@@ -20,6 +20,7 @@ const MapDivComponent = ({ mapMode }) => {
   const [activeCountry, setActiveCountry] = useState(null);
   const [features, setFeatures] = useState(null);
   const [showLoading, setShowLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
 
   const mapRef = useRef(null);
@@ -55,6 +56,10 @@ const MapDivComponent = ({ mapMode }) => {
   }, [clickLocation]);
 
   // Detect device type (mobile vs. desktop) and set appropriate maxZoom
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const matchMedia = window.matchMedia("(pointer: coarse)");
@@ -255,7 +260,7 @@ const MapDivComponent = ({ mapMode }) => {
               fill="url(#bg-pattern)"
             />
             <Sphere stroke="#E4E5E6" strokeWidth={0} className="mapbg" />
-            <Graticule stroke="#E4E5E6" strokeWidth={0} />
+            {mounted && <Graticule stroke="#E4E5E6" strokeWidth={0} />}
             {features && <Geographies geography={geographiesData}>
               {({ geographies }) => {
                 const remainingCountries = geographies.filter(
