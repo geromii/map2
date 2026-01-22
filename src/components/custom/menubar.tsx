@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -14,11 +15,11 @@ const MenuBar = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-primary text-primary-foreground shadow-md">
+    <nav className="bg-primary text-primary-foreground border-b-2 border-yellow-400/80">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-14 items-center justify-between">
+        <div className="flex h-12 items-center justify-between">
           {/* Left: Navigation Links */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -26,20 +27,16 @@ const MenuBar = () => {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative px-3 py-2 text-sm font-medium transition-colors rounded-md",
-                    "hover:bg-white/10",
-                    isActive && "text-yellow-400"
+                    "relative px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-md",
+                    isActive
+                      ? "bg-yellow-400/15 text-yellow-400"
+                      : "text-white/70 hover:text-white hover:bg-white/5"
                   )}
                 >
                   {/* Desktop label */}
                   <span className="hidden sm:inline">{item.label}</span>
                   {/* Mobile label */}
                   <span className="sm:hidden">{item.shortLabel}</span>
-
-                  {/* Active indicator */}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-0.5 bg-yellow-400 rounded-full" />
-                  )}
                 </Link>
               );
             })}
@@ -47,7 +44,11 @@ const MenuBar = () => {
 
           {/* Center: Logo/Title */}
           <div className="absolute left-1/2 -translate-x-1/2">
-            <Link href="/" className="font-arvo text-lg sm:text-xl tracking-tight hover:text-yellow-400 transition-colors">
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-arvo text-lg sm:text-xl tracking-tight text-white/90 hover:text-yellow-400 transition-colors duration-200"
+            >
+              <Globe className="w-5 h-5 hidden sm:block" />
               <span className="hidden sm:inline">Global Relations Map</span>
               <span className="sm:hidden">Mapdis</span>
             </Link>
