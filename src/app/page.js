@@ -51,9 +51,8 @@ export default function LandingPage() {
               <h1 className="text-6xl sm:text-7xl lg:text-8xl text-white tracking-tight font-arvo font-medium mb-6">
                 Mapdis
               </h1>
-              <p className="text-xl sm:text-2xl text-gray-400 font-light max-w-2xl mx-auto leading-relaxed">
-                Explore international relations and conflicts through
-                <span className="text-[hsl(48,96%,53%)]"> interactive data visualization</span>
+              <p className="text-2xl sm:text-3xl lg:text-4xl text-secondary font-light max-w-2xl mx-auto leading-relaxed">
+                Global Relations Map
               </p>
             </div>
 
