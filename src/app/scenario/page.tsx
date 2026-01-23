@@ -67,6 +67,7 @@ export default function ScenarioPage() {
   const getActiveMapVersion = useQuery(api.issues.getActiveMapVersion);
   const userId = useQuery(api.issues.getCurrentUserId);
   const userScenarios = useQuery(api.issues.getUserScenarios) as SavedScenario[] | undefined;
+  const deleteScenario = useMutation(api.issues.deleteScenario);
 
   // Poll job status when generating
   const jobStatus = useQuery(
@@ -238,6 +239,22 @@ export default function ScenarioPage() {
 
   const hasResults = currentIssue && Object.keys(scores).length > 0;
 
+  // Delete a scenario
+  const handleDelete = async (e: React.MouseEvent, scenarioId: Id<"issues">) => {
+    e.stopPropagation(); // Prevent selecting the scenario
+    if (!confirm("Are you sure you want to delete this scenario?")) return;
+
+    try {
+      await deleteScenario({ issueId: scenarioId });
+      // If we deleted the currently viewed scenario, clear the view
+      if (currentIssue?.id === scenarioId) {
+        handleClear();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete scenario");
+    }
+  };
+
   // Format date for display
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString(undefined, {
@@ -253,9 +270,9 @@ export default function ScenarioPage() {
       title="AI Scenario Generator"
       description="Create custom geopolitical scenarios and see how countries might align. Sign in to generate your own scenarios."
     >
-      <div className="flex-1 min-h-0 bg-slate-50 flex">
+      <div className="h-[calc(100vh-48px)] bg-slate-50 flex overflow-hidden">
         {/* Sidebar - Saved scenarios */}
-        <aside className="w-80 bg-white border-r border-slate-200 flex flex-col">
+        <aside className="w-80 bg-white border-r border-slate-200 flex flex-col min-h-0">
           <div className="p-4 border-b border-slate-200">
             <h1 className="text-lg font-bold text-slate-900">My Scenarios</h1>
             <p className="text-sm text-slate-600 mt-1">
@@ -290,16 +307,26 @@ export default function ScenarioPage() {
 
             <div className="space-y-2">
               {userScenarios?.map((scenario) => (
-                <button
+                <div
                   key={scenario._id}
-                  onClick={() => handleSelectScenario(scenario)}
-                  className={`w-full text-left p-3 rounded-lg border transition-all ${
+                  className={`relative group w-full text-left p-3 rounded-lg border transition-all cursor-pointer ${
                     currentIssue?.id === scenario._id
                       ? "border-blue-500 bg-blue-50 shadow-sm"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
                   }`}
+                  onClick={() => handleSelectScenario(scenario)}
                 >
-                  <div className="font-medium text-slate-900 text-sm leading-snug">
+                  {/* Delete button */}
+                  <button
+                    onClick={(e) => handleDelete(e, scenario._id)}
+                    className="absolute top-2 right-2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-100 text-slate-400 hover:text-red-600 transition-all"
+                    title="Delete scenario"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                  <div className="font-medium text-slate-900 text-sm leading-snug pr-6">
                     {scenario.title}
                   </div>
                   {scenario.description && (
@@ -317,7 +344,7 @@ export default function ScenarioPage() {
                       {formatDate(scenario.generatedAt)}
                     </span>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
@@ -641,11 +668,12 @@ export default function ScenarioPage() {
             />
 
             {/* Legend (floating) */}
-            {hasResults && currentIssue && (
+            {currentIssue && (step === "generating" || hasResults) && (
               <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 px-4 py-3">
                 <ScoreLegend
                   sideALabel={currentIssue.sideA.label}
                   sideBLabel={currentIssue.sideB.label}
+                  showPending={step === "generating"}
                 />
               </div>
             )}

@@ -86,7 +86,7 @@ export function D3ScoreMap({
   const getCountryColor = useCallback(
     (name: string) => {
       const countryScore = scores[name];
-      if (!countryScore) return "#e5e5e5"; // Neutral gray for countries without scores
+      if (countryScore === undefined) return "#d1d5db"; // Gray for countries awaiting data
       return scoreToColor(countryScore.score);
     },
     [scores]
@@ -155,9 +155,11 @@ export function D3ScoreMap({
 export function ScoreLegend({
   sideALabel = "Supports",
   sideBLabel = "Opposes",
+  showPending = false,
 }: {
   sideALabel?: string;
   sideBLabel?: string;
+  showPending?: boolean;
 }) {
   const gradientStops = [
     { offset: "0%", color: scoreToColor(-1) },
@@ -169,6 +171,15 @@ export function ScoreLegend({
 
   return (
     <div className="flex items-center gap-3 text-sm">
+      {showPending && (
+        <>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-sm bg-[#d1d5db]" />
+            <span className="text-slate-500">Pending</span>
+          </div>
+          <span className="text-slate-300">|</span>
+        </>
+      )}
       <span className="text-red-700 font-medium">{sideBLabel}</span>
       <div className="relative w-32 h-3 rounded-full overflow-hidden">
         <svg width="100%" height="100%">

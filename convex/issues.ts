@@ -435,6 +435,51 @@ export const createGenerationJobWithProgress = mutation({
   },
 });
 
+// Delete a scenario and all associated data (authenticated, owner only)
+export const deleteScenario = mutation({
+  args: {
+    issueId: v.id("issues"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Authentication required");
+    }
+
+    // Get the issue and verify ownership
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) {
+      throw new Error("Scenario not found");
+    }
+    if (issue.userId !== userId) {
+      throw new Error("You can only delete your own scenarios");
+    }
+
+    // Delete all country scores for this issue
+    const scores = await ctx.db
+      .query("countryScores")
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .collect();
+    for (const score of scores) {
+      await ctx.db.delete(score._id);
+    }
+
+    // Delete all generation jobs for this issue
+    const jobs = await ctx.db
+      .query("generationJobs")
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .collect();
+    for (const job of jobs) {
+      await ctx.db.delete(job._id);
+    }
+
+    // Delete the issue itself
+    await ctx.db.delete(args.issueId);
+
+    return { success: true };
+  },
+});
+
 // Create initial map version (for seeding)
 export const createMapVersion = mutation({
   args: {
