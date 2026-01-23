@@ -26,7 +26,8 @@ const schema = defineSchema({
     generatedAt: v.number(),
     isActive: v.boolean(),
     source: v.union(v.literal("daily"), v.literal("custom")),
-  }).index("by_active", ["isActive"]),
+    userId: v.optional(v.string()), // User who created the issue (for custom scenarios)
+  }).index("by_active", ["isActive"]).index("by_user", ["userId"]),
 
   // Country scores per issue
   countryScores: defineTable({
@@ -60,10 +61,29 @@ const schema = defineSchema({
       v.literal("completed"),
       v.literal("failed")
     ),
-    progress: v.optional(v.number()),
+    progress: v.optional(v.number()), // 0-100 percentage
+    totalBatches: v.optional(v.number()),
+    completedBatches: v.optional(v.number()),
+    currentRun: v.optional(v.number()), // Which averaging run we're on
+    totalRuns: v.optional(v.number()),
     startedAt: v.optional(v.number()),
     completedAt: v.optional(v.number()),
-  }).index("by_status", ["status"]),
+    error: v.optional(v.string()),
+  }).index("by_status", ["status"]).index("by_issue", ["issueId"]),
+
+  // AI request logs (for debugging)
+  aiLogs: defineTable({
+    timestamp: v.number(),
+    action: v.string(), // e.g., "parsePromptToSides", "generateBatchScores"
+    model: v.string(),
+    systemPrompt: v.string(),
+    userPrompt: v.string(),
+    requestBody: v.string(), // Full JSON stringified request
+    responseStatus: v.optional(v.number()),
+    responseBody: v.optional(v.string()),
+    error: v.optional(v.string()),
+    durationMs: v.optional(v.number()),
+  }).index("by_timestamp", ["timestamp"]),
 });
 
 export default schema;

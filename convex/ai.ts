@@ -10,16 +10,24 @@ const issuesApi = api.issues as any;
 const BATCH_SIZE = 10;
 const DEFAULT_NUM_RUNS = 2; // Default number of runs to average (user configurable)
 
-// Geopolitical context annotations for countries (to update AI beyond training cutoff)
-const COUNTRY_ANNOTATIONS: Record<string, string> = {
-  "United States": "(Trump won 2024 Election)",
-  "Syria": "(Post-Assad Transition Government)",
+// Geopolitical context updates for countries (to update AI beyond training cutoff)
+// These sentences are appended to the prompt when the country is being rated
+const COUNTRY_CONTEXT: Record<string, string> = {
+  "United States": "Donald Trump won the 2024 Presidential Election.",
+  "Syria": "Syria deposed Assad, currently has a transitional government and uncertain geopolitical alliances.",
 };
 
-// Helper to annotate country names with geopolitical context
-function annotateCountry(country: string): string {
-  const annotation = COUNTRY_ANNOTATIONS[country];
-  return annotation ? `${country} ${annotation}` : country;
+// Helper to build context sentences for countries in a batch
+function buildCountryContext(countries: string[]): string {
+  const contextSentences: string[] = [];
+  for (const country of countries) {
+    if (COUNTRY_CONTEXT[country]) {
+      contextSentences.push(COUNTRY_CONTEXT[country]);
+    }
+  }
+  return contextSentences.length > 0
+    ? `\n\nRecent updates: ${contextSentences.join(" ")}`
+    : "";
 }
 
 // AI logging mutation
@@ -634,11 +642,11 @@ Return a JSON object with this exact structure:
   }
 }
 
-Only return valid JSON, no additional text. Country names in your response must match exactly as provided (without any annotations).`;
+Only return valid JSON, no additional text. Country names must match exactly as provided.`;
 
-  // Annotate countries with geopolitical context for the AI
-  const annotatedCountries = countries.map(annotateCountry);
-  const userPrompt = `Rate these countries: ${annotatedCountries.join(", ")}`;
+  // Build user prompt with country context if applicable
+  const countryContext = buildCountryContext(countries);
+  const userPrompt = `Rate these countries: ${countries.join(", ")}${countryContext}`;
   const MODEL = "openai/gpt-oss-120b:exacto";
 
   const { content } = await fetchOpenRouterWithLogging(

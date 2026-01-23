@@ -4,6 +4,15 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 
 // ============ QUERIES ============
 
+// Get current authenticated user ID
+export const getCurrentUserId = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    return userId;
+  },
+});
+
 // Get current active daily issues (public)
 export const getActiveIssues = query({
   args: {},
@@ -81,6 +90,21 @@ export const getUserPrompts = query({
   },
 });
 
+// Get user's custom scenarios/issues (authenticated)
+export const getUserScenarios = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
+
+    return await ctx.db
+      .query("issues")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .order("desc")
+      .collect();
+  },
+});
+
 // Get a specific prompt by ID
 export const getPromptById = query({
   args: { promptId: v.id("customPrompts") },
@@ -95,10 +119,18 @@ export const getJobStatus = query({
   handler: async (ctx, args) => {
     const jobs = await ctx.db
       .query("generationJobs")
-      .filter((q) => q.eq(q.field("issueId"), args.issueId))
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
       .order("desc")
       .first();
     return jobs;
+  },
+});
+
+// Get job by ID
+export const getJobById = query({
+  args: { jobId: v.id("generationJobs") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.jobId);
   },
 });
 
@@ -114,6 +146,7 @@ export const createIssue = mutation({
     mapVersionId: v.id("mapVersions"),
     source: v.union(v.literal("daily"), v.literal("custom")),
     isActive: v.optional(v.boolean()),
+    userId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const issueId = await ctx.db.insert("issues", {
@@ -125,6 +158,7 @@ export const createIssue = mutation({
       generatedAt: Date.now(),
       isActive: args.isActive ?? false,
       source: args.source,
+      userId: args.userId,
     });
     return issueId;
   },
@@ -251,37 +285,64 @@ export const createGenerationJob = mutation({
 export const updateJobStatus = mutation({
   args: {
     jobId: v.id("generationJobs"),
-    status: v.union(
+    status: v.optional(v.union(
       v.literal("pending"),
       v.literal("running"),
       v.literal("completed"),
       v.literal("failed")
-    ),
+    )),
     progress: v.optional(v.number()),
+    totalBatches: v.optional(v.number()),
+    completedBatches: v.optional(v.number()),
+    currentRun: v.optional(v.number()),
+    totalRuns: v.optional(v.number()),
+    error: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const updateData: {
-      status: "pending" | "running" | "completed" | "failed";
-      progress?: number;
-      startedAt?: number;
-      completedAt?: number;
-    } = {
-      status: args.status,
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: Record<string, any> = {};
 
-    if (args.progress !== undefined) {
-      updateData.progress = args.progress;
+    if (args.status !== undefined) {
+      updateData.status = args.status;
+
+      if (args.status === "running") {
+        updateData.startedAt = Date.now();
+      }
+      if (args.status === "completed" || args.status === "failed") {
+        updateData.completedAt = Date.now();
+      }
     }
 
-    if (args.status === "running") {
-      updateData.startedAt = Date.now();
-    }
-
-    if (args.status === "completed" || args.status === "failed") {
-      updateData.completedAt = Date.now();
-    }
+    if (args.progress !== undefined) updateData.progress = args.progress;
+    if (args.totalBatches !== undefined) updateData.totalBatches = args.totalBatches;
+    if (args.completedBatches !== undefined) updateData.completedBatches = args.completedBatches;
+    if (args.currentRun !== undefined) updateData.currentRun = args.currentRun;
+    if (args.totalRuns !== undefined) updateData.totalRuns = args.totalRuns;
+    if (args.error !== undefined) updateData.error = args.error;
 
     await ctx.db.patch(args.jobId, updateData);
+  },
+});
+
+// Create generation job with initial progress info
+export const createGenerationJobWithProgress = mutation({
+  args: {
+    issueId: v.id("issues"),
+    totalBatches: v.number(),
+    totalRuns: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const jobId = await ctx.db.insert("generationJobs", {
+      issueId: args.issueId,
+      status: "running",
+      progress: 0,
+      totalBatches: args.totalBatches,
+      completedBatches: 0,
+      currentRun: 1,
+      totalRuns: args.totalRuns,
+      startedAt: Date.now(),
+    });
+    return jobId;
   },
 });
 
