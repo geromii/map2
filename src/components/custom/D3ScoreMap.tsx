@@ -31,14 +31,20 @@ function scoreToColor(score: number): string {
   const s = Math.max(-1, Math.min(1, score));
 
   // Apply exponential curve for more visual distinction
-  const intensity = Math.abs(s) ** 1.4;
+  const intensity = Math.abs(s) ** 1.5;
 
   // Blue for positive (Side A), Red for negative (Side B)
-  const hue = s >= 0 ? 220 : 0;
-  const saturation = 85 * intensity;
-  const lightness = 85 - 40 * intensity;
-
-  return `hsl(${hue}, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
+  if (s >= 0) {
+    // Blue tones - more saturated and distinct
+    const saturation = 70 + 20 * intensity;
+    const lightness = 92 - 47 * intensity;
+    return `hsl(217, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
+  } else {
+    // Red tones - richer crimson shades
+    const saturation = 65 + 25 * intensity;
+    const lightness = 92 - 45 * intensity;
+    return `hsl(4, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
+  }
 }
 
 export function D3ScoreMap({

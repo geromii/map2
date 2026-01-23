@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useAction, useQuery } from "convex/react";
+import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { D3ScoreMap, ScoreLegend, CountryTooltip } from "@/components/custom/D3ScoreMap";
 import { Button } from "@/components/ui/button";
@@ -60,9 +60,11 @@ export default function ScenarioPage() {
   // Hover state
   const [hoveredCountry, setHoveredCountry] = useState<HoveredCountry | null>(null);
 
-  // Convex queries and actions
+  // Convex queries, mutations, and actions
   const parsePrompt = useAction(api.ai.parsePromptToSides);
-  const generateScores = useAction(api.ai.generateScoresWithProgress);
+  const initializeScenario = useMutation(api.issues.initializeScenario);
+  const processScenarioBatches = useAction(api.ai.processScenarioBatches);
+  const getActiveMapVersion = useQuery(api.issues.getActiveMapVersion);
   const userId = useQuery(api.issues.getCurrentUserId);
   const userScenarios = useQuery(api.issues.getUserScenarios) as SavedScenario[] | undefined;
 
@@ -78,18 +80,16 @@ export default function ScenarioPage() {
     currentIssue ? { issueId: currentIssue.id } : "skip"
   );
 
-  // Load scores when generation completes or when viewing a saved scenario
+  // Load scores in real-time (during generation and when viewing saved scenarios)
   useEffect(() => {
-    if (issueScoresQuery && currentIssue && (step === "results" || currentIssue)) {
+    if (issueScoresQuery && currentIssue) {
       const newScores: Record<string, { score: number; reasoning?: string }> = {};
       for (const s of issueScoresQuery) {
         newScores[s.countryName] = { score: s.score, reasoning: s.reasoning };
       }
-      if (Object.keys(newScores).length > 0) {
-        setScores(newScores);
-      }
+      setScores(newScores);
     }
-  }, [issueScoresQuery, currentIssue, step]);
+  }, [issueScoresQuery, currentIssue]);
 
   // Check if generation completed
   useEffect(() => {
@@ -133,34 +133,51 @@ export default function ScenarioPage() {
 
   // Step 2: Generate scores after confirmation
   const handleConfirm = async () => {
-    if (!parsedScenario) return;
+    if (!parsedScenario || !getActiveMapVersion) return;
 
     setStep("generating");
     setError(null);
 
     try {
-      const result = await generateScores({
+      // Calculate batch info for initialization
+      const BATCH_SIZE = 10;
+      const totalBatches = Math.ceil(getActiveMapVersion.countries.length / BATCH_SIZE) * numRuns;
+
+      // Initialize scenario (fast mutation - returns immediately)
+      const { issueId, jobId: newJobId } = await initializeScenario({
+        title: parsedScenario.title,
+        description: parsedScenario.description,
+        sideA: parsedScenario.sideA,
+        sideB: parsedScenario.sideB,
+        mapVersionId: getActiveMapVersion._id,
+        userId: userId || undefined,
+        totalBatches,
+        totalRuns: numRuns,
+      });
+
+      // Set state immediately to start real-time polling
+      setJobId(newJobId);
+      setCurrentIssue({
+        id: issueId,
+        title: parsedScenario.title,
+        description: parsedScenario.description,
+        sideA: parsedScenario.sideA,
+        sideB: parsedScenario.sideB,
+      });
+
+      // Start batch processing (fire-and-forget, don't await)
+      processScenarioBatches({
+        issueId,
+        jobId: newJobId,
         title: parsedScenario.title,
         description: parsedScenario.description,
         sideA: parsedScenario.sideA,
         sideB: parsedScenario.sideB,
         numRuns,
-        userId: userId || undefined,
+      }).catch((err) => {
+        console.error("Batch processing error:", err);
+        setError(err instanceof Error ? err.message : "Failed to process batches");
       });
-
-      if (result.success && result.issueId && result.jobId) {
-        setJobId(result.jobId as Id<"generationJobs">);
-        setCurrentIssue({
-          id: result.issueId as Id<"issues">,
-          title: parsedScenario.title,
-          description: parsedScenario.description,
-          sideA: parsedScenario.sideA,
-          sideB: parsedScenario.sideB,
-        });
-      } else {
-        setError(result.error || "Failed to generate scores");
-        setStep("confirm");
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setStep("confirm");
@@ -520,7 +537,7 @@ export default function ScenarioPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-3 pt-2">
-                      <Button onClick={handleConfirm} className="px-6">
+                      <Button onClick={handleConfirm} className="px-6" disabled={!getActiveMapVersion}>
                         Generate Predictions
                       </Button>
                       <Button variant="ghost" onClick={handleEdit} className="text-slate-500">

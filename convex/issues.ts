@@ -201,6 +201,53 @@ export const saveCountryScores = mutation({
   },
 });
 
+// Upsert batch scores incrementally (for real-time map updates)
+// If a score already exists, it averages the new score with the existing one
+export const upsertBatchScores = mutation({
+  args: {
+    issueId: v.id("issues"),
+    scores: v.array(
+      v.object({
+        countryName: v.string(),
+        score: v.float64(),
+        reasoning: v.optional(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    for (const newScore of args.scores) {
+      // Check if score already exists for this country
+      const existing = await ctx.db
+        .query("countryScores")
+        .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+        .filter((q) => q.eq(q.field("countryName"), newScore.countryName))
+        .first();
+
+      if (existing) {
+        // Average with existing score (for multiple runs)
+        // We track count implicitly: if existing has been updated N times,
+        // new average = (existing.score * N + newScore) / (N + 1)
+        // For simplicity, we just do a running average: (old + new) / 2
+        const avgScore = (existing.score + newScore.score) / 2;
+        await ctx.db.patch(existing._id, {
+          score: Math.max(-1, Math.min(1, avgScore)),
+          reasoning: newScore.reasoning || existing.reasoning,
+        });
+      } else {
+        // Insert new score
+        await ctx.db.insert("countryScores", {
+          issueId: args.issueId,
+          countryName: newScore.countryName,
+          score: Math.max(-1, Math.min(1, newScore.score)),
+          reasoning: newScore.reasoning,
+        });
+      }
+    }
+
+    return { upsertedCount: args.scores.length };
+  },
+});
+
 // Submit a custom prompt (authenticated)
 export const submitCustomPrompt = mutation({
   args: {
@@ -321,6 +368,48 @@ export const updateJobStatus = mutation({
     if (args.error !== undefined) updateData.error = args.error;
 
     await ctx.db.patch(args.jobId, updateData);
+  },
+});
+
+// Initialize a scenario (create issue + job) and return IDs for real-time polling
+export const initializeScenario = mutation({
+  args: {
+    title: v.string(),
+    description: v.string(),
+    sideA: v.object({ label: v.string(), description: v.string() }),
+    sideB: v.object({ label: v.string(), description: v.string() }),
+    mapVersionId: v.id("mapVersions"),
+    userId: v.optional(v.string()),
+    totalBatches: v.number(),
+    totalRuns: v.number(),
+  },
+  handler: async (ctx, args) => {
+    // Create issue
+    const issueId = await ctx.db.insert("issues", {
+      title: args.title,
+      description: args.description,
+      sideA: args.sideA,
+      sideB: args.sideB,
+      mapVersionId: args.mapVersionId,
+      generatedAt: Date.now(),
+      isActive: false,
+      source: "custom",
+      userId: args.userId,
+    });
+
+    // Create job
+    const jobId = await ctx.db.insert("generationJobs", {
+      issueId,
+      status: "running",
+      progress: 0,
+      totalBatches: args.totalBatches,
+      completedBatches: 0,
+      currentRun: 1,
+      totalRuns: args.totalRuns,
+      startedAt: Date.now(),
+    });
+
+    return { issueId, jobId };
   },
 });
 

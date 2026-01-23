@@ -36,56 +36,33 @@ Backend database added via Convex (2026-01-21). Provider set up in `src/app/Conv
 - UI components: `src/components/custom/SignIn.tsx`, `src/components/custom/UserButton.tsx`
 - Google OAuth requires environment variables: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`
 
-### Feature 1: Daily Geopolitics Headlines (Public)
-- **Auth**: No login required (pre-generated data)
-- **Goal**: Daily scan for major geopolitics news, generate country positions
-- **UX**: User selects from ~4 current major geopolitical issues, sees map for each
-- **Process**:
-  1. Background job scans news sources daily for geopolitics headlines
-  2. AI selects ~4 most significant issues
-  3. For each issue, generate for/against scores for every country
-  4. Store results in Convex
-  5. Frontend displays selectable list of issues with corresponding maps
-- **Status**: Planning
+### AI Scenario Generation Pipeline (2026-01-22)
 
-### Feature 2: Custom Prompt Scenario Generator (Authenticated)
-- **Auth**: Requires login
-- **Goal**: Allow users to input custom prompts (e.g., "China invades Taiwan")
-- **Process**:
-  1. User submits a custom prompt
-  2. AI parses the prompt into distinct for/against sides
-  3. AI queries each country's likely position on each side
-  4. Results displayed on the conflict map
-- **Status**: Planning
+**Status**: Basic implementation complete, behind feature flag.
 
-### Shared AI Map Data Generation Pipeline
-Features 1 and 2 use the same underlying pipeline to generate country position data.
+**Documentation**: See `docs/AI_PIPELINE.md` for full technical details.
 
-**Scoring Modes**:
+**Feature Flags**:
+- `NEXT_PUBLIC_SCENARIOS_ENABLED=true` - Shows Scenarios dropdown in menubar
+- `OPENROUTER_API_KEY` - Set in Convex for AI generation
 
-1. **Basic Binary**: Two opposing sides with scores from -1 to 1
-   - Example: "US Annexation of Greenland" → "Supports" vs "Opposes"
-   - Score: -1 (strongly opposes) to 1 (strongly supports)
-   - Simple two-color gradient visualization
+**Pages**:
+- `/headlines` - Daily AI-generated issues (public) - UI ready, needs data
+- `/scenario` - Custom prompt generator (requires auth) - Fully functional
 
-2. **Advanced Multi-Position** (future): Multiple categories that must sum to 1
-   - Example with neutral: `{ "Approve": 0.4, "Disapprove": 0.3, "Neutral": 0.3 }`
-   - Example multi-party: `{ "USA": 0.5, "China": 0.3, "Russia": 0.1, "Neutral": 0.1 }`
-   - Handles complex issues that aren't purely binary
-   - AI proposes categories when parsing the issue
-   - Map shows dominant position color with intensity based on strength
+**Key Files**:
+- `convex/schema.ts` - Database tables (issues, countryScores, customPrompts, etc.)
+- `convex/issues.ts` - Queries and mutations
+- `convex/ai.ts` - AI actions (OpenRouter + gpt-oss-120b)
+- `src/components/custom/D3ScoreMap.tsx` - d3-geo map component
+- `src/app/scenario/page.tsx` - Custom scenario page
+- `src/app/headlines/page.tsx` - Headlines page
 
-**Implementation Plan**: Start with Basic Binary mode. Design data structures and APIs with Advanced mode in mind to avoid costly refactors later.
+**Seeding**:
+- Run `npx tsx scripts/seed-map-version.ts` to create the initial mapVersion entry
+- Required before using the Scenario Generator for the first time
 
-**Generation Modes**:
-
-1. **High-Accuracy Mode** (for current events / Feature 1):
-   - Queries AI with web search for each country individually
-   - Higher cost but more accurate for breaking news
-   - Best for daily headlines where real-time information matters
-
-2. **Batch Mode** (for hypothetical scenarios / Feature 2):
-   - Groups countries into batches of ~20 (randomized order)
-   - AI returns JSON with justification + score for each country
-   - Run 3 times and average results (potentially across different AI models)
-   - Lower cost, suitable for non-current-event scenarios
+**Future Work**:
+- Daily headline generation (scheduled job with news scanning)
+- High-accuracy mode with web search for current events
+- Advanced multi-position scoring mode

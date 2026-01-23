@@ -2,18 +2,20 @@
 
 import { SignIn } from "@/components/custom/SignIn";
 import { useConvexAuth } from "convex/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 export default function LoginPage() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/");
+      router.push(redirectTo);
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, redirectTo]);
 
   if (isLoading) {
     return (

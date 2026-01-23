@@ -410,7 +410,7 @@ export const generateScoresWithProgress = action({
       // Track completed batches across all parallel requests
       let completedBatches = 0;
 
-      // Helper to process a single batch and return its scores
+      // Helper to process a single batch, save scores immediately, and return them
       const processBatch = async (batch: string[]): Promise<Record<string, { score: number; reasoning?: string }>> => {
         const batchScores = await generateScoresForBatch(
           ctx,
@@ -421,6 +421,22 @@ export const generateScoresWithProgress = action({
           args.sideB,
           batch
         );
+
+        // Save scores immediately for real-time map updates
+        const scoresToSave = Object.entries(batchScores).map(([countryName, data]) => ({
+          countryName,
+          score: data.score,
+          reasoning: data.reasoning,
+        }));
+
+        if (scoresToSave.length > 0) {
+          ctx.runMutation(issuesApi.upsertBatchScores, {
+            issueId,
+            scores: scoresToSave,
+          }).catch((err) => {
+            console.error("Failed to save batch scores:", err);
+          });
+        }
 
         // Update progress (non-blocking - conflicts are OK since batches run in parallel)
         completedBatches++;
@@ -448,44 +464,8 @@ export const generateScoresWithProgress = action({
         }
       }
 
-      // Execute all batches in parallel
-      const allBatchResults = await Promise.all(allBatchPromises);
-
-      // Merge results from all batches
-      const scoreAccumulator: Record<string, { total: number; count: number; reasonings: string[] }> = {};
-      countries.forEach((country) => {
-        scoreAccumulator[country] = { total: 0, count: 0, reasonings: [] };
-      });
-
-      for (const batchResult of allBatchResults) {
-        for (const [country, data] of Object.entries(batchResult)) {
-          if (scoreAccumulator[country]) {
-            scoreAccumulator[country].total += data.score;
-            scoreAccumulator[country].count += 1;
-            if (data.reasoning) {
-              scoreAccumulator[country].reasonings.push(data.reasoning);
-            }
-          }
-        }
-      }
-
-      // Calculate averaged scores
-      const finalScores: CountryScore[] = countries.map((country) => {
-        const acc = scoreAccumulator[country];
-        const avgScore = acc.count > 0 ? acc.total / acc.count : 0;
-        const reasoning = acc.reasonings.length > 0 ? acc.reasonings[0] : undefined;
-        return {
-          countryName: country,
-          score: Math.max(-1, Math.min(1, avgScore)),
-          reasoning,
-        };
-      });
-
-      // Save scores to database
-      await ctx.runMutation(issuesApi.saveCountryScores, {
-        issueId,
-        scores: finalScores,
-      });
+      // Execute all batches in parallel (scores are saved incrementally in processBatch)
+      await Promise.all(allBatchPromises);
 
       // Activate the issue and mark job complete
       await ctx.runMutation(issuesApi.updateIssueActive, {
@@ -501,6 +481,122 @@ export const generateScoresWithProgress = action({
 
       return { success: true, issueId, jobId };
     } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  },
+});
+
+// Process scenario batches for an existing issue (for real-time updates)
+// Called after initializeScenario mutation, can be fire-and-forget
+export const processScenarioBatches = action({
+  args: {
+    issueId: v.id("issues"),
+    jobId: v.id("generationJobs"),
+    title: v.string(),
+    description: v.string(),
+    sideA: v.object({ label: v.string(), description: v.string() }),
+    sideB: v.object({ label: v.string(), description: v.string() }),
+    numRuns: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<{ success: boolean; error?: string }> => {
+    const openaiApiKey = process.env.OPENROUTER_API_KEY;
+    if (!openaiApiKey) {
+      throw new Error("OPENROUTER_API_KEY environment variable not set");
+    }
+
+    const numRuns = args.numRuns ?? DEFAULT_NUM_RUNS;
+
+    try {
+      // Get active map version
+      const mapVersion = await ctx.runQuery(issuesApi.getActiveMapVersion, {}) as MapVersionType | null;
+      if (!mapVersion) {
+        throw new Error("No active map version found");
+      }
+
+      const countries = mapVersion.countries;
+      const batches = batchArray(countries, BATCH_SIZE);
+      const totalBatches = batches.length * numRuns;
+
+      // Track completed batches
+      let completedBatches = 0;
+
+      // Helper to process a single batch and save scores immediately
+      const processBatch = async (batch: string[]): Promise<void> => {
+        const batchScores = await generateScoresForBatch(
+          ctx,
+          openaiApiKey,
+          args.title,
+          args.description,
+          args.sideA,
+          args.sideB,
+          batch
+        );
+
+        // Save scores immediately for real-time map updates
+        const scoresToSave = Object.entries(batchScores).map(([countryName, data]) => ({
+          countryName,
+          score: data.score,
+          reasoning: data.reasoning,
+        }));
+
+        if (scoresToSave.length > 0) {
+          ctx.runMutation(issuesApi.upsertBatchScores, {
+            issueId: args.issueId,
+            scores: scoresToSave,
+          }).catch((err) => {
+            console.error("Failed to save batch scores:", err);
+          });
+        }
+
+        // Update progress
+        completedBatches++;
+        const progress = Math.round((completedBatches / totalBatches) * 100);
+        ctx.runMutation(issuesApi.updateJobStatus, {
+          jobId: args.jobId,
+          completedBatches,
+          progress,
+        }).catch(() => {});
+      };
+
+      // Create all batch promises across all runs (fully parallel)
+      const allBatchPromises: Promise<void>[] = [];
+
+      for (let run = 0; run < numRuns; run++) {
+        const shuffledCountries = shuffleArray(countries);
+        const runBatches = batchArray(shuffledCountries, BATCH_SIZE);
+
+        for (const batch of runBatches) {
+          allBatchPromises.push(processBatch(batch));
+        }
+      }
+
+      // Execute all batches in parallel
+      await Promise.all(allBatchPromises);
+
+      // Activate the issue and mark job complete
+      await ctx.runMutation(issuesApi.updateIssueActive, {
+        issueId: args.issueId,
+        isActive: true,
+      });
+
+      await ctx.runMutation(issuesApi.updateJobStatus, {
+        jobId: args.jobId,
+        status: "completed",
+        progress: 100,
+      });
+
+      return { success: true };
+    } catch (error) {
+      // Mark job as failed
+      await ctx.runMutation(issuesApi.updateJobStatus, {
+        jobId: args.jobId,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Unknown error",
+      }).catch(() => {});
+
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
