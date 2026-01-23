@@ -31,6 +31,15 @@ interface CurrentIssue {
   sideB: { label: string; description: string };
 }
 
+interface SavedScenario {
+  _id: Id<"issues">;
+  title: string;
+  description: string;
+  sideA: { label: string; description: string };
+  sideB: { label: string; description: string };
+  generatedAt: number;
+}
+
 export default function ScenarioPage() {
   // Step tracking
   const [step, setStep] = useState<Step>("input");
@@ -51,9 +60,11 @@ export default function ScenarioPage() {
   // Hover state
   const [hoveredCountry, setHoveredCountry] = useState<HoveredCountry | null>(null);
 
-  // Convex actions
+  // Convex queries and actions
   const parsePrompt = useAction(api.ai.parsePromptToSides);
   const generateScores = useAction(api.ai.generateScoresWithProgress);
+  const userId = useQuery(api.issues.getCurrentUserId);
+  const userScenarios = useQuery(api.issues.getUserScenarios) as SavedScenario[] | undefined;
 
   // Poll job status when generating
   const jobStatus = useQuery(
@@ -67,9 +78,9 @@ export default function ScenarioPage() {
     currentIssue ? { issueId: currentIssue.id } : "skip"
   );
 
-  // Load scores when generation completes
+  // Load scores when generation completes or when viewing a saved scenario
   useEffect(() => {
-    if (issueScoresQuery && currentIssue && step === "results" && Object.keys(scores).length === 0) {
+    if (issueScoresQuery && currentIssue && (step === "results" || currentIssue)) {
       const newScores: Record<string, { score: number; reasoning?: string }> = {};
       for (const s of issueScoresQuery) {
         newScores[s.countryName] = { score: s.score, reasoning: s.reasoning };
@@ -78,7 +89,7 @@ export default function ScenarioPage() {
         setScores(newScores);
       }
     }
-  }, [issueScoresQuery, currentIssue, step, scores]);
+  }, [issueScoresQuery, currentIssue, step]);
 
   // Check if generation completed
   useEffect(() => {
@@ -134,6 +145,7 @@ export default function ScenarioPage() {
         sideA: parsedScenario.sideA,
         sideB: parsedScenario.sideB,
         numRuns,
+        userId: userId || undefined,
       });
 
       if (result.success && result.issueId && result.jobId) {
@@ -152,6 +164,28 @@ export default function ScenarioPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setStep("confirm");
+    }
+  };
+
+  // Select a saved scenario to view
+  const handleSelectScenario = (scenario: SavedScenario) => {
+    if (currentIssue?.id === scenario._id) {
+      // Deselect - go back to input
+      handleClear();
+    } else {
+      setCurrentIssue({
+        id: scenario._id,
+        title: scenario.title,
+        description: scenario.description,
+        sideA: scenario.sideA,
+        sideB: scenario.sideB,
+      });
+      setScores({}); // Clear scores, will load via query
+      setStep("results");
+      setParsedScenario(null);
+      setPrompt("");
+      setJobId(null);
+      setError(null);
     }
   };
 
@@ -185,384 +219,457 @@ export default function ScenarioPage() {
     []
   );
 
-  const hasResults = step === "results" && Object.keys(scores).length > 0;
+  const hasResults = currentIssue && Object.keys(scores).length > 0;
+
+  // Format date for display
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   return (
     <RequireAuth
       title="AI Scenario Generator"
       description="Create custom geopolitical scenarios and see how countries might align. Sign in to generate your own scenarios."
     >
-    <div className="h-[calc(100vh-48px)] bg-slate-50 flex flex-col">
-      {/* Header section */}
-      <div className="bg-white border-b border-slate-200 px-4 py-6">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
-            AI Scenario Generator
-          </h1>
-          <p className="text-slate-600 mb-4">
-            Describe a geopolitical scenario and AI will predict how each country might position themselves.
-          </p>
+      <div className="flex-1 min-h-0 bg-slate-50 flex">
+        {/* Sidebar - Saved scenarios */}
+        <aside className="w-80 bg-white border-r border-slate-200 flex flex-col">
+          <div className="p-4 border-b border-slate-200">
+            <h1 className="text-lg font-bold text-slate-900">My Scenarios</h1>
+            <p className="text-sm text-slate-600 mt-1">
+              Your generated scenario maps
+            </p>
+          </div>
 
-          {/* Step 1: Input prompt */}
-          {step === "input" && (
-            <form onSubmit={handleParse} className="flex gap-3">
-              <input
-                type="text"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="e.g., US annexation of Greenland, China invades Taiwan, Global carbon tax..."
-                disabled={isParsing}
-                className="flex-1 px-4 py-3 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              <Button
-                type="submit"
-                disabled={isParsing || !prompt.trim()}
-                className="px-6 py-3 h-auto"
-              >
-                {isParsing ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Parsing...
-                  </span>
-                ) : (
-                  "Analyze"
-                )}
-              </Button>
-            </form>
-          )}
+          {/* New Scenario button */}
+          <div className="p-2 border-b border-slate-200">
+            <Button
+              onClick={handleClear}
+              variant={step === "input" && !currentIssue ? "default" : "outline"}
+              className="w-full justify-start gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Scenario
+            </Button>
+          </div>
 
-          {/* Step 2: Review and confirm scenario */}
-          {step === "confirm" && parsedScenario && (
-            <div className="space-y-4">
-              {/* Title - click to edit */}
-              <div>
-                {editingField === "title" ? (
-                  <input
-                    type="text"
-                    value={parsedScenario.title}
-                    onChange={(e) => setParsedScenario({ ...parsedScenario, title: e.target.value })}
-                    onBlur={() => setEditingField(null)}
-                    onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
-                    autoFocus
-                    className="w-full text-xl font-semibold text-slate-900 px-2 py-1 -mx-2 rounded border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                ) : (
-                  <div
-                    onClick={() => setEditingField("title")}
-                    className="group flex items-center gap-2 cursor-pointer hover:bg-slate-100 rounded px-2 py-1 -mx-2 transition-colors"
-                    title="Click to edit"
-                  >
-                    <h3 className="text-xl font-semibold text-slate-900">{parsedScenario.title}</h3>
-                    <svg className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </div>
-                )}
+          <div className="flex-1 overflow-y-auto p-2">
+            {!userScenarios && (
+              <div className="p-4 text-center text-slate-500">Loading...</div>
+            )}
+
+            {userScenarios && userScenarios.length === 0 && (
+              <div className="p-4 text-center text-slate-500">
+                No scenarios yet. Create your first one!
               </div>
+            )}
 
-              {/* Description - click to edit */}
-              <div>
-                {editingField === "description" ? (
-                  <textarea
-                    value={parsedScenario.description}
-                    onChange={(e) => setParsedScenario({ ...parsedScenario, description: e.target.value })}
-                    onBlur={() => setEditingField(null)}
-                    autoFocus
-                    rows={2}
-                    className="w-full text-slate-600 text-sm px-2 py-1 -mx-2 rounded border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  />
-                ) : (
-                  <div
-                    onClick={() => setEditingField("description")}
-                    className="group flex items-start gap-2 cursor-pointer hover:bg-slate-100 rounded px-2 py-1 -mx-2 transition-colors"
-                    title="Click to edit"
-                  >
-                    <p className="text-slate-600 text-sm flex-1">{parsedScenario.description}</p>
-                    <svg className="w-3 h-3 text-slate-400 group-hover:text-slate-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
+            <div className="space-y-2">
+              {userScenarios?.map((scenario) => (
+                <button
+                  key={scenario._id}
+                  onClick={() => handleSelectScenario(scenario)}
+                  className={`w-full text-left p-3 rounded-lg border transition-all ${
+                    currentIssue?.id === scenario._id
+                      ? "border-blue-500 bg-blue-50 shadow-sm"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
+                  }`}
+                >
+                  <div className="font-medium text-slate-900 text-sm leading-snug">
+                    {scenario.title}
                   </div>
-                )}
-              </div>
-
-              {/* Side A and Side B */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Side A */}
-                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 flex-shrink-0" />
-                    {editingField === "sideA.label" ? (
-                      <input
-                        type="text"
-                        value={parsedScenario.sideA.label}
-                        onChange={(e) => setParsedScenario({
-                          ...parsedScenario,
-                          sideA: { ...parsedScenario.sideA, label: e.target.value }
-                        })}
-                        onBlur={() => setEditingField(null)}
-                        onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
-                        autoFocus
-                        className="flex-1 font-medium text-blue-900 px-2 py-0.5 rounded border border-blue-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    ) : (
-                      <div
-                        onClick={() => setEditingField("sideA.label")}
-                        className="group flex items-center gap-1.5 cursor-pointer hover:bg-blue-100 rounded px-2 py-0.5 -mx-2 transition-colors"
-                        title="Click to edit"
-                      >
-                        <span className="font-medium text-blue-900">{parsedScenario.sideA.label}</span>
-                        <svg className="w-3 h-3 text-blue-400 group-hover:text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  {editingField === "sideA.description" ? (
-                    <textarea
-                      value={parsedScenario.sideA.description}
-                      onChange={(e) => setParsedScenario({
-                        ...parsedScenario,
-                        sideA: { ...parsedScenario.sideA, description: e.target.value }
-                      })}
-                      onBlur={() => setEditingField(null)}
-                      autoFocus
-                      rows={3}
-                      className="w-full text-sm text-blue-700 px-2 py-1 rounded border border-blue-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                    />
-                  ) : (
-                    <div
-                      onClick={() => setEditingField("sideA.description")}
-                      className="group flex items-start gap-1.5 cursor-pointer hover:bg-blue-100 rounded px-2 py-1 -mx-2 transition-colors"
-                      title="Click to edit"
-                    >
-                      <p className="text-sm text-blue-700 leading-relaxed flex-1">{parsedScenario.sideA.description}</p>
-                      <svg className="w-3 h-3 text-blue-400 group-hover:text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
+                  {scenario.description && (
+                    <div className="text-xs text-slate-500 mt-1 line-clamp-2">
+                      {scenario.description}
                     </div>
                   )}
-                </div>
-
-                {/* Side B */}
-                <div className="bg-red-50/50 border border-red-100 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-600 flex-shrink-0" />
-                    {editingField === "sideB.label" ? (
-                      <input
-                        type="text"
-                        value={parsedScenario.sideB.label}
-                        onChange={(e) => setParsedScenario({
-                          ...parsedScenario,
-                          sideB: { ...parsedScenario.sideB, label: e.target.value }
-                        })}
-                        onBlur={() => setEditingField(null)}
-                        onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
-                        autoFocus
-                        className="flex-1 font-medium text-red-900 px-2 py-0.5 rounded border border-red-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-500"
-                      />
-                    ) : (
-                      <div
-                        onClick={() => setEditingField("sideB.label")}
-                        className="group flex items-center gap-1.5 cursor-pointer hover:bg-red-100 rounded px-2 py-0.5 -mx-2 transition-colors"
-                        title="Click to edit"
-                      >
-                        <span className="font-medium text-red-900">{parsedScenario.sideB.label}</span>
-                        <svg className="w-3 h-3 text-red-400 group-hover:text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  {editingField === "sideB.description" ? (
-                    <textarea
-                      value={parsedScenario.sideB.description}
-                      onChange={(e) => setParsedScenario({
-                        ...parsedScenario,
-                        sideB: { ...parsedScenario.sideB, description: e.target.value }
-                      })}
-                      onBlur={() => setEditingField(null)}
-                      autoFocus
-                      rows={3}
-                      className="w-full text-sm text-red-700 px-2 py-1 rounded border border-red-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
-                    />
-                  ) : (
-                    <div
-                      onClick={() => setEditingField("sideB.description")}
-                      className="group flex items-start gap-1.5 cursor-pointer hover:bg-red-100 rounded px-2 py-1 -mx-2 transition-colors"
-                      title="Click to edit"
-                    >
-                      <p className="text-sm text-red-700 leading-relaxed flex-1">{parsedScenario.sideB.description}</p>
-                      <svg className="w-3 h-3 text-red-400 group-hover:text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-blue-600">{scenario.sideA.label}</span>
+                      <span className="text-slate-400">vs</span>
+                      <span className="text-red-600">{scenario.sideB.label}</span>
                     </div>
-                  )}
-                </div>
-              </div>
+                    <span className="text-xs text-slate-400">
+                      {formatDate(scenario.generatedAt)}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
 
-              {/* Actions */}
-              <div className="flex items-center gap-3 pt-2">
-                <Button onClick={handleConfirm} className="px-6">
-                  Generate Predictions
-                </Button>
-                <Button variant="ghost" onClick={handleEdit} className="text-slate-500">
-                  Start Over
-                </Button>
-                <div className="ml-auto flex items-center gap-2 text-sm text-slate-500">
-                  <label htmlFor="numRuns">Accuracy runs:</label>
-                  <select
-                    id="numRuns"
-                    value={numRuns}
-                    onChange={(e) => setNumRuns(Number(e.target.value))}
-                    className="px-2 py-1 border border-slate-300 rounded text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value={1}>1 (fastest)</option>
-                    <option value={2}>2 (balanced)</option>
-                    <option value={3}>3 (most accurate)</option>
-                  </select>
-                </div>
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col">
+          {/* Header section - only show when creating new scenario */}
+          {(step === "input" || step === "confirm" || step === "generating") && (
+            <div className="bg-white border-b border-slate-200 px-6 py-6">
+              <div className="max-w-3xl">
+                <h2 className="text-xl font-bold text-slate-900 mb-2">
+                  {step === "input" && "Create New Scenario"}
+                  {step === "confirm" && "Confirm Scenario"}
+                  {step === "generating" && "Generating..."}
+                </h2>
+                <p className="text-slate-600 mb-4">
+                  Describe a geopolitical scenario and AI will predict how each country might position themselves.
+                </p>
+
+                {/* Step 1: Input prompt */}
+                {step === "input" && (
+                  <form onSubmit={handleParse} className="flex gap-3">
+                    <input
+                      type="text"
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="e.g., US annexation of Greenland, China invades Taiwan, Global carbon tax..."
+                      disabled={isParsing}
+                      className="flex-1 px-4 py-3 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={isParsing || !prompt.trim()}
+                      className="px-6 py-3 h-auto"
+                    >
+                      {isParsing ? (
+                        <span className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Parsing...
+                        </span>
+                      ) : (
+                        "Analyze"
+                      )}
+                    </Button>
+                  </form>
+                )}
+
+                {/* Step 2: Review and confirm scenario */}
+                {step === "confirm" && parsedScenario && (
+                  <div className="space-y-4">
+                    {/* Title - click to edit */}
+                    <div>
+                      {editingField === "title" ? (
+                        <input
+                          type="text"
+                          value={parsedScenario.title}
+                          onChange={(e) => setParsedScenario({ ...parsedScenario, title: e.target.value })}
+                          onBlur={() => setEditingField(null)}
+                          onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
+                          autoFocus
+                          className="w-full text-xl font-semibold text-slate-900 px-2 py-1 -mx-2 rounded border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <div
+                          onClick={() => setEditingField("title")}
+                          className="group flex items-center gap-2 cursor-pointer hover:bg-slate-100 rounded px-2 py-1 -mx-2 transition-colors"
+                          title="Click to edit"
+                        >
+                          <h3 className="text-xl font-semibold text-slate-900">{parsedScenario.title}</h3>
+                          <svg className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Description - click to edit */}
+                    <div>
+                      {editingField === "description" ? (
+                        <textarea
+                          value={parsedScenario.description}
+                          onChange={(e) => setParsedScenario({ ...parsedScenario, description: e.target.value })}
+                          onBlur={() => setEditingField(null)}
+                          autoFocus
+                          rows={2}
+                          className="w-full text-slate-600 text-sm px-2 py-1 -mx-2 rounded border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        />
+                      ) : (
+                        <div
+                          onClick={() => setEditingField("description")}
+                          className="group flex items-start gap-2 cursor-pointer hover:bg-slate-100 rounded px-2 py-1 -mx-2 transition-colors"
+                          title="Click to edit"
+                        >
+                          <p className="text-slate-600 text-sm flex-1">{parsedScenario.description}</p>
+                          <svg className="w-3 h-3 text-slate-400 group-hover:text-slate-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Side A and Side B */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Side A */}
+                      <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-blue-600 flex-shrink-0" />
+                          {editingField === "sideA.label" ? (
+                            <input
+                              type="text"
+                              value={parsedScenario.sideA.label}
+                              onChange={(e) => setParsedScenario({
+                                ...parsedScenario,
+                                sideA: { ...parsedScenario.sideA, label: e.target.value }
+                              })}
+                              onBlur={() => setEditingField(null)}
+                              onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
+                              autoFocus
+                              className="flex-1 font-medium text-blue-900 px-2 py-0.5 rounded border border-blue-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          ) : (
+                            <div
+                              onClick={() => setEditingField("sideA.label")}
+                              className="group flex items-center gap-1.5 cursor-pointer hover:bg-blue-100 rounded px-2 py-0.5 -mx-2 transition-colors"
+                              title="Click to edit"
+                            >
+                              <span className="font-medium text-blue-900">{parsedScenario.sideA.label}</span>
+                              <svg className="w-3 h-3 text-blue-400 group-hover:text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        {editingField === "sideA.description" ? (
+                          <textarea
+                            value={parsedScenario.sideA.description}
+                            onChange={(e) => setParsedScenario({
+                              ...parsedScenario,
+                              sideA: { ...parsedScenario.sideA, description: e.target.value }
+                            })}
+                            onBlur={() => setEditingField(null)}
+                            autoFocus
+                            rows={3}
+                            className="w-full text-sm text-blue-700 px-2 py-1 rounded border border-blue-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          />
+                        ) : (
+                          <div
+                            onClick={() => setEditingField("sideA.description")}
+                            className="group flex items-start gap-1.5 cursor-pointer hover:bg-blue-100 rounded px-2 py-1 -mx-2 transition-colors"
+                            title="Click to edit"
+                          >
+                            <p className="text-sm text-blue-700 leading-relaxed flex-1">{parsedScenario.sideA.description}</p>
+                            <svg className="w-3 h-3 text-blue-400 group-hover:text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Side B */}
+                      <div className="bg-red-50/50 border border-red-100 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-red-600 flex-shrink-0" />
+                          {editingField === "sideB.label" ? (
+                            <input
+                              type="text"
+                              value={parsedScenario.sideB.label}
+                              onChange={(e) => setParsedScenario({
+                                ...parsedScenario,
+                                sideB: { ...parsedScenario.sideB, label: e.target.value }
+                              })}
+                              onBlur={() => setEditingField(null)}
+                              onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
+                              autoFocus
+                              className="flex-1 font-medium text-red-900 px-2 py-0.5 rounded border border-red-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                            />
+                          ) : (
+                            <div
+                              onClick={() => setEditingField("sideB.label")}
+                              className="group flex items-center gap-1.5 cursor-pointer hover:bg-red-100 rounded px-2 py-0.5 -mx-2 transition-colors"
+                              title="Click to edit"
+                            >
+                              <span className="font-medium text-red-900">{parsedScenario.sideB.label}</span>
+                              <svg className="w-3 h-3 text-red-400 group-hover:text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        {editingField === "sideB.description" ? (
+                          <textarea
+                            value={parsedScenario.sideB.description}
+                            onChange={(e) => setParsedScenario({
+                              ...parsedScenario,
+                              sideB: { ...parsedScenario.sideB, description: e.target.value }
+                            })}
+                            onBlur={() => setEditingField(null)}
+                            autoFocus
+                            rows={3}
+                            className="w-full text-sm text-red-700 px-2 py-1 rounded border border-red-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
+                          />
+                        ) : (
+                          <div
+                            onClick={() => setEditingField("sideB.description")}
+                            className="group flex items-start gap-1.5 cursor-pointer hover:bg-red-100 rounded px-2 py-1 -mx-2 transition-colors"
+                            title="Click to edit"
+                          >
+                            <p className="text-sm text-red-700 leading-relaxed flex-1">{parsedScenario.sideB.description}</p>
+                            <svg className="w-3 h-3 text-red-400 group-hover:text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-3 pt-2">
+                      <Button onClick={handleConfirm} className="px-6">
+                        Generate Predictions
+                      </Button>
+                      <Button variant="ghost" onClick={handleEdit} className="text-slate-500">
+                        Start Over
+                      </Button>
+                      <div className="ml-auto flex items-center gap-2 text-sm text-slate-500">
+                        <label htmlFor="numRuns">Accuracy runs:</label>
+                        <select
+                          id="numRuns"
+                          value={numRuns}
+                          onChange={(e) => setNumRuns(Number(e.target.value))}
+                          className="px-2 py-1 border border-slate-300 rounded text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value={1}>1 (fastest)</option>
+                          <option value={2}>2 (balanced)</option>
+                          <option value={3}>3 (most accurate)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Generating with progress */}
+                {step === "generating" && (
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                    <div className="mb-3">
+                      <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                        {parsedScenario?.title}
+                      </h3>
+                    </div>
+
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm text-slate-600 mb-2">
+                        <span>Generating country positions...</span>
+                        <span>
+                          {jobStatus ? (
+                            <>
+                              {jobStatus.completedBatches || 0} of {jobStatus.totalBatches || "?"} batches complete
+                            </>
+                          ) : (
+                            "Starting..."
+                          )}
+                        </span>
+                      </div>
+                      <div className="h-3 bg-slate-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-blue-600 rounded-full transition-all duration-300"
+                          style={{ width: `${jobStatus?.progress || 0}%` }}
+                        />
+                      </div>
+                      <div className="text-right text-sm text-slate-500 mt-1">
+                        {jobStatus?.progress || 0}%
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-slate-500">
+                      AI is analyzing how each country might position themselves on this issue.
+                    </p>
+                  </div>
+                )}
+
+                {/* Error display */}
+                {error && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 max-h-32 overflow-y-auto">
+                    <div className="flex items-start gap-2">
+                      <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      <span className="break-words">{error}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Step 3: Generating with progress */}
-          {step === "generating" && (
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-              <div className="mb-3">
-                <h3 className="text-lg font-semibold text-slate-900 mb-1">
-                  {parsedScenario?.title}
-                </h3>
+          {/* Results header (when viewing results) */}
+          {hasResults && currentIssue && (
+            <div className="bg-slate-100 border-b border-slate-200 px-6 py-4">
+              <h2 className="text-lg font-semibold text-slate-900">{currentIssue.title}</h2>
+              <div className="flex items-center gap-4 mt-1 text-sm">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-blue-600" />
+                  <span className="text-blue-700 font-medium">{currentIssue.sideA.label}</span>
+                </span>
+                <span className="text-slate-400">vs</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-red-600" />
+                  <span className="text-red-700 font-medium">{currentIssue.sideB.label}</span>
+                </span>
               </div>
-
-              <div className="mb-4">
-                <div className="flex justify-between text-sm text-slate-600 mb-2">
-                  <span>Generating country positions...</span>
-                  <span>
-                    {jobStatus ? (
-                      <>
-                        {jobStatus.completedBatches || 0} of {jobStatus.totalBatches || "?"} batches complete
-                      </>
-                    ) : (
-                      "Starting..."
-                    )}
-                  </span>
-                </div>
-                <div className="h-3 bg-slate-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-600 rounded-full transition-all duration-300"
-                    style={{ width: `${jobStatus?.progress || 0}%` }}
-                  />
-                </div>
-                <div className="text-right text-sm text-slate-500 mt-1">
-                  {jobStatus?.progress || 0}%
-                </div>
-              </div>
-
-              <p className="text-sm text-slate-500">
-                AI is analyzing how each country might position themselves on this issue.
-                This typically takes 30-60 seconds.
-              </p>
             </div>
           )}
 
-          {/* Results header */}
-          {step === "results" && currentIssue && (
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-sm text-slate-500">Showing results for:</span>
-                <h3 className="text-lg font-semibold text-slate-900">{currentIssue.title}</h3>
-              </div>
-              <Button variant="outline" onClick={handleClear}>
-                New Scenario
-              </Button>
-            </div>
-          )}
+          {/* Map section */}
+          <div className="flex-1 relative">
+            <D3ScoreMap
+              scores={scores}
+              onCountryHover={handleCountryHover}
+              className="w-full h-full min-h-[400px]"
+            />
 
-          {/* Error display */}
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-              {error}
-            </div>
-          )}
+            {/* Legend (floating) */}
+            {hasResults && currentIssue && (
+              <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 px-4 py-3">
+                <ScoreLegend
+                  sideALabel={currentIssue.sideA.label}
+                  sideBLabel={currentIssue.sideB.label}
+                />
+              </div>
+            )}
+
+            {/* Tooltip (floating) */}
+            {hoveredCountry && (
+              <div className="absolute top-4 right-4 pointer-events-none">
+                <CountryTooltip
+                  country={hoveredCountry.name}
+                  score={hoveredCountry.score}
+                  reasoning={hoveredCountry.reasoning}
+                  sideALabel={currentIssue?.sideA.label || "Supports"}
+                  sideBLabel={currentIssue?.sideB.label || "Opposes"}
+                />
+              </div>
+            )}
+
+            {/* Empty state */}
+            {step === "input" && !isParsing && !currentIssue && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="text-center text-slate-500 max-w-md px-4">
+                  <div className="text-6xl mb-4 opacity-50">🌍</div>
+                  <p className="text-lg">
+                    Enter a geopolitical scenario above to see how countries might align.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Loading state for saved scenario */}
+            {currentIssue && !hasResults && step === "results" && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="text-center text-slate-500">
+                  <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                  <p>Loading country positions...</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Issue header with sides (when viewing results) */}
-      {hasResults && currentIssue && (
-        <div className="relative bg-gradient-to-r from-blue-50 via-white to-red-50 border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-center">
-              {/* Side A */}
-              <div className="flex-1 flex justify-end">
-                <div className="flex items-center gap-3 bg-blue-500/10 px-4 py-2 rounded-l-full border border-blue-200/50 border-r-0">
-                  <span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-500/30" />
-                  <span className="text-blue-700 font-semibold text-sm">{currentIssue.sideA.label}</span>
-                </div>
-              </div>
-
-              {/* VS divider */}
-              <div className="flex-shrink-0 px-4">
-                <div className="w-10 h-10 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center shadow-sm">
-                  <span className="text-slate-400 font-bold text-xs">VS</span>
-                </div>
-              </div>
-
-              {/* Side B */}
-              <div className="flex-1 flex justify-start">
-                <div className="flex items-center gap-3 bg-red-500/10 px-4 py-2 rounded-r-full border border-red-200/50 border-l-0">
-                  <span className="text-red-700 font-semibold text-sm">{currentIssue.sideB.label}</span>
-                  <span className="w-3 h-3 rounded-full bg-red-500 shadow-sm shadow-red-500/30" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Map section */}
-      <div className="flex-1 relative">
-        <D3ScoreMap
-          scores={scores}
-          onCountryHover={handleCountryHover}
-          className="w-full h-full min-h-[400px]"
-        />
-
-        {/* Legend (floating) */}
-        {hasResults && currentIssue && (
-          <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 px-4 py-3">
-            <ScoreLegend
-              sideALabel={currentIssue.sideA.label}
-              sideBLabel={currentIssue.sideB.label}
-            />
-          </div>
-        )}
-
-        {/* Tooltip (floating) */}
-        {hoveredCountry && (
-          <div className="absolute top-4 right-4 pointer-events-none">
-            <CountryTooltip
-              country={hoveredCountry.name}
-              score={hoveredCountry.score}
-              reasoning={hoveredCountry.reasoning}
-              sideALabel={currentIssue?.sideA.label || "Supports"}
-              sideBLabel={currentIssue?.sideB.label || "Opposes"}
-            />
-          </div>
-        )}
-
-        {/* Empty state */}
-        {step === "input" && !isParsing && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center text-slate-500 max-w-md px-4">
-              <div className="text-6xl mb-4 opacity-50">🌍</div>
-              <p className="text-lg">
-                Enter a geopolitical scenario above to see how countries might align.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
     </RequireAuth>
   );
 }

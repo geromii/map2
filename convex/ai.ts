@@ -10,6 +10,18 @@ const issuesApi = api.issues as any;
 const BATCH_SIZE = 10;
 const DEFAULT_NUM_RUNS = 2; // Default number of runs to average (user configurable)
 
+// Geopolitical context annotations for countries (to update AI beyond training cutoff)
+const COUNTRY_ANNOTATIONS: Record<string, string> = {
+  "United States": "(Trump won 2024 Election)",
+  "Syria": "(Post-Assad Transition Government)",
+};
+
+// Helper to annotate country names with geopolitical context
+function annotateCountry(country: string): string {
+  const annotation = COUNTRY_ANNOTATIONS[country];
+  return annotation ? `${country} ${annotation}` : country;
+}
+
 // AI logging mutation
 export const logAiRequest = mutation({
   args: {
@@ -88,9 +100,26 @@ async function fetchOpenRouterWithLogging(
       responseBody = responseText.substring(0, 5000); // Truncate for storage
 
       if (!response.ok) {
-        error = `HTTP ${response.status}: ${responseText}`;
+        error = `HTTP ${response.status}: ${responseText.substring(0, 500)}`;
         // Don't retry HTTP errors (auth failures, rate limits should be handled differently)
-        throw new Error(`OpenRouter API error: ${responseText}`);
+        // Detect HTML error pages and provide a cleaner message
+        const isHtmlError = responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html');
+        if (isHtmlError) {
+          if (response.status >= 500) {
+            throw new Error(`OpenRouter is experiencing server issues (HTTP ${response.status}). Please try again in a few minutes.`);
+          } else {
+            throw new Error(`OpenRouter API error (HTTP ${response.status}). Please try again.`);
+          }
+        }
+        // Try to parse JSON error response
+        try {
+          const errorJson = JSON.parse(responseText);
+          const errorMessage = errorJson.error?.message || errorJson.message || responseText.substring(0, 200);
+          throw new Error(`OpenRouter API error: ${errorMessage}`);
+        } catch {
+          // Not JSON, truncate and show
+          throw new Error(`OpenRouter API error (HTTP ${response.status}): ${responseText.substring(0, 200)}`);
+        }
       }
 
       const data = JSON.parse(responseText);
@@ -325,6 +354,7 @@ export const generateScoresWithProgress = action({
     sideA: v.object({ label: v.string(), description: v.string() }),
     sideB: v.object({ label: v.string(), description: v.string() }),
     numRuns: v.optional(v.number()),
+    userId: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<{
     success: boolean;
@@ -355,6 +385,7 @@ export const generateScoresWithProgress = action({
         mapVersionId: mapVersion._id,
         source: "custom",
         isActive: false,
+        userId: args.userId,
       });
 
       const countries = mapVersion.countries;
@@ -603,9 +634,11 @@ Return a JSON object with this exact structure:
   }
 }
 
-Only return valid JSON, no additional text. Country names must match exactly as provided.`;
+Only return valid JSON, no additional text. Country names in your response must match exactly as provided (without any annotations).`;
 
-  const userPrompt = `Rate these countries: ${countries.join(", ")}`;
+  // Annotate countries with geopolitical context for the AI
+  const annotatedCountries = countries.map(annotateCountry);
+  const userPrompt = `Rate these countries: ${annotatedCountries.join(", ")}`;
   const MODEL = "openai/gpt-oss-120b:exacto";
 
   const { content } = await fetchOpenRouterWithLogging(
