@@ -24,14 +24,39 @@ export const getActiveIssues = query({
   },
 });
 
-// Get all country scores for an issue
+// Get all country scores for an issue (aggregated/averaged by country)
 export const getIssueScores = query({
   args: { issueId: v.id("issues") },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const rawScores = await ctx.db
       .query("countryScores")
       .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
       .collect();
+
+    // Aggregate scores by country name (average if multiple entries exist)
+    const scoreMap = new Map<string, { total: number; count: number; reasoning?: string }>();
+
+    for (const score of rawScores) {
+      const existing = scoreMap.get(score.countryName);
+      if (existing) {
+        existing.total += score.score;
+        existing.count += 1;
+        // Keep first reasoning
+      } else {
+        scoreMap.set(score.countryName, {
+          total: score.score,
+          count: 1,
+          reasoning: score.reasoning,
+        });
+      }
+    }
+
+    // Convert to array with averaged scores
+    return Array.from(scoreMap.entries()).map(([countryName, data]) => ({
+      countryName,
+      score: data.total / data.count,
+      reasoning: data.reasoning,
+    }));
   },
 });
 
@@ -203,8 +228,8 @@ export const saveCountryScores = mutation({
   },
 });
 
-// Upsert batch scores incrementally (for real-time map updates)
-// If a score already exists, it averages the new score with the existing one
+// Insert batch scores (for real-time map updates)
+// Always inserts new rows - the query handles averaging multiple entries per country
 export const upsertBatchScores = mutation({
   args: {
     issueId: v.id("issues"),
@@ -218,35 +243,15 @@ export const upsertBatchScores = mutation({
   },
   handler: async (ctx, args) => {
     for (const newScore of args.scores) {
-      // Check if score already exists for this country
-      const existing = await ctx.db
-        .query("countryScores")
-        .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
-        .filter((q) => q.eq(q.field("countryName"), newScore.countryName))
-        .first();
-
-      if (existing) {
-        // Average with existing score (for multiple runs)
-        // We track count implicitly: if existing has been updated N times,
-        // new average = (existing.score * N + newScore) / (N + 1)
-        // For simplicity, we just do a running average: (old + new) / 2
-        const avgScore = (existing.score + newScore.score) / 2;
-        await ctx.db.patch(existing._id, {
-          score: Math.max(-1, Math.min(1, avgScore)),
-          reasoning: newScore.reasoning || existing.reasoning,
-        });
-      } else {
-        // Insert new score
-        await ctx.db.insert("countryScores", {
-          issueId: args.issueId,
-          countryName: newScore.countryName,
-          score: Math.max(-1, Math.min(1, newScore.score)),
-          reasoning: newScore.reasoning,
-        });
-      }
+      await ctx.db.insert("countryScores", {
+        issueId: args.issueId,
+        countryName: newScore.countryName,
+        score: Math.max(-1, Math.min(1, newScore.score)),
+        reasoning: newScore.reasoning,
+      });
     }
 
-    return { upsertedCount: args.scores.length };
+    return { insertedCount: args.scores.length };
   },
 });
 
