@@ -1034,7 +1034,12 @@ For each country, search for official statements, government responses, or credi
 - Credible news reports citing official positions
 
 If you find actual statements or reported positions, use those to inform your score and cite them in your reasoning.
-If no official position is found for a country, make your best educated guess based on that country's known alliances, historical positions, and geopolitical interests - but note in the reasoning that no official statement was found.
+
+If no official position is found for a country:
+- Start reasoning with "[Country] has not issued a statement on this issue, but..." (or similar phrasing)
+- Then justify their expected position based on historical precedent, geopolitical alliances, treaty obligations, regional interests, or past behavior on similar issues
+- Lean towards neutral (score closer to 0) when uncertain, but use your geopolitical expertise to make informed predictions when historical patterns are clear
+- Never say "No official government statement was found" - always provide analysis of their likely position
 
 ` : '';
 
@@ -1043,15 +1048,15 @@ If no official position is found for a country, make your best educated guess ba
 SCENARIO: ${title}
 ${description}
 ${webGroundingInstructions}
-SIDE A (${sideA.label}): ${sideA.description} → positive scores (0 to 1)
-SIDE B (${sideB.label}): ${sideB.description} → negative scores (-1 to 0)
+${sideA.label}: ${sideA.description} → positive scores (0 to 1)
+${sideB.label}: ${sideB.description} → negative scores (-1 to 0)
 
 Rate each country from -1 to 1 where:
-- 1.0 = Strongly supports Side A
-- 0.5 = Moderately supports Side A
+- 1.0 = Strongly ${sideA.label.toLowerCase()}
+- 0.5 = Moderately ${sideA.label.toLowerCase()}
 - 0.0 = Neutral / No clear position
-- -0.5 = Moderately supports Side B
-- -1.0 = Strongly supports Side B
+- -0.5 = Moderately ${sideB.label.toLowerCase()}
+- -1.0 = Strongly ${sideB.label.toLowerCase()}
 
 Consider:
 - Current alliances and treaties
@@ -1061,12 +1066,20 @@ Consider:
 - Regional interests
 - Domestic political considerations
 
+IMPORTANT FORMATTING RULES:
+- NEVER use "Side A" or "Side B" in your reasoning
+- Use natural language to describe positions. For example, say "leading voice against annexation" rather than "leading Anti-Annexation voice". Describe the stance in plain English rather than inserting stance labels awkwardly.
+- Write in a natural, human tone - like a knowledgeable analyst explaining to a colleague, not a formal report. Vary sentence structure, avoid repetitive phrasing, and don't overuse words like "significant", "notable", "robust", or "multifaceted".
+- Provide detailed reasoning of 4-6 sentences with a paragraph break
+- First paragraph: Explain the country's official position (if known) or historical stance on similar issues
+- Second paragraph: Analyze the geopolitical factors, alliances, and interests that inform their position
+
 If the scenario description is in a language other than English, please issue your response in that language.
 
 Return a JSON object with this exact structure:
 {
   "scores": {
-    "CountryName": { "score": 0.5, "reasoning": "Brief explanation" },
+    "CountryName": { "score": 0.5, "reasoning": "First paragraph about position...\\n\\nSecond paragraph about factors..." },
     ...
   }
 }
