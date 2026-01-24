@@ -4,9 +4,18 @@ import { useState, useCallback, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { D3ScoreMap, ScoreLegend, CountryTooltip } from "@/components/custom/D3ScoreMap";
+import { CountryDetailModal } from "@/components/custom/CountryDetailModal";
+import { CountryListView } from "@/components/custom/CountryListView";
 import { Id } from "../../../convex/_generated/dataModel";
+import { ArrowLeft, Map, List } from "lucide-react";
 
 interface HoveredCountry {
+  name: string;
+  score: number;
+  reasoning?: string;
+}
+
+interface SelectedCountry {
   name: string;
   score: number;
   reasoning?: string;
@@ -23,12 +32,18 @@ interface Issue {
 }
 
 export default function HeadlinesPage() {
-  // Currently selected issue
+  // Selected issue
   const [selectedIssueId, setSelectedIssueId] = useState<Id<"issues"> | null>(null);
   const [scores, setScores] = useState<Record<string, { score: number; reasoning?: string }>>({});
 
-  // Hover state
+  // Detail view mode (map or list) - only relevant when a headline is selected
+  const [detailView, setDetailView] = useState<"map" | "list">("map");
+
+  // Hover state (for map)
   const [hoveredCountry, setHoveredCountry] = useState<HoveredCountry | null>(null);
+
+  // Selected country for modal
+  const [selectedCountry, setSelectedCountry] = useState<SelectedCountry | null>(null);
 
   // Fetch active daily issues
   const activeIssues = useQuery(api.issues.getActiveIssues);
@@ -53,16 +68,16 @@ export default function HeadlinesPage() {
 
   const selectedIssue = dailyIssues.find((i) => i._id === selectedIssueId);
 
-  const handleSelectIssue = (issue: Issue) => {
-    if (selectedIssueId === issue._id) {
-      // Deselect
-      setSelectedIssueId(null);
-      setScores({});
-    } else {
-      setSelectedIssueId(issue._id);
-      setScores({}); // Clear scores, will load via query
-    }
-  };
+  const handleSelectIssue = useCallback((issue: Issue) => {
+    setSelectedIssueId(issue._id);
+    setScores({}); // Clear scores, will load via query
+    setDetailView("map"); // Default to map view
+  }, []);
+
+  const handleBack = useCallback(() => {
+    setSelectedIssueId(null);
+    setScores({});
+  }, []);
 
   const handleCountryHover = useCallback(
     (country: string | null, score: { score: number; reasoning?: string } | null) => {
@@ -75,142 +90,230 @@ export default function HeadlinesPage() {
     []
   );
 
+  const handleCountryClick = useCallback(
+    (country: string, score: { score: number; reasoning?: string } | null) => {
+      if (score) {
+        setSelectedCountry({
+          name: country,
+          score: score.score,
+          reasoning: score.reasoning,
+        });
+      }
+    },
+    []
+  );
+
   const hasResults = selectedIssue && Object.keys(scores).length > 0;
 
-  return (
-    <div className="h-[calc(100vh-48px)] bg-slate-50 flex">
-      {/* Sidebar - Issue list */}
-      <aside className="w-80 bg-white border-r border-slate-200 flex flex-col">
-        <div className="p-4 border-b border-slate-200">
-          <h1 className="text-lg font-bold text-slate-900">Daily Headlines</h1>
-          <p className="text-sm text-slate-600 mt-1">
-            AI-generated country positions on current events
-          </p>
-        </div>
+  const sideALabel = selectedIssue?.sideA.label || "Supports";
+  const sideBLabel = selectedIssue?.sideB.label || "Opposes";
 
-        <div className="flex-1 overflow-y-auto p-2">
-          {!activeIssues && (
-            <div className="p-4 text-center text-slate-500">Loading...</div>
-          )}
-
-          {activeIssues && dailyIssues.length === 0 && (
-            <div className="p-4 text-center text-slate-500">
-              No daily headlines available yet.
-            </div>
-          )}
-
-          <div className="space-y-2">
-            {dailyIssues.map((issue) => (
-              <button
-                key={issue._id}
-                onClick={() => handleSelectIssue(issue)}
-                className={`w-full text-left p-3 rounded-lg border transition-all ${
-                  selectedIssueId === issue._id
-                    ? "border-blue-500 bg-blue-50 shadow-sm"
-                    : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
-                }`}
-              >
-                <div className="font-medium text-slate-900 text-sm leading-snug">
-                  {issue.title}
-                </div>
-                {issue.description && (
-                  <div className="text-xs text-slate-500 mt-1 line-clamp-2">
-                    {issue.description}
-                  </div>
-                )}
-                <div className="flex items-center gap-2 mt-2 text-xs">
-                  <span className="text-blue-600">{issue.sideA.label}</span>
-                  <span className="text-slate-400">vs</span>
-                  <span className="text-red-600">{issue.sideB.label}</span>
-                </div>
-              </button>
-            ))}
+  // Show headlines list when no issue is selected
+  if (!selectedIssueId) {
+    return (
+      <div className="h-[calc(100vh-48px)] bg-slate-50 flex flex-col overflow-hidden">
+        <div className="p-4 sm:p-6">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Today&apos;s Headlines</h1>
+            <p className="text-sm sm:text-base text-slate-600 mt-1">
+              See how countries position themselves on major world events
+            </p>
           </div>
         </div>
-      </aside>
 
-      {/* Map area */}
-      <div className="flex-1 flex flex-col">
-        {/* Issue header (when viewing results) */}
-        {hasResults && selectedIssue && (
-          <div className="bg-slate-100 border-b border-slate-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-slate-900">{selectedIssue.title}</h2>
-            <div className="flex items-center gap-4 mt-1 text-sm">
-              {selectedIssue.primaryActor && (
-                <>
-                  <span className="text-slate-600">
-                    <span className="text-slate-400">by</span> {selectedIssue.primaryActor}
-                  </span>
-                  <span className="text-slate-300">|</span>
-                </>
-              )}
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-blue-600" />
-                <span className="text-blue-700 font-medium">{selectedIssue.sideA.label}</span>
-              </span>
-              <span className="text-slate-400">vs</span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-red-600" />
-                <span className="text-red-700 font-medium">{selectedIssue.sideB.label}</span>
-              </span>
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6">
+          <div className="max-w-4xl mx-auto">
+            {!activeIssues && (
+              <div className="p-8 text-center text-slate-500">Loading...</div>
+            )}
+
+            {activeIssues && dailyIssues.length === 0 && (
+              <div className="p-8 text-center text-slate-500">
+                No headlines available yet.
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {dailyIssues.map((issue) => (
+                <button
+                  key={issue._id}
+                  onClick={() => handleSelectIssue(issue)}
+                  className="w-full text-left rounded-xl border-2 bg-white shadow-sm transition-all hover:shadow-md flex flex-col border-slate-200 hover:border-slate-300"
+                >
+                  <div className="p-4 sm:p-5 flex flex-col flex-1">
+                    <h2 className="font-semibold text-slate-900 text-base sm:text-lg leading-snug">
+                      {issue.title}
+                    </h2>
+                    {issue.description && (
+                      <p className="text-sm sm:text-base text-slate-600 mt-2 line-clamp-3 flex-1">
+                        {issue.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-3 mt-4 pt-3 border-t border-slate-100">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                        <span className="text-sm text-blue-700 font-medium">{issue.sideA.label}</span>
+                      </span>
+                      <span className="text-slate-400 text-sm">vs</span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                        <span className="text-sm text-red-700 font-medium">{issue.sideB.label}</span>
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Detail view (selected headline)
+  return (
+    <div className="h-[calc(100vh-48px)] bg-slate-50 flex flex-col">
+      {/* Detail header */}
+      <div className="bg-white border-b border-slate-200">
+        {/* Top bar with back button and view toggle */}
+        <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm font-medium">Headlines</span>
+          </button>
+
+          {/* Map/List toggle */}
+          <div className="flex bg-slate-100 rounded-lg p-1">
+            <button
+              onClick={() => setDetailView("map")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                detailView === "map"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Map className="w-4 h-4" />
+              <span>Map</span>
+            </button>
+            <button
+              onClick={() => setDetailView("list")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                detailView === "list"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <List className="w-4 h-4" />
+              <span>List</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Issue info */}
+        {selectedIssue && (
+          <div className="px-4 sm:px-6 pb-4">
+            <div className="max-w-4xl">
+              <h1 className="text-lg sm:text-xl font-bold text-slate-900">
+                {selectedIssue.title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm">
+                {selectedIssue.primaryActor && (
+                  <>
+                    <span className="text-slate-600">
+                      <span className="text-slate-400">by</span> {selectedIssue.primaryActor}
+                    </span>
+                    <span className="text-slate-300 hidden sm:inline">|</span>
+                  </>
+                )}
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                  <span className="text-blue-700 font-medium">{selectedIssue.sideA.label}</span>
+                </span>
+                <span className="text-slate-400">vs</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                  <span className="text-red-700 font-medium">{selectedIssue.sideB.label}</span>
+                </span>
+              </div>
             </div>
           </div>
         )}
-
-        {/* Map */}
-        <div className="flex-1 relative">
-          <D3ScoreMap
-            scores={scores}
-            onCountryHover={handleCountryHover}
-            className="w-full h-full min-h-[500px]"
-          />
-
-          {/* Legend (floating) */}
-          {hasResults && (
-            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 px-4 py-3">
-              <ScoreLegend
-                sideALabel={selectedIssue?.sideA.label || "Supports"}
-                sideBLabel={selectedIssue?.sideB.label || "Opposes"}
-              />
-            </div>
-          )}
-
-          {/* Tooltip (floating) */}
-          {hoveredCountry && (
-            <div className="absolute top-4 right-4 pointer-events-none">
-              <CountryTooltip
-                country={hoveredCountry.name}
-                score={hoveredCountry.score}
-                reasoning={hoveredCountry.reasoning}
-                sideALabel={selectedIssue?.sideA.label || "Supports"}
-                sideBLabel={selectedIssue?.sideB.label || "Opposes"}
-              />
-            </div>
-          )}
-
-          {/* Empty state */}
-          {!selectedIssue && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center text-slate-500 max-w-md px-4">
-                <div className="text-6xl mb-4 opacity-50">📰</div>
-                <p className="text-lg">
-                  Select a headline from the sidebar to see country positions.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Loading state */}
-          {selectedIssue && !hasResults && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center text-slate-500">
-                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p>Loading country positions...</p>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
+
+      {/* Content area */}
+      <main className="flex-1 overflow-hidden">
+        {detailView === "map" ? (
+          <div className="relative h-full">
+            <D3ScoreMap
+              scores={scores}
+              onCountryHover={handleCountryHover}
+              onCountryClick={handleCountryClick}
+              className="w-full h-full"
+            />
+
+            {/* Legend (floating) */}
+            {hasResults && (
+              <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 px-4 py-3">
+                <ScoreLegend sideALabel={sideALabel} sideBLabel={sideBLabel} />
+              </div>
+            )}
+
+            {/* Tooltip (floating) */}
+            {hoveredCountry && (
+              <div className="absolute top-4 right-4 pointer-events-none">
+                <CountryTooltip
+                  country={hoveredCountry.name}
+                  score={hoveredCountry.score}
+                  reasoning={hoveredCountry.reasoning}
+                  sideALabel={sideALabel}
+                  sideBLabel={sideBLabel}
+                />
+              </div>
+            )}
+
+            {/* Loading state */}
+            {selectedIssue && !hasResults && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="text-center text-slate-500">
+                  <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                  <p>Loading country positions...</p>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : hasResults ? (
+          <CountryListView
+            scores={scores}
+            sideALabel={sideALabel}
+            sideBLabel={sideBLabel}
+            onCountryClick={(country, score) =>
+              setSelectedCountry({ name: country, ...score })
+            }
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-slate-500">
+            <div className="text-center px-4">
+              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p>Loading country positions...</p>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Country detail modal */}
+      {selectedCountry && (
+        <CountryDetailModal
+          country={selectedCountry.name}
+          score={selectedCountry.score}
+          reasoning={selectedCountry.reasoning}
+          sideALabel={sideALabel}
+          sideBLabel={sideBLabel}
+          onClose={() => setSelectedCountry(null)}
+        />
+      )}
     </div>
   );
 }
