@@ -53,7 +53,7 @@ export default function ScenarioPage() {
   const [parsedScenario, setParsedScenario] = useState<ParsedScenario | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
-  const [numRuns, setNumRuns] = useState(2); // Default 2 runs
+  const [numRuns, setNumRuns] = useState(1); // Default 1 run (fastest)
 
   // Generation state
   const [jobId, setJobId] = useState<Id<"generationJobs"> | null>(null);
@@ -327,7 +327,7 @@ export default function ScenarioPage() {
     setJobId(null);
     setError(null);
     setEditingField(null);
-    setNumRuns(2);
+    setNumRuns(1);
     setFunFacts([]);
     setFactIndex(0);
     setFactFading(false);
@@ -914,7 +914,10 @@ export default function ScenarioPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">{currentIssue.title}</h2>
-                  <div className="flex items-center gap-4 mt-1 text-sm">
+                  {currentIssue.description && (
+                    <p className="text-sm text-slate-600 mt-1">{currentIssue.description}</p>
+                  )}
+                  <div className="flex items-center gap-4 mt-2 text-sm">
                     {currentIssue.primaryActor && (
                       <>
                         <span className="text-slate-600">

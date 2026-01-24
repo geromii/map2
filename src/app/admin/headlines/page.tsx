@@ -52,6 +52,7 @@ export default function AdminHeadlinesPage() {
   const [error, setError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<Id<"generationJobs"> | null>(null);
   const [generatingIssueId, setGeneratingIssueId] = useState<Id<"issues"> | null>(null);
+  const [numRuns, setNumRuns] = useState(1); // Default 1 run (fastest)
 
   // Queries
   const allDailyIssues = useQuery(api.issues.getAllDailyIssues) as DailyIssue[] | undefined;
@@ -124,7 +125,6 @@ export default function AdminHeadlinesPage() {
     try {
       const BATCH_SIZE = 10;
       const totalCountries = getActiveMapVersion.countries.length;
-      const numRuns = 2;
       const totalBatches = Math.ceil(totalCountries / BATCH_SIZE) * numRuns;
 
       const { issueId, jobId: newJobId } = await initializeScenario({
@@ -189,6 +189,7 @@ export default function AdminHeadlinesPage() {
     setParsedHeadline(null);
     setEditingField(null);
     setError(null);
+    setNumRuns(1);
   };
 
   // Format date
@@ -395,15 +396,30 @@ export default function AdminHeadlinesPage() {
                   />
                   <span className="text-sm text-slate-700">Web grounding</span>
                 </label>
-                <select
-                  value={modelScores}
-                  onChange={(e) => setModelScores(e.target.value as ModelChoice)}
-                  className="text-sm border border-slate-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                >
-                  {MODEL_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="numRuns" className="text-sm text-slate-600">Runs:</label>
+                    <select
+                      id="numRuns"
+                      value={numRuns}
+                      onChange={(e) => setNumRuns(Number(e.target.value))}
+                      className="text-sm border border-slate-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    >
+                      <option value={1}>1</option>
+                      <option value={2}>2</option>
+                      <option value={3}>3</option>
+                    </select>
+                  </div>
+                  <select
+                    value={modelScores}
+                    onChange={(e) => setModelScores(e.target.value as ModelChoice)}
+                    className="text-sm border border-slate-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  >
+                    {MODEL_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-2">

@@ -113,7 +113,7 @@ export default function HeadlinesPage() {
     return (
       <div className="h-[calc(100vh-48px)] bg-slate-50 flex flex-col overflow-hidden">
         <div className="p-4 sm:p-6">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Today&apos;s Headlines</h1>
             <p className="text-sm sm:text-base text-slate-600 mt-1">
               See how countries position themselves on major world events
@@ -122,7 +122,7 @@ export default function HeadlinesPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             {!activeIssues && (
               <div className="p-8 text-center text-slate-500">Loading...</div>
             )}
@@ -133,7 +133,7 @@ export default function HeadlinesPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {dailyIssues.map((issue) => (
                 <button
                   key={issue._id}
@@ -219,6 +219,11 @@ export default function HeadlinesPage() {
               <h1 className="text-lg sm:text-xl font-bold text-slate-900">
                 {selectedIssue.title}
               </h1>
+              {selectedIssue.description && (
+                <p className="text-sm sm:text-base text-slate-600 mt-1">
+                  {selectedIssue.description}
+                </p>
+              )}
               <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm">
                 {selectedIssue.primaryActor && (
                   <>
