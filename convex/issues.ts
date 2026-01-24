@@ -39,6 +39,15 @@ export const getActiveIssues = query({
   },
 });
 
+// Get all daily issues (for admin, includes hidden)
+export const getAllDailyIssues = query({
+  args: {},
+  handler: async (ctx) => {
+    const allIssues = await ctx.db.query("issues").collect();
+    return allIssues.filter((issue) => issue.source === "daily");
+  },
+});
+
 // Get all country scores for an issue (aggregated/averaged by country)
 export const getIssueScores = query({
   args: { issueId: v.id("issues") },
@@ -514,7 +523,7 @@ export const createGenerationJobWithProgress = mutation({
   },
 });
 
-// Delete a scenario and all associated data (authenticated, owner only)
+// Delete a scenario and all associated data (authenticated, owner or admin)
 export const deleteScenario = mutation({
   args: {
     issueId: v.id("issues"),
@@ -525,12 +534,17 @@ export const deleteScenario = mutation({
       throw new Error("Authentication required");
     }
 
-    // Get the issue and verify ownership
+    // Check if user is admin
+    const user = await ctx.db.get(userId);
+    const adminEmails = process.env.ADMIN_EMAILS?.toLowerCase().split(",").map(e => e.trim()) || [];
+    const isAdmin = user && "email" in user && user.email && adminEmails.includes((user.email as string).toLowerCase());
+
+    // Get the issue and verify ownership or admin
     const issue = await ctx.db.get(args.issueId);
     if (!issue) {
       throw new Error("Scenario not found");
     }
-    if (issue.userId !== userId) {
+    if (issue.userId !== userId && !isAdmin) {
       throw new Error("You can only delete your own scenarios");
     }
 

@@ -79,6 +79,7 @@ const schema = defineSchema({
     timestamp: v.number(),
     action: v.string(), // e.g., "parsePromptToSides", "generateBatchScores"
     model: v.string(),
+    provider: v.optional(v.string()), // e.g., "google-ai-studio", "openrouter"
     systemPrompt: v.string(),
     userPrompt: v.string(),
     requestBody: v.string(), // Full JSON stringified request

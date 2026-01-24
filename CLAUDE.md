@@ -44,7 +44,8 @@ Backend database added via Convex (2026-01-21). Provider set up in `src/app/Conv
 
 **Feature Flags**:
 - `NEXT_PUBLIC_SCENARIOS_ENABLED=true` - Shows Scenarios dropdown in menubar
-- `OPENROUTER_API_KEY` - Set in Convex for AI generation
+- `OPENROUTER_API_KEY` - Set in Convex for AI generation (non-grounded requests)
+- `GEMINI_API_KEY` - Set in Convex for Google Gemini API with search grounding (web grounding enabled)
 
 **Pages**:
 - `/headlines` - Daily AI-generated issues (public) - UI ready, needs data
@@ -53,7 +54,7 @@ Backend database added via Convex (2026-01-21). Provider set up in `src/app/Conv
 **Key Files**:
 - `convex/schema.ts` - Database tables (issues, countryScores, customPrompts, etc.)
 - `convex/issues.ts` - Queries and mutations
-- `convex/ai.ts` - AI actions (OpenRouter + gpt-oss-120b)
+- `convex/ai.ts` - AI actions (OpenRouter for non-grounded, Google Gemini 3 Flash for web grounded)
 - `src/components/custom/D3ScoreMap.tsx` - d3-geo map component
 - `src/app/scenario/page.tsx` - Custom scenario page
 - `src/app/headlines/page.tsx` - Headlines page

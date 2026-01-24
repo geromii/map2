@@ -26,6 +26,13 @@ interface DailyIssue {
 }
 
 type Step = "input" | "confirm" | "generating";
+type ModelChoice = "2.5" | "3.0" | "3.0-fallback";
+
+const MODEL_OPTIONS: { value: ModelChoice; label: string }[] = [
+  { value: "3.0-fallback", label: "Flash 3.0 (fallback to 2.5)" },
+  { value: "3.0", label: "Flash 3.0" },
+  { value: "2.5", label: "Flash 2.5" },
+];
 
 export default function AdminHeadlinesPage() {
   // Auth check
@@ -34,8 +41,12 @@ export default function AdminHeadlinesPage() {
   // Step tracking
   const [step, setStep] = useState<Step>("input");
   const [prompt, setPrompt] = useState("");
-  const [useWebGrounding, setUseWebGrounding] = useState(true);
+  const [useWebGroundingParse, setUseWebGroundingParse] = useState(true);
+  const [useWebGroundingScores, setUseWebGroundingScores] = useState(true);
+  const [modelParse, setModelParse] = useState<ModelChoice>("3.0-fallback");
+  const [modelScores, setModelScores] = useState<ModelChoice>("3.0-fallback");
   const [isParsing, setIsParsing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"visible" | "hidden">("visible");
   const [parsedHeadline, setParsedHeadline] = useState<ParsedHeadline | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,8 +54,10 @@ export default function AdminHeadlinesPage() {
   const [generatingIssueId, setGeneratingIssueId] = useState<Id<"issues"> | null>(null);
 
   // Queries
-  const activeIssues = useQuery(api.issues.getActiveIssues);
-  const dailyIssues = (activeIssues?.filter((issue) => issue.source === "daily") || []) as DailyIssue[];
+  const allDailyIssues = useQuery(api.issues.getAllDailyIssues) as DailyIssue[] | undefined;
+  const visibleIssues = allDailyIssues?.filter((issue) => issue.isActive) || [];
+  const hiddenIssues = allDailyIssues?.filter((issue) => !issue.isActive) || [];
+  const displayedIssues = activeTab === "visible" ? visibleIssues : hiddenIssues;
   const getActiveMapVersion = useQuery(api.issues.getActiveMapVersion);
 
   // Actions and mutations
@@ -80,7 +93,7 @@ export default function AdminHeadlinesPage() {
     setError(null);
 
     try {
-      const result = await parsePrompt({ prompt: prompt.trim(), useWebGrounding });
+      const result = await parsePrompt({ prompt: prompt.trim(), useWebGrounding: useWebGroundingParse, modelChoice: modelParse });
 
       if (result && "error" in result) {
         setError(result.error);
@@ -139,7 +152,8 @@ export default function AdminHeadlinesPage() {
         sideA: parsedHeadline.sideA,
         sideB: parsedHeadline.sideB,
         numRuns,
-        useWebGrounding,
+        useWebGrounding: useWebGroundingScores,
+        modelChoice: modelScores,
       }).catch((err) => {
         console.error("Batch processing error:", err);
         setError(err instanceof Error ? err.message : "Failed to generate");
@@ -243,17 +257,27 @@ export default function AdminHeadlinesPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={useWebGrounding}
-                    onChange={(e) => setUseWebGrounding(e.target.checked)}
-                    className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
-                  />
-                  <span className="text-sm text-slate-700">Enable web grounding</span>
-                  <span className="text-xs text-slate-500">(searches current news)</span>
-                </label>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={useWebGroundingParse}
+                      onChange={(e) => setUseWebGroundingParse(e.target.checked)}
+                      className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                    />
+                    <span className="text-sm text-slate-700">Web grounding</span>
+                  </label>
+                  <select
+                    value={modelParse}
+                    onChange={(e) => setModelParse(e.target.value as ModelChoice)}
+                    className="text-sm border border-slate-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  >
+                    {MODEL_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <Button
@@ -361,6 +385,27 @@ export default function AdminHeadlinesPage() {
                 </div>
               </div>
 
+              <div className="flex items-center justify-between pt-2 pb-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useWebGroundingScores}
+                    onChange={(e) => setUseWebGroundingScores(e.target.checked)}
+                    className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-sm text-slate-700">Web grounding</span>
+                </label>
+                <select
+                  value={modelScores}
+                  onChange={(e) => setModelScores(e.target.value as ModelChoice)}
+                  className="text-sm border border-slate-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                >
+                  {MODEL_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <Button
                   onClick={handleGenerate}
@@ -422,20 +467,39 @@ export default function AdminHeadlinesPage() {
       <div className="w-1/2 flex flex-col bg-white">
         <div className="p-6 border-b border-slate-200">
           <h2 className="text-lg font-bold text-slate-900">Existing Headlines</h2>
-          <p className="text-sm text-slate-600 mt-1">
-            {dailyIssues.length} daily headline{dailyIssues.length !== 1 ? "s" : ""}
-          </p>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={() => setActiveTab("visible")}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                activeTab === "visible"
+                  ? "bg-green-100 text-green-700 border border-green-300"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              Visible ({visibleIssues.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("hidden")}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                activeTab === "hidden"
+                  ? "bg-slate-200 text-slate-700 border border-slate-400"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              Hidden ({hiddenIssues.length})
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {dailyIssues.length === 0 && (
+          {displayedIssues.length === 0 && (
             <div className="text-center text-slate-500 py-8">
-              No daily headlines yet. Create one!
+              {activeTab === "visible" ? "No visible headlines. Create one!" : "No hidden headlines."}
             </div>
           )}
 
           <div className="space-y-3">
-            {dailyIssues.map((issue) => (
+            {displayedIssues.map((issue) => (
               <div
                 key={issue._id}
                 className={`p-4 rounded-lg border ${
@@ -479,7 +543,7 @@ export default function AdminHeadlinesPage() {
                       onClick={() => handleToggleActive(issue._id, issue.isActive)}
                       className="text-xs"
                     >
-                      {issue.isActive ? "Hide" : "Show"}
+                      {issue.isActive ? "Hide" : "Unhide"}
                     </Button>
                     <Button
                       size="sm"

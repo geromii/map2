@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { action, internalAction, internalMutation, mutation } from "./_generated/server";
 import { internal, api } from "./_generated/api";
+import { GoogleGenAI } from "@google/genai";
 
 // Store api reference to avoid deep type instantiation in actions
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,6 +38,7 @@ export const logAiRequest = mutation({
     timestamp: v.number(),
     action: v.string(),
     model: v.string(),
+    provider: v.optional(v.string()), // e.g., "google-ai-studio", "openrouter"
     systemPrompt: v.string(),
     userPrompt: v.string(),
     requestBody: v.string(),
@@ -178,6 +180,7 @@ async function fetchOpenRouterWithLogging(
         timestamp: startTime,
         action: `${actionName}${attempt > 1 ? ` (attempt ${attempt})` : ''}`,
         model,
+        provider: "openrouter",
         systemPrompt: systemPrompt.substring(0, 2000),
         userPrompt: userPrompt.substring(0, 2000),
         requestBody: JSON.stringify(requestBody).substring(0, 5000),
@@ -197,10 +200,190 @@ async function fetchOpenRouterWithLogging(
         timestamp: startTime,
         action: `${actionName} (attempt ${attempt}/${MAX_RETRIES})`,
         model,
+        provider: "openrouter",
         systemPrompt: systemPrompt.substring(0, 2000),
         userPrompt: userPrompt.substring(0, 2000),
         requestBody: JSON.stringify(requestBody).substring(0, 5000),
         responseStatus,
+        responseBody,
+        error,
+        durationMs,
+      }).catch(console.error);
+
+      lastError = err instanceof Error ? err : new Error(String(err));
+
+      // Only retry for RetryableError
+      if (err instanceof RetryableError && attempt < MAX_RETRIES) {
+        console.log(`Retrying ${actionName} (attempt ${attempt + 1}/${MAX_RETRIES})...`);
+        continue;
+      }
+
+      // Non-retryable error or max retries reached
+      throw lastError;
+    }
+  }
+
+  // Should never reach here, but TypeScript needs this
+  throw lastError || new Error("Max retries exceeded");
+}
+
+// Gemini model options
+const GEMINI_MODELS = {
+  "2.5": "gemini-2.5-flash",
+  "3.0": "gemini-3-flash-preview",
+} as const;
+type GeminiModelVersion = keyof typeof GEMINI_MODELS;
+
+// Default model - 3.0 supports JSON + tools together, 2.5 does not
+const DEFAULT_GEMINI_MODEL: GeminiModelVersion = "3.0";
+
+// Helper to make logged Google Gemini requests with search grounding and retry logic
+async function fetchGeminiWithLogging(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ctx: any,
+  actionName: string,
+  systemPrompt: string,
+  userPrompt: string,
+  apiKey: string,
+  useSearchGrounding: boolean = false,
+  temperature: number = 0.3,
+  timeoutMs?: number,
+  modelVersion: GeminiModelVersion = DEFAULT_GEMINI_MODEL
+): Promise<{ content: string; raw: unknown }> {
+  const model = GEMINI_MODELS[modelVersion];
+
+  // Build the config with optional search grounding
+  // Note: Gemini 2.5 does NOT support responseMimeType with tools
+  // Gemini 3.0 supports both together
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const config: any = {
+    temperature,
+    maxOutputTokens: 8000,
+  };
+
+  // Add search grounding tool if enabled
+  if (useSearchGrounding) {
+    config.tools = [{ googleSearch: {} }];
+    // Only 3.0 supports JSON response format with tools
+    if (modelVersion === "3.0") {
+      config.responseMimeType = "application/json";
+    }
+  } else {
+    // Without tools, both models support JSON response format
+    config.responseMimeType = "application/json";
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+  const combinedPrompt = `${systemPrompt}\n\n---\n\nUser request: ${userPrompt}`;
+
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const startTime = Date.now();
+    let responseBody: string | undefined;
+    let error: string | undefined;
+
+    try {
+      // Create abort controller for timeout
+      const controller = timeoutMs ? new AbortController() : undefined;
+      const timeoutId = timeoutMs && controller
+        ? setTimeout(() => controller.abort(), timeoutMs)
+        : undefined;
+
+      const response = await ai.models.generateContent({
+        model,
+        contents: combinedPrompt,
+        config,
+      });
+
+      if (timeoutId) clearTimeout(timeoutId);
+
+      let content = response.text || "";
+
+      // Build comprehensive response body with metadata
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const responseData: any = {
+        text: content.substring(0, 3000), // Truncate text to leave room for metadata
+      };
+
+      // Add usage metadata if available
+      if (response.usageMetadata) {
+        responseData.usage = response.usageMetadata;
+      }
+
+      // Add grounding metadata if available (search sources, queries)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const candidate = (response as any).candidates?.[0];
+      if (candidate?.groundingMetadata) {
+        const gm = candidate.groundingMetadata;
+        responseData.grounding = {
+          searchQueries: gm.webSearchQueries,
+          // Extract just URLs and titles from grounding chunks to save space
+          sources: gm.groundingChunks?.slice(0, 10)?.map((chunk: { web?: { uri?: string; title?: string } }) => ({
+            url: chunk.web?.uri,
+            title: chunk.web?.title,
+          })),
+        };
+      }
+
+      // Add finish reason if available
+      if (candidate?.finishReason) {
+        responseData.finishReason = candidate.finishReason;
+      }
+
+      responseBody = JSON.stringify(responseData).substring(0, 5000);
+
+      if (!content || content.trim().length < 10) {
+        error = `Gemini returned empty or minimal response (attempt ${attempt}/${MAX_RETRIES})`;
+        throw new RetryableError(error);
+      }
+
+      // Clean up the content
+      content = content.trim();
+
+      // Try to extract JSON if wrapped in markdown code blocks
+      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        content = jsonMatch[1].trim();
+      }
+
+      // Validate it's parseable JSON
+      try {
+        JSON.parse(content);
+      } catch (parseError) {
+        error = `Invalid JSON from Gemini (attempt ${attempt}/${MAX_RETRIES}): ${parseError instanceof Error ? parseError.message : 'parse error'}`;
+        throw new RetryableError(error);
+      }
+
+      // Success - log and return
+      const durationMs = Date.now() - startTime;
+      await ctx.runMutation(api.ai.logAiRequest, {
+        timestamp: startTime,
+        action: `${actionName}${attempt > 1 ? ` (attempt ${attempt})` : ''}`,
+        model: model + (useSearchGrounding ? " (search grounded)" : ""),
+        provider: "google-ai-studio",
+        systemPrompt: systemPrompt.substring(0, 2000),
+        userPrompt: userPrompt.substring(0, 2000),
+        requestBody: JSON.stringify({ model, config }).substring(0, 5000),
+        responseStatus: 200,
+        responseBody,
+        durationMs,
+      }).catch(console.error);
+
+      return { content, raw: response };
+    } catch (err) {
+      const durationMs = Date.now() - startTime;
+      error = error || (err instanceof Error ? err.message : "Unknown error");
+
+      // Log this attempt
+      await ctx.runMutation(api.ai.logAiRequest, {
+        timestamp: startTime,
+        action: `${actionName} (attempt ${attempt}/${MAX_RETRIES})`,
+        model: model + (useSearchGrounding ? " (search grounded)" : ""),
+        provider: "google-ai-studio",
+        systemPrompt: systemPrompt.substring(0, 2000),
+        userPrompt: userPrompt.substring(0, 2000),
+        requestBody: JSON.stringify({ model, config }).substring(0, 5000),
         responseBody,
         error,
         durationMs,
@@ -273,11 +456,15 @@ function batchArray<T>(array: T[], batchSize: number): T[][] {
   return batches;
 }
 
+// Model choice type for API
+const modelChoiceValidator = v.optional(v.union(v.literal("2.5"), v.literal("3.0"), v.literal("3.0-fallback")));
+
 // Parse prompt into Side A / Side B structure
 export const parsePromptToSides = action({
   args: {
     prompt: v.string(),
     useWebGrounding: v.optional(v.boolean()),
+    modelChoice: modelChoiceValidator,
   },
   handler: async (ctx, args): Promise<{
     title: string;
@@ -291,13 +478,19 @@ export const parsePromptToSides = action({
       throw new Error("OPENROUTER_API_KEY environment variable not set");
     }
 
+    const webGroundingInstructions = args.useWebGrounding ? `
+IMPORTANT - WEB SEARCH INSTRUCTIONS:
+Search for the latest news and current events related to this topic. The "description" field should summarize WHAT IS CURRENTLY HAPPENING in the news regarding this issue - recent developments, announcements, reactions, or events. Be specific with dates and details from your search results.
+
+` : '';
+
     const systemPrompt = `You are an expert at analyzing geopolitical scenarios. Given a user prompt, parse it into a structured format with two opposing sides.
 
 Try your best to interpret the prompt as a geopolitical scenario. Be creative - most topics can be framed geopolitically (technology, climate, trade, cultural issues, etc.).
-
+${webGroundingInstructions}
 Return a JSON object with:
 - title: A concise title for the issue (max 100 chars)
-- description: A brief description of the overall scenario (1-2 sentences)
+- description: ${args.useWebGrounding ? 'A summary of CURRENT NEWS and recent developments on this topic (2-3 sentences). Include specific recent events, dates, or announcements from your web search.' : 'A brief description of the overall scenario (1-2 sentences)'}
 - primaryActor: The entity pushing for or driving this scenario (Side A only). This is who would "win" or "succeed" if the scenario comes to pass. Can be one or multiple countries, organizations, movements, or groups. If multiple, separate with " and " (e.g., "United States and United Kingdom"). This should ONLY represent one side of the issue - the proponents, not both sides.
 - sideA: The side that supports/approves/is in favor (object with "label" and "description")
 - sideB: The side that opposes/disapproves/is against (object with "label" and "description")
@@ -356,18 +549,62 @@ If the user's message is in a language other than English, please issue your res
 
 Only return valid JSON, no additional text.`;
 
-    const BASE_MODEL = "google/gemini-2.0-flash-001";
-    const MODEL = args.useWebGrounding ? `${BASE_MODEL}:online` : BASE_MODEL;
-    const { content } = await fetchOpenRouterWithLogging(
-      ctx,
-      "parsePromptToSides",
-      MODEL,
-      systemPrompt,
-      args.prompt,
-      openaiApiKey,
-      0.3,
-      args.useWebGrounding ? 30000 : 20000 // Longer timeout for web grounding
-    );
+    let content!: string; // Assigned in either branch below, or we throw
+    const modelChoice = args.modelChoice || "3.0-fallback";
+
+    // Use Gemini with search grounding when web grounding is enabled
+    if (args.useWebGrounding) {
+      const geminiApiKey = process.env.GEMINI_API_KEY;
+      if (!geminiApiKey) {
+        throw new Error("GEMINI_API_KEY environment variable not set (required for web grounding)");
+      }
+
+      // Determine model version(s) to try
+      const tryModels: GeminiModelVersion[] = modelChoice === "3.0-fallback"
+        ? ["3.0", "2.5"]
+        : [modelChoice === "3.0" ? "3.0" : "2.5"];
+
+      let lastError: Error | null = null;
+      for (const modelVersion of tryModels) {
+        try {
+          const result = await fetchGeminiWithLogging(
+            ctx,
+            "parsePromptToSides",
+            systemPrompt,
+            args.prompt,
+            geminiApiKey,
+            true, // useSearchGrounding
+            0.3,
+            45000, // 45 second timeout for search grounding
+            modelVersion
+          );
+          content = result.content;
+          lastError = null;
+          break;
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error(String(err));
+          console.log(`Model ${modelVersion} failed, ${tryModels.indexOf(modelVersion) < tryModels.length - 1 ? 'trying fallback...' : 'no more fallbacks'}`);
+          if (tryModels.indexOf(modelVersion) >= tryModels.length - 1) {
+            throw lastError;
+          }
+        }
+      }
+      if (lastError) throw lastError;
+    } else {
+      // Use OpenRouter for non-grounded requests
+      const BASE_MODEL = "google/gemini-2.0-flash-001";
+      const result = await fetchOpenRouterWithLogging(
+        ctx,
+        "parsePromptToSides",
+        BASE_MODEL,
+        systemPrompt,
+        args.prompt,
+        openaiApiKey,
+        0.3,
+        20000
+      );
+      content = result.content;
+    }
 
     const parsed = JSON.parse(content);
 
@@ -480,23 +717,19 @@ export const generateScoresWithProgress = action({
           }));
 
         if (scoresToSave.length > 0) {
-          ctx.runMutation(issuesApi.upsertBatchScores, {
+          await ctx.runMutation(issuesApi.upsertBatchScores, {
             issueId,
             scores: scoresToSave,
-          }).catch((err) => {
-            console.error("Failed to save batch scores:", err);
           });
         }
 
-        // Update progress (non-blocking - conflicts are OK since batches run in parallel)
+        // Update progress
         completedBatches++;
         const progress = Math.round((completedBatches / totalBatches) * 100);
-        ctx.runMutation(issuesApi.updateJobStatus, {
+        await ctx.runMutation(issuesApi.updateJobStatus, {
           jobId,
           completedBatches,
           progress,
-        }).catch(() => {
-          // Ignore conflicts - progress updates are best-effort with parallel execution
         });
 
         return batchScores;
@@ -514,8 +747,14 @@ export const generateScoresWithProgress = action({
         }
       }
 
-      // Execute all batches in parallel (scores are saved incrementally in processBatch)
-      await Promise.all(allBatchPromises);
+      // Execute all batches in parallel (use allSettled so one failure doesn't stop others)
+      const results = await Promise.allSettled(allBatchPromises);
+
+      // Count failures
+      const failures = results.filter(r => r.status === "rejected");
+      if (failures.length > 0) {
+        console.error(`${failures.length} of ${results.length} batches failed`);
+      }
 
       // Activate the issue and mark job complete
       await ctx.runMutation(issuesApi.updateIssueActive, {
@@ -551,6 +790,7 @@ export const processScenarioBatches = action({
     sideB: v.object({ label: v.string(), description: v.string() }),
     numRuns: v.optional(v.number()),
     useWebGrounding: v.optional(v.boolean()),
+    modelChoice: modelChoiceValidator,
   },
   handler: async (ctx, args): Promise<{ success: boolean; error?: string }> => {
     const openaiApiKey = process.env.OPENROUTER_API_KEY;
@@ -576,6 +816,8 @@ export const processScenarioBatches = action({
       let completedBatches = 0;
       let completedCountries = 0;
 
+      const modelChoice = args.modelChoice || "3.0-fallback";
+
       // Helper to process a single batch and save scores immediately
       const processBatch = async (batch: string[]): Promise<void> => {
         const batchScores = await generateScoresForBatch(
@@ -586,7 +828,8 @@ export const processScenarioBatches = action({
           args.sideA,
           args.sideB,
           batch,
-          args.useWebGrounding
+          args.useWebGrounding,
+          modelChoice
         );
 
         // Save scores immediately for real-time map updates
@@ -600,11 +843,9 @@ export const processScenarioBatches = action({
           }));
 
         if (scoresToSave.length > 0) {
-          ctx.runMutation(issuesApi.upsertBatchScores, {
+          await ctx.runMutation(issuesApi.upsertBatchScores, {
             issueId: args.issueId,
             scores: scoresToSave,
-          }).catch((err) => {
-            console.error("Failed to save batch scores:", err);
           });
         }
 
@@ -617,12 +858,12 @@ export const processScenarioBatches = action({
         // (with multiple runs, we score each country multiple times)
         const displayedCountries = Math.min(completedCountries, totalCountries);
 
-        ctx.runMutation(issuesApi.updateJobStatus, {
+        await ctx.runMutation(issuesApi.updateJobStatus, {
           jobId: args.jobId,
           completedBatches,
           completedCountries: displayedCountries,
           progress,
-        }).catch(() => {});
+        });
       };
 
       // Create all batch promises across all runs (fully parallel)
@@ -637,10 +878,19 @@ export const processScenarioBatches = action({
         }
       }
 
-      // Execute all batches in parallel
-      await Promise.all(allBatchPromises);
+      // Execute all batches in parallel (use allSettled so one failure doesn't stop others)
+      const results = await Promise.allSettled(allBatchPromises);
 
-      // Activate the issue and mark job complete
+      // Count failures
+      const failures = results.filter(r => r.status === "rejected");
+      if (failures.length > 0) {
+        console.error(`${failures.length} of ${results.length} batches failed`);
+        // Log first failure reason
+        const firstFailure = failures[0] as PromiseRejectedResult;
+        console.error("First failure:", firstFailure.reason);
+      }
+
+      // Activate the issue and mark job complete (even with partial failures)
       await ctx.runMutation(issuesApi.updateIssueActive, {
         issueId: args.issueId,
         isActive: true,
@@ -648,9 +898,10 @@ export const processScenarioBatches = action({
 
       await ctx.runMutation(issuesApi.updateJobStatus, {
         jobId: args.jobId,
-        status: "completed",
+        status: failures.length > 0 ? "completed" : "completed", // Could use "partial" status
         progress: 100,
         completedCountries: totalCountries,
+        error: failures.length > 0 ? `${failures.length} batches failed` : undefined,
       });
 
       return { success: true };
@@ -771,7 +1022,8 @@ async function generateScoresForBatch(
   sideA: { label: string; description: string },
   sideB: { label: string; description: string },
   countries: string[],
-  useWebGrounding?: boolean
+  useWebGrounding?: boolean,
+  modelChoice?: "2.5" | "3.0" | "3.0-fallback"
 ): Promise<Record<string, { score: number; reasoning?: string }>> {
   const webGroundingInstructions = useWebGrounding ? `
 IMPORTANT - WEB SEARCH INSTRUCTIONS:
@@ -824,19 +1076,63 @@ Only return valid JSON, no additional text. Country names must match exactly as 
   // Build user prompt with country context if applicable
   const countryContext = buildCountryContext(countries);
   const userPrompt = `Rate these countries: ${countries.join(", ")}${countryContext}`;
-  const BASE_MODEL = "google/gemini-2.0-flash-001";
-  const MODEL = useWebGrounding ? `${BASE_MODEL}:online` : BASE_MODEL;
 
-  const { content } = await fetchOpenRouterWithLogging(
-    ctx,
-    "generateScoresForBatch",
-    MODEL,
-    systemPrompt,
-    userPrompt,
-    apiKey,
-    0.5,
-    useWebGrounding ? 45000 : undefined // Longer timeout for web grounding
-  );
+  let content!: string; // Assigned in either branch below, or we throw
+
+  // Use Gemini with search grounding when web grounding is enabled
+  if (useWebGrounding) {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      throw new Error("GEMINI_API_KEY environment variable not set (required for web grounding)");
+    }
+
+    // Determine model version(s) to try
+    const effectiveChoice = modelChoice || "3.0-fallback";
+    const tryModels: GeminiModelVersion[] = effectiveChoice === "3.0-fallback"
+      ? ["3.0", "2.5"]
+      : [effectiveChoice === "3.0" ? "3.0" : "2.5"];
+
+    let lastError: Error | null = null;
+    for (const modelVersion of tryModels) {
+      try {
+        const result = await fetchGeminiWithLogging(
+          ctx,
+          "generateScoresForBatch",
+          systemPrompt,
+          userPrompt,
+          geminiApiKey,
+          true, // useSearchGrounding
+          0.5,
+          60000, // 60 second timeout for search grounding
+          modelVersion
+        );
+        content = result.content;
+        lastError = null;
+        break;
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        console.log(`Model ${modelVersion} failed, ${tryModels.indexOf(modelVersion) < tryModels.length - 1 ? 'trying fallback...' : 'no more fallbacks'}`);
+        if (tryModels.indexOf(modelVersion) >= tryModels.length - 1) {
+          throw lastError;
+        }
+      }
+    }
+    if (lastError) throw lastError;
+  } else {
+    // Use OpenRouter for non-grounded requests
+    const BASE_MODEL = "google/gemini-2.0-flash-001";
+    const result = await fetchOpenRouterWithLogging(
+      ctx,
+      "generateScoresForBatch",
+      BASE_MODEL,
+      systemPrompt,
+      userPrompt,
+      apiKey,
+      0.5
+    );
+    content = result.content;
+  }
+
   const parsed = JSON.parse(content);
   return parsed.scores || {};
 }
