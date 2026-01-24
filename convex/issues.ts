@@ -130,6 +130,52 @@ export const getUserScenarios = query({
   },
 });
 
+// Get user's scenarios with pagination and search (authenticated)
+export const getUserScenariosPaginated = query({
+  args: {
+    page: v.number(),
+    pageSize: v.number(),
+    searchTerm: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return { scenarios: [], totalCount: 0, totalPages: 0 };
+
+    // Fetch all user scenarios (ordered by most recent)
+    let scenarios = await ctx.db
+      .query("issues")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .order("desc")
+      .collect();
+
+    // Apply search filter if provided
+    if (args.searchTerm && args.searchTerm.trim()) {
+      const search = args.searchTerm.toLowerCase().trim();
+      scenarios = scenarios.filter(
+        (s) =>
+          s.title.toLowerCase().includes(search) ||
+          s.description.toLowerCase().includes(search) ||
+          s.primaryActor?.toLowerCase().includes(search) ||
+          s.sideA.label.toLowerCase().includes(search) ||
+          s.sideB.label.toLowerCase().includes(search)
+      );
+    }
+
+    const totalCount = scenarios.length;
+    const totalPages = Math.ceil(totalCount / args.pageSize);
+
+    // Apply pagination (page is 1-indexed)
+    const startIndex = (args.page - 1) * args.pageSize;
+    const paginatedScenarios = scenarios.slice(startIndex, startIndex + args.pageSize);
+
+    return {
+      scenarios: paginatedScenarios,
+      totalCount,
+      totalPages,
+    };
+  },
+});
+
 // Get a specific prompt by ID
 export const getPromptById = query({
   args: { promptId: v.id("customPrompts") },
@@ -348,6 +394,8 @@ export const updateJobStatus = mutation({
     progress: v.optional(v.number()),
     totalBatches: v.optional(v.number()),
     completedBatches: v.optional(v.number()),
+    totalCountries: v.optional(v.number()),
+    completedCountries: v.optional(v.number()),
     currentRun: v.optional(v.number()),
     totalRuns: v.optional(v.number()),
     error: v.optional(v.string()),
@@ -370,6 +418,8 @@ export const updateJobStatus = mutation({
     if (args.progress !== undefined) updateData.progress = args.progress;
     if (args.totalBatches !== undefined) updateData.totalBatches = args.totalBatches;
     if (args.completedBatches !== undefined) updateData.completedBatches = args.completedBatches;
+    if (args.totalCountries !== undefined) updateData.totalCountries = args.totalCountries;
+    if (args.completedCountries !== undefined) updateData.completedCountries = args.completedCountries;
     if (args.currentRun !== undefined) updateData.currentRun = args.currentRun;
     if (args.totalRuns !== undefined) updateData.totalRuns = args.totalRuns;
     if (args.error !== undefined) updateData.error = args.error;
@@ -390,6 +440,7 @@ export const initializeScenario = mutation({
     userId: v.optional(v.string()),
     totalBatches: v.number(),
     totalRuns: v.number(),
+    totalCountries: v.number(),
   },
   handler: async (ctx, args) => {
     // Create issue
@@ -413,6 +464,8 @@ export const initializeScenario = mutation({
       progress: 0,
       totalBatches: args.totalBatches,
       completedBatches: 0,
+      totalCountries: args.totalCountries,
+      completedCountries: 0,
       currentRun: 1,
       totalRuns: args.totalRuns,
       startedAt: Date.now(),

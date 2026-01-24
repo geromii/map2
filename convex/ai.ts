@@ -355,7 +355,7 @@ If the user's message is in a language other than English, please issue your res
 
 Only return valid JSON, no additional text.`;
 
-    const MODEL = "google/gemini-2.5-flash-lite";
+    const MODEL = "google/gemini-2.0-flash-001";
     const { content } = await fetchOpenRouterWithLogging(
       ctx,
       "parsePromptToSides",
@@ -565,11 +565,13 @@ export const processScenarioBatches = action({
       }
 
       const countries = mapVersion.countries;
+      const totalCountries = countries.length;
       const batches = batchArray(countries, BATCH_SIZE);
       const totalBatches = batches.length * numRuns;
 
-      // Track completed batches
+      // Track completed batches and countries (across all parallel requests)
       let completedBatches = 0;
+      let completedCountries = 0;
 
       // Helper to process a single batch and save scores immediately
       const processBatch = async (batch: string[]): Promise<void> => {
@@ -602,12 +604,19 @@ export const processScenarioBatches = action({
           });
         }
 
-        // Update progress
+        // Update progress counters
         completedBatches++;
+        completedCountries += scoresToSave.length;
         const progress = Math.round((completedBatches / totalBatches) * 100);
+
+        // Cap completedCountries at totalCountries for display purposes
+        // (with multiple runs, we score each country multiple times)
+        const displayedCountries = Math.min(completedCountries, totalCountries);
+
         ctx.runMutation(issuesApi.updateJobStatus, {
           jobId: args.jobId,
           completedBatches,
+          completedCountries: displayedCountries,
           progress,
         }).catch(() => {});
       };
@@ -637,6 +646,7 @@ export const processScenarioBatches = action({
         jobId: args.jobId,
         status: "completed",
         progress: 100,
+        completedCountries: totalCountries,
       });
 
       return { success: true };
@@ -796,7 +806,7 @@ Only return valid JSON, no additional text. Country names must match exactly as 
   // Build user prompt with country context if applicable
   const countryContext = buildCountryContext(countries);
   const userPrompt = `Rate these countries: ${countries.join(", ")}${countryContext}`;
-  const MODEL = "google/gemini-2.5-flash-lite";
+  const MODEL = "google/gemini-2.0-flash-001";
 
   const { content } = await fetchOpenRouterWithLogging(
     ctx,
@@ -845,7 +855,7 @@ If the user's message is in a language other than English, please issue your res
 
 Only return valid JSON, no additional text.`;
 
-  const MODEL = "google/gemini-2.5-flash-lite";
+  const MODEL = "google/gemini-2.0-flash-001";
   const { content } = await fetchOpenRouterWithLogging(
     ctx,
     "parsePromptToSidesInternal",
@@ -889,7 +899,7 @@ Rules:
 
 Return JSON: { "fact": "Your fun fact here" }`;
 
-    const MODEL = "google/gemini-2.5-flash-lite";
+    const MODEL = "google/gemini-2.0-flash-001";
 
     try {
       const { content } = await fetchOpenRouterWithLogging(

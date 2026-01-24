@@ -68,6 +68,21 @@ export default function ScenarioPage() {
   // Hover state
   const [hoveredCountry, setHoveredCountry] = useState<HoveredCountry | null>(null);
 
+  // Pagination and search state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const PAGE_SIZE = 10;
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1); // Reset to page 1 on search
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   // Convex queries, mutations, and actions
   const parsePrompt = useAction(api.ai.parsePromptToSides);
   const generateFunFact = useAction(api.ai.generateFunFact);
@@ -75,7 +90,14 @@ export default function ScenarioPage() {
   const processScenarioBatches = useAction(api.ai.processScenarioBatches);
   const getActiveMapVersion = useQuery(api.issues.getActiveMapVersion);
   const userId = useQuery(api.issues.getCurrentUserId);
-  const userScenarios = useQuery(api.issues.getUserScenarios) as SavedScenario[] | undefined;
+  const scenariosData = useQuery(api.issues.getUserScenariosPaginated, {
+    page: currentPage,
+    pageSize: PAGE_SIZE,
+    searchTerm: debouncedSearch || undefined,
+  });
+  const userScenarios = scenariosData?.scenarios as SavedScenario[] | undefined;
+  const totalPages = scenariosData?.totalPages ?? 0;
+  const totalCount = scenariosData?.totalCount ?? 0;
   const deleteScenario = useMutation(api.issues.deleteScenario);
 
   // Poll job status when generating
@@ -84,10 +106,10 @@ export default function ScenarioPage() {
     jobId ? { jobId } : "skip"
   );
 
-  // Poll scores when we have an issue
+  // Poll scores only when viewing results (not during generation - saves bandwidth)
   const issueScoresQuery = useQuery(
     api.issues.getIssueScores,
-    currentIssue ? { issueId: currentIssue.id } : "skip"
+    currentIssue && step === "results" ? { issueId: currentIssue.id } : "skip"
   );
 
   // Load scores in real-time (during generation and when viewing saved scenarios)
@@ -219,7 +241,8 @@ export default function ScenarioPage() {
     try {
       // Calculate batch info for initialization
       const BATCH_SIZE = 10;
-      const totalBatches = Math.ceil(getActiveMapVersion.countries.length / BATCH_SIZE) * numRuns;
+      const totalCountries = getActiveMapVersion.countries.length;
+      const totalBatches = Math.ceil(totalCountries / BATCH_SIZE) * numRuns;
 
       // Initialize scenario (fast mutation - returns immediately)
       const { issueId, jobId: newJobId } = await initializeScenario({
@@ -232,6 +255,7 @@ export default function ScenarioPage() {
         userId: userId || undefined,
         totalBatches,
         totalRuns: numRuns,
+        totalCountries,
       });
 
       // Set state immediately to start real-time polling
@@ -384,14 +408,56 @@ export default function ScenarioPage() {
             </Button>
           </div>
 
+          {/* Search bar */}
+          <div className="p-2 border-b border-slate-200">
+            <div className="relative">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search scenarios..."
+                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="flex-1 overflow-y-auto p-2">
             {!userScenarios && (
               <div className="p-4 text-center text-slate-500">Loading...</div>
             )}
 
-            {userScenarios && userScenarios.length === 0 && (
+            {userScenarios && userScenarios.length === 0 && !debouncedSearch && (
               <div className="p-4 text-center text-slate-500">
                 No scenarios yet. Create your first one!
+              </div>
+            )}
+
+            {userScenarios && userScenarios.length === 0 && debouncedSearch && (
+              <div className="p-4 text-center text-slate-500">
+                No scenarios match &quot;{debouncedSearch}&quot;
               </div>
             )}
 
@@ -438,6 +504,36 @@ export default function ScenarioPage() {
               ))}
             </div>
           </div>
+
+          {/* Pagination controls */}
+          {totalPages > 1 && (
+            <div className="p-3 border-t border-slate-200 bg-slate-50">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-1.5 rounded hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <span className="text-sm text-slate-600">
+                  Page {currentPage} of {totalPages}
+                  <span className="text-slate-400 ml-1">({totalCount} total)</span>
+                </span>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 rounded hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
         </aside>
 
         {/* Main content area */}
@@ -724,7 +820,7 @@ export default function ScenarioPage() {
                         <span>
                           {jobStatus ? (
                             <>
-                              {jobStatus.completedBatches || 0} of {jobStatus.totalBatches || "?"} batches complete
+                              {jobStatus.completedCountries || 0} of {jobStatus.totalCountries || "?"} countries scored
                             </>
                           ) : (
                             "Starting..."

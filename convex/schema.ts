@@ -65,6 +65,8 @@ const schema = defineSchema({
     progress: v.optional(v.number()), // 0-100 percentage
     totalBatches: v.optional(v.number()),
     completedBatches: v.optional(v.number()),
+    totalCountries: v.optional(v.number()), // Total countries to score (e.g., 201)
+    completedCountries: v.optional(v.number()), // Countries scored so far
     currentRun: v.optional(v.number()), // Which averaging run we're on
     totalRuns: v.optional(v.number()),
     startedAt: v.optional(v.number()),
