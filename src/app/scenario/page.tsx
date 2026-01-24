@@ -322,6 +322,13 @@ export default function ScenarioPage() {
 
   const hasResults = currentIssue && Object.keys(scores).length > 0;
 
+  // Check if primary actor is missing or invalid
+  const isPrimaryActorMissing = (actor: string | undefined): boolean => {
+    if (!actor) return true;
+    const normalized = actor.trim().toLowerCase();
+    return normalized === "" || normalized === "none" || normalized === "n/a" || normalized === "not specified";
+  };
+
   // Delete a scenario
   const handleDelete = async (e: React.MouseEvent, scenarioId: Id<"issues">) => {
     e.stopPropagation(); // Prevent selecting the scenario
@@ -531,8 +538,10 @@ export default function ScenarioPage() {
                     </div>
 
                     {/* Primary Actor - click to edit */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-500">Primary Actor(s):</span>
+                    <div className={`flex items-center gap-2 ${isPrimaryActorMissing(parsedScenario.primaryActor) ? "p-2 -m-2 bg-amber-50 border border-amber-300 rounded-lg" : ""}`}>
+                      <span className={`text-sm ${isPrimaryActorMissing(parsedScenario.primaryActor) ? "text-amber-700 font-medium" : "text-slate-500"}`}>
+                        Primary Actor(s){isPrimaryActorMissing(parsedScenario.primaryActor) ? " (required):" : ":"}
+                      </span>
                       {editingField === "primaryActor" ? (
                         <input
                           type="text"
@@ -542,18 +551,18 @@ export default function ScenarioPage() {
                           onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
                           autoFocus
                           placeholder="e.g., United States, The UN, Western Nations"
-                          className="flex-1 max-w-xs text-slate-900 text-sm px-2 py-1 rounded border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className={`flex-1 max-w-xs text-slate-900 text-sm px-2 py-1 rounded border focus:outline-none focus:ring-2 ${isPrimaryActorMissing(parsedScenario.primaryActor) ? "border-amber-400 focus:ring-amber-500" : "border-blue-300 focus:ring-blue-500"}`}
                         />
                       ) : (
                         <div
                           onClick={() => setEditingField("primaryActor")}
-                          className="group flex items-center gap-1.5 cursor-pointer hover:bg-slate-100 rounded px-2 py-1 -mx-2 transition-colors"
+                          className={`group flex items-center gap-1.5 cursor-pointer rounded px-2 py-1 -mx-2 transition-colors ${isPrimaryActorMissing(parsedScenario.primaryActor) ? "hover:bg-amber-100" : "hover:bg-slate-100"}`}
                           title="Click to edit"
                         >
-                          <span className="text-sm font-medium text-slate-700">
-                            {parsedScenario.primaryActor || "Not specified"}
+                          <span className={`text-sm font-medium ${isPrimaryActorMissing(parsedScenario.primaryActor) ? "text-amber-600 italic" : "text-slate-700"}`}>
+                            {isPrimaryActorMissing(parsedScenario.primaryActor) ? "Click to specify" : parsedScenario.primaryActor}
                           </span>
-                          <svg className="w-3 h-3 text-slate-400 group-hover:text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className={`w-3 h-3 flex-shrink-0 ${isPrimaryActorMissing(parsedScenario.primaryActor) ? "text-amber-400 group-hover:text-amber-600" : "text-slate-400 group-hover:text-slate-600"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                         </div>
@@ -677,7 +686,7 @@ export default function ScenarioPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-3 pt-2">
-                      <Button onClick={handleConfirm} className="px-6" disabled={!getActiveMapVersion}>
+                      <Button onClick={handleConfirm} className="px-6" disabled={!getActiveMapVersion || isPrimaryActorMissing(parsedScenario.primaryActor)}>
                         Generate Predictions
                       </Button>
                       <Button variant="ghost" onClick={handleEdit} className="text-slate-500">

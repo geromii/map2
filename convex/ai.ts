@@ -15,6 +15,7 @@ const DEFAULT_NUM_RUNS = 2; // Default number of runs to average (user configura
 const COUNTRY_CONTEXT: Record<string, string> = {
   "United States": "Donald Trump won the 2024 Presidential Election.",
   "Syria": "Syria deposed Assad, currently has a transitional government and uncertain geopolitical alliances.",
+  "Argentina": "Right-wing Libertarian Candidate Javier Milei is currently Argentina's President"
 };
 
 // Helper to build context sentences for countries in a batch
@@ -82,7 +83,7 @@ async function fetchOpenRouterWithLogging(
     max_tokens: 8000, // Limit response size to prevent runaway generation
     response_format: { type: "json_object" },
     provider: {
-      ignore: ["google-vertex"],
+      ignore: [],
     },
   };
 
@@ -296,7 +297,7 @@ Try your best to interpret the prompt as a geopolitical scenario. Be creative - 
 Return a JSON object with:
 - title: A concise title for the issue (max 100 chars)
 - description: A brief description of the overall scenario (1-2 sentences)
-- primaryActor: The entity or entities that would be considered to have "succeeded" or "won" if this scenario comes to pass. Can be one or multiple countries, organizations, movements, or groups. If multiple, separate with " and " (e.g., "United States and United Kingdom"). Think: who benefits most or achieves their goal if this happens?
+- primaryActor: The entity pushing for or driving this scenario (Side A only). This is who would "win" or "succeed" if the scenario comes to pass. Can be one or multiple countries, organizations, movements, or groups. If multiple, separate with " and " (e.g., "United States and United Kingdom"). This should ONLY represent one side of the issue - the proponents, not both sides.
 - sideA: The side that supports/approves/is in favor (object with "label" and "description")
 - sideB: The side that opposes/disapproves/is against (object with "label" and "description")
 
@@ -354,7 +355,7 @@ If the user's message is in a language other than English, please issue your res
 
 Only return valid JSON, no additional text.`;
 
-    const MODEL = "openai/gpt-oss-20b";
+    const MODEL = "google/gemini-2.5-flash-lite";
     const { content } = await fetchOpenRouterWithLogging(
       ctx,
       "parsePromptToSides",
@@ -795,7 +796,7 @@ Only return valid JSON, no additional text. Country names must match exactly as 
   // Build user prompt with country context if applicable
   const countryContext = buildCountryContext(countries);
   const userPrompt = `Rate these countries: ${countries.join(", ")}${countryContext}`;
-  const MODEL = "openai/gpt-oss-20b";
+  const MODEL = "google/gemini-2.5-flash-lite";
 
   const { content } = await fetchOpenRouterWithLogging(
     ctx,
@@ -844,7 +845,7 @@ If the user's message is in a language other than English, please issue your res
 
 Only return valid JSON, no additional text.`;
 
-  const MODEL = "openai/gpt-oss-20b";
+  const MODEL = "google/gemini-2.5-flash-lite";
   const { content } = await fetchOpenRouterWithLogging(
     ctx,
     "parsePromptToSidesInternal",
@@ -875,20 +876,20 @@ export const generateFunFact = action({
       ? `\n\nPrevious fun facts: ${args.previousFacts.join(" || ")} || New fun facts should touch on a different topic.`
       : "";
 
-    const systemPrompt = `You are a witty trivia expert. Given a geopolitical scenario title, generate ONE fun, interesting, or surprising fact that MUST be directly related to the scenario's topic.
+    const systemPrompt = `You are a witty trivia expert specializing in history, geopolitics, and international relations. Given a geopolitical scenario title, generate ONE fun, interesting, or surprising fact that MUST be directly related to the scenario's topic.
 
 Rules:
 - ACCURACY IS CRITICAL: Only state facts you are confident are true. Do not make up statistics, dates, or claims. If unsure, pick a different fact you know to be accurate.
 - The fact MUST relate to the specific scenario topic, countries, regions, or key themes involved - this is non-negotiable
+- Prefer facts about history, geopolitics, diplomacy, international relations, treaties, alliances, or historical conflicts
 - Keep it brief (1-2 sentences max)
 - Make it genuinely interesting or surprising
-- Can be historical, cultural, economic, or geographic - but must connect to the scenario
 - Avoid being too serious - aim for "huh, that's interesting!" reactions
 - Do NOT start with "Did you know" or similar phrases - just state the fact directly
 
 Return JSON: { "fact": "Your fun fact here" }`;
 
-    const MODEL = "google/gemini-3-flash-preview";
+    const MODEL = "google/gemini-2.5-flash-lite";
 
     try {
       const { content } = await fetchOpenRouterWithLogging(
