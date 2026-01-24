@@ -277,6 +277,7 @@ function batchArray<T>(array: T[], batchSize: number): T[][] {
 export const parsePromptToSides = action({
   args: {
     prompt: v.string(),
+    useWebGrounding: v.optional(v.boolean()),
   },
   handler: async (ctx, args): Promise<{
     title: string;
@@ -355,7 +356,8 @@ If the user's message is in a language other than English, please issue your res
 
 Only return valid JSON, no additional text.`;
 
-    const MODEL = "google/gemini-2.0-flash-001";
+    const BASE_MODEL = "google/gemini-2.0-flash-001";
+    const MODEL = args.useWebGrounding ? `${BASE_MODEL}:online` : BASE_MODEL;
     const { content } = await fetchOpenRouterWithLogging(
       ctx,
       "parsePromptToSides",
@@ -364,7 +366,7 @@ Only return valid JSON, no additional text.`;
       args.prompt,
       openaiApiKey,
       0.3,
-      20000 // 20 second timeout
+      args.useWebGrounding ? 30000 : 20000 // Longer timeout for web grounding
     );
 
     const parsed = JSON.parse(content);
@@ -548,6 +550,7 @@ export const processScenarioBatches = action({
     sideA: v.object({ label: v.string(), description: v.string() }),
     sideB: v.object({ label: v.string(), description: v.string() }),
     numRuns: v.optional(v.number()),
+    useWebGrounding: v.optional(v.boolean()),
   },
   handler: async (ctx, args): Promise<{ success: boolean; error?: string }> => {
     const openaiApiKey = process.env.OPENROUTER_API_KEY;
@@ -582,7 +585,8 @@ export const processScenarioBatches = action({
           args.description,
           args.sideA,
           args.sideB,
-          batch
+          batch,
+          args.useWebGrounding
         );
 
         // Save scores immediately for real-time map updates
@@ -766,7 +770,8 @@ async function generateScoresForBatch(
   description: string,
   sideA: { label: string; description: string },
   sideB: { label: string; description: string },
-  countries: string[]
+  countries: string[],
+  useWebGrounding?: boolean
 ): Promise<Record<string, { score: number; reasoning?: string }>> {
   const systemPrompt = `You are an expert geopolitical analyst. You will rate each country's likely position on a given issue.
 
@@ -806,7 +811,8 @@ Only return valid JSON, no additional text. Country names must match exactly as 
   // Build user prompt with country context if applicable
   const countryContext = buildCountryContext(countries);
   const userPrompt = `Rate these countries: ${countries.join(", ")}${countryContext}`;
-  const MODEL = "google/gemini-2.0-flash-001";
+  const BASE_MODEL = "google/gemini-2.0-flash-001";
+  const MODEL = useWebGrounding ? `${BASE_MODEL}:online` : BASE_MODEL;
 
   const { content } = await fetchOpenRouterWithLogging(
     ctx,
@@ -815,7 +821,8 @@ Only return valid JSON, no additional text. Country names must match exactly as 
     systemPrompt,
     userPrompt,
     apiKey,
-    0.5
+    0.5,
+    useWebGrounding ? 45000 : undefined // Longer timeout for web grounding
   );
   const parsed = JSON.parse(content);
   return parsed.scores || {};

@@ -13,6 +13,21 @@ export const getCurrentUserId = query({
   },
 });
 
+// Check if current user is an admin
+export const isCurrentUserAdmin = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return false;
+
+    const user = await ctx.db.get(userId);
+    if (!user || !("email" in user) || !user.email) return false;
+
+    const adminEmails = process.env.ADMIN_EMAILS?.toLowerCase().split(",").map(e => e.trim()) || [];
+    return adminEmails.includes((user.email as string).toLowerCase());
+  },
+});
+
 // Get current active daily issues (public)
 export const getActiveIssues = query({
   args: {},
@@ -441,6 +456,8 @@ export const initializeScenario = mutation({
     totalBatches: v.number(),
     totalRuns: v.number(),
     totalCountries: v.number(),
+    source: v.optional(v.union(v.literal("daily"), v.literal("custom"))),
+    isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Create issue
@@ -452,8 +469,8 @@ export const initializeScenario = mutation({
       sideB: args.sideB,
       mapVersionId: args.mapVersionId,
       generatedAt: Date.now(),
-      isActive: false,
-      source: "custom",
+      isActive: args.isActive ?? false,
+      source: args.source ?? "custom",
       userId: args.userId,
     });
 
