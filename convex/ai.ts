@@ -114,7 +114,7 @@ async function fetchOpenRouterWithLogging(
 
       responseStatus = response.status;
       const responseText = await response.text();
-      responseBody = responseText.substring(0, 5000); // Truncate for storage
+      responseBody = responseText.trim().substring(0, 5000); // Trim whitespace and truncate for storage
 
       if (!response.ok) {
         error = `HTTP ${response.status}: ${responseText.substring(0, 500)}`;
@@ -350,9 +350,11 @@ For "AUKUS nuclear submarine program":
 If the prompt is truly unparseable (gibberish, completely unrelated to world affairs like "make me a sandwich", or too vague to interpret), return:
 { "error": "Brief explanation of why this can't be parsed as a geopolitical scenario" }
 
+If the user's message is in a language other than English, please issue your response in that language.
+
 Only return valid JSON, no additional text.`;
 
-    const MODEL = "z-ai/glm-4.7";
+    const MODEL = "openai/gpt-oss-20b";
     const { content } = await fetchOpenRouterWithLogging(
       ctx,
       "parsePromptToSides",
@@ -465,11 +467,14 @@ export const generateScoresWithProgress = action({
         );
 
         // Save scores immediately for real-time map updates
-        const scoresToSave = Object.entries(batchScores).map(([countryName, data]) => ({
-          countryName,
-          score: data.score,
-          reasoning: data.reasoning,
-        }));
+        // Filter out entries with missing or invalid scores (AI sometimes returns malformed data)
+        const scoresToSave = Object.entries(batchScores)
+          .filter(([, data]) => typeof data.score === 'number' && !isNaN(data.score))
+          .map(([countryName, data]) => ({
+            countryName,
+            score: data.score,
+            reasoning: data.reasoning,
+          }));
 
         if (scoresToSave.length > 0) {
           ctx.runMutation(issuesApi.upsertBatchScores, {
@@ -578,11 +583,14 @@ export const processScenarioBatches = action({
         );
 
         // Save scores immediately for real-time map updates
-        const scoresToSave = Object.entries(batchScores).map(([countryName, data]) => ({
-          countryName,
-          score: data.score,
-          reasoning: data.reasoning,
-        }));
+        // Filter out entries with missing or invalid scores (AI sometimes returns malformed data)
+        const scoresToSave = Object.entries(batchScores)
+          .filter(([, data]) => typeof data.score === 'number' && !isNaN(data.score))
+          .map(([countryName, data]) => ({
+            countryName,
+            score: data.score,
+            reasoning: data.reasoning,
+          }));
 
         if (scoresToSave.length > 0) {
           ctx.runMutation(issuesApi.upsertBatchScores, {
@@ -702,9 +710,9 @@ export const generateBatchScores = action({
           batch
         );
 
-        // Accumulate scores
+        // Accumulate scores (skip entries with missing/invalid scores)
         for (const [country, data] of Object.entries(batchScores)) {
-          if (scoreAccumulator[country]) {
+          if (scoreAccumulator[country] && typeof data.score === 'number' && !isNaN(data.score)) {
             scoreAccumulator[country].total += data.score;
             scoreAccumulator[country].count += 1;
             if (data.reasoning) {
@@ -772,6 +780,8 @@ Consider:
 - Regional interests
 - Domestic political considerations
 
+If the scenario description is in a language other than English, please issue your response in that language.
+
 Return a JSON object with this exact structure:
 {
   "scores": {
@@ -785,7 +795,7 @@ Only return valid JSON, no additional text. Country names must match exactly as 
   // Build user prompt with country context if applicable
   const countryContext = buildCountryContext(countries);
   const userPrompt = `Rate these countries: ${countries.join(", ")}${countryContext}`;
-  const MODEL = "z-ai/glm-4.7";
+  const MODEL = "openai/gpt-oss-20b";
 
   const { content } = await fetchOpenRouterWithLogging(
     ctx,
@@ -830,9 +840,11 @@ For example, if the prompt is "US annexation of Greenland", you might return:
   "sideB": { "label": "Anti-Annexation", "description": "Opposes US acquisition of Greenland" }
 }
 
+If the user's message is in a language other than English, please issue your response in that language.
+
 Only return valid JSON, no additional text.`;
 
-  const MODEL = "z-ai/glm-4.7";
+  const MODEL = "openai/gpt-oss-20b";
   const { content } = await fetchOpenRouterWithLogging(
     ctx,
     "parsePromptToSidesInternal",
@@ -846,6 +858,61 @@ Only return valid JSON, no additional text.`;
 
   return JSON.parse(content);
 }
+
+// Generate a fun fact related to the scenario title
+export const generateFunFact = action({
+  args: {
+    title: v.string(),
+    previousFacts: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args): Promise<{ fact: string }> => {
+    const openaiApiKey = process.env.OPENROUTER_API_KEY;
+    if (!openaiApiKey) {
+      throw new Error("OPENROUTER_API_KEY environment variable not set");
+    }
+
+    const previousFactsNote = args.previousFacts && args.previousFacts.length > 0
+      ? `\n\nPrevious fun facts: ${args.previousFacts.join(" || ")} || New fun facts should touch on a different topic.`
+      : "";
+
+    const systemPrompt = `You are a witty trivia expert. Given a geopolitical scenario title, generate ONE fun, interesting, or surprising fact that MUST be directly related to the scenario's topic.
+
+Rules:
+- ACCURACY IS CRITICAL: Only state facts you are confident are true. Do not make up statistics, dates, or claims. If unsure, pick a different fact you know to be accurate.
+- The fact MUST relate to the specific scenario topic, countries, regions, or key themes involved - this is non-negotiable
+- Keep it brief (1-2 sentences max)
+- Make it genuinely interesting or surprising
+- Can be historical, cultural, economic, or geographic - but must connect to the scenario
+- Avoid being too serious - aim for "huh, that's interesting!" reactions
+- Do NOT start with "Did you know" or similar phrases - just state the fact directly
+
+Return JSON: { "fact": "Your fun fact here" }`;
+
+    const MODEL = "google/gemini-3-flash-preview";
+
+    try {
+      const { content } = await fetchOpenRouterWithLogging(
+        ctx,
+        "generateFunFact",
+        MODEL,
+        systemPrompt,
+        `Scenario: ${args.title}${previousFactsNote}`,
+        openaiApiKey,
+        0.9, // High temperature for variety
+        10000 // 10 second timeout
+      );
+
+      const parsed = JSON.parse(content);
+      if (!parsed.fact) {
+        return { fact: "" };
+      }
+      return { fact: parsed.fact };
+    } catch (error) {
+      // Return empty fact if AI fails - UI will not display it
+      return { fact: "" };
+    }
+  },
+});
 
 // Process a custom prompt end-to-end
 export const processCustomPrompt = action({
@@ -943,9 +1010,9 @@ export const processCustomPrompt = action({
             batch
           );
 
-          // Accumulate scores
+          // Accumulate scores (skip entries with missing/invalid scores)
           for (const [country, data] of Object.entries(batchScores)) {
-            if (scoreAccumulator[country]) {
+            if (scoreAccumulator[country] && typeof data.score === 'number' && !isNaN(data.score)) {
               scoreAccumulator[country].total += data.score;
               scoreAccumulator[country].count += 1;
               if (data.reasoning) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { D3ScoreMap, ScoreLegend, CountryTooltip } from "@/components/custom/D3ScoreMap";
@@ -60,11 +60,17 @@ export default function ScenarioPage() {
   const [currentIssue, setCurrentIssue] = useState<CurrentIssue | null>(null);
   const [scores, setScores] = useState<Record<string, { score: number; reasoning?: string }>>({});
 
+  // Fun fact state - stores all facts, with index for navigation
+  const [funFacts, setFunFacts] = useState<string[]>([]);
+  const [factIndex, setFactIndex] = useState(0);
+  const [factFading, setFactFading] = useState(false);
+
   // Hover state
   const [hoveredCountry, setHoveredCountry] = useState<HoveredCountry | null>(null);
 
   // Convex queries, mutations, and actions
   const parsePrompt = useAction(api.ai.parsePromptToSides);
+  const generateFunFact = useAction(api.ai.generateFunFact);
   const initializeScenario = useMutation(api.issues.initializeScenario);
   const processScenarioBatches = useAction(api.ai.processScenarioBatches);
   const getActiveMapVersion = useQuery(api.issues.getActiveMapVersion);
@@ -102,6 +108,64 @@ export default function ScenarioPage() {
     }
   }, [jobStatus, step, currentIssue]);
 
+  // Ref to track fun facts without causing re-renders
+  const funFactsRef = useRef<string[]>([]);
+  funFactsRef.current = funFacts;
+
+  // Max number of fun facts to generate
+  const MAX_FUN_FACTS = 3;
+
+  // Cycle fun facts during generation (initial fact is pre-generated on parse)
+  // Stops when: generation completes OR we hit 3 facts
+  useEffect(() => {
+    if (step !== "generating" || !parsedScenario?.title) {
+      // Only clear fun facts when going back to input, not when viewing results
+      if (step === "input") {
+        setFunFacts([]);
+        setFactIndex(0);
+      }
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchFact = async () => {
+      // Stop if we already have max facts
+      if (funFactsRef.current.length >= MAX_FUN_FACTS) return;
+
+      try {
+        // Fade out current fact
+        setFactFading(true);
+        await new Promise((r) => setTimeout(r, 300));
+
+        if (cancelled) return;
+
+        const result = await generateFunFact({
+          title: parsedScenario.title,
+          previousFacts: funFactsRef.current,
+        });
+        if (cancelled) return;
+
+        if (result.fact) {
+          setFunFacts((prev) => [...prev, result.fact]);
+          setFactIndex((prev) => prev + 1);
+        }
+        setFactFading(false);
+      } catch (err) {
+        console.error("Failed to fetch fun fact:", err);
+        setFactFading(false);
+      }
+    };
+
+    // Start cycling after 20 seconds (first fact is already pre-loaded)
+    const interval = setInterval(fetchFact, 20000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [step, parsedScenario?.title, generateFunFact]);
+
   // Step 1: Parse the prompt
   const handleParse = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,6 +192,16 @@ export default function ScenarioPage() {
 
       setParsedScenario(result);
       setStep("confirm");
+
+      // Pre-generate the first fun fact so it's ready when generation starts
+      generateFunFact({ title: result.title })
+        .then((factResult) => {
+          if (factResult.fact) {
+            setFunFacts([factResult.fact]);
+            setFactIndex(0);
+          }
+        })
+        .catch((err) => console.error("Failed to pre-generate fun fact:", err));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to parse scenario");
     } finally {
@@ -230,6 +304,9 @@ export default function ScenarioPage() {
     setError(null);
     setEditingField(null);
     setNumRuns(2);
+    setFunFacts([]);
+    setFactIndex(0);
+    setFactFading(false);
   };
 
   const handleCountryHover = useCallback(
@@ -455,7 +532,7 @@ export default function ScenarioPage() {
 
                     {/* Primary Actor - click to edit */}
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-500">Primary Actor:</span>
+                      <span className="text-sm text-slate-500">Primary Actor(s):</span>
                       {editingField === "primaryActor" ? (
                         <input
                           type="text"
@@ -671,6 +748,55 @@ export default function ScenarioPage() {
                       </svg>
                       <span className="break-words">{error}</span>
                     </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Fun facts banner - shown during and after generation */}
+          {(step === "generating" || step === "results") && funFacts.length > 0 && (
+            <div
+              className={`bg-amber-50 border-b border-amber-200 px-6 py-3 transition-opacity duration-300 ${
+                factFading ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-amber-500 text-lg">💡</span>
+                <div className="flex items-center gap-2">
+                  {factIndex > 0 && (
+                    <button
+                      onClick={() => setFactIndex((i) => i - 1)}
+                      className="p-1 rounded hover:bg-amber-100 text-amber-600"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                  )}
+                  <p className="text-sm text-amber-800 italic text-center max-w-prose">{funFacts[factIndex]}</p>
+                  {factIndex < funFacts.length - 1 && (
+                    <button
+                      onClick={() => setFactIndex((i) => i + 1)}
+                      className="p-1 rounded hover:bg-amber-100 text-amber-600"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                {funFacts.length > 1 && (
+                  <div className="flex gap-1 mt-1">
+                    {funFacts.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setFactIndex(i)}
+                        className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                          i === factIndex ? "bg-amber-500" : "bg-amber-300"
+                        }`}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
