@@ -773,11 +773,24 @@ async function generateScoresForBatch(
   countries: string[],
   useWebGrounding?: boolean
 ): Promise<Record<string, { score: number; reasoning?: string }>> {
+  const webGroundingInstructions = useWebGrounding ? `
+IMPORTANT - WEB SEARCH INSTRUCTIONS:
+For each country, search for official statements, government responses, or credible news coverage about this specific incident/issue. Look for:
+- Official government statements or press releases
+- Foreign ministry responses
+- Statements from heads of state or relevant ministers
+- Credible news reports citing official positions
+
+If you find actual statements or reported positions, use those to inform your score and cite them in your reasoning.
+If no official position is found for a country, make your best educated guess based on that country's known alliances, historical positions, and geopolitical interests - but note in the reasoning that no official statement was found.
+
+` : '';
+
   const systemPrompt = `You are an expert geopolitical analyst. You will rate each country's likely position on a given issue.
 
 SCENARIO: ${title}
 ${description}
-
+${webGroundingInstructions}
 SIDE A (${sideA.label}): ${sideA.description} → positive scores (0 to 1)
 SIDE B (${sideB.label}): ${sideB.description} → negative scores (-1 to 0)
 
