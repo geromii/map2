@@ -69,7 +69,8 @@ async function fetchOpenRouterWithLogging(
   systemPrompt: string,
   userPrompt: string,
   apiKey: string,
-  temperature: number = 0.3
+  temperature: number = 0.3,
+  timeoutMs?: number
 ): Promise<{ content: string; raw: unknown }> {
   const requestBody = {
     model,
@@ -78,7 +79,7 @@ async function fetchOpenRouterWithLogging(
       { role: "user", content: userPrompt },
     ],
     temperature,
-    max_tokens: 4000, // Limit response size to prevent runaway generation
+    max_tokens: 8000, // Limit response size to prevent runaway generation
     response_format: { type: "json_object" },
     provider: {
       ignore: ["google-vertex"],
@@ -94,6 +95,11 @@ async function fetchOpenRouterWithLogging(
     let error: string | undefined;
 
     try {
+      const controller = timeoutMs ? new AbortController() : undefined;
+      const timeoutId = timeoutMs && controller
+        ? setTimeout(() => controller.abort(), timeoutMs)
+        : undefined;
+
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -101,7 +107,10 @@ async function fetchOpenRouterWithLogging(
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify(requestBody),
+        signal: controller?.signal,
       });
+
+      if (timeoutId) clearTimeout(timeoutId);
 
       responseStatus = response.status;
       const responseText = await response.text();
@@ -271,6 +280,7 @@ export const parsePromptToSides = action({
   handler: async (ctx, args): Promise<{
     title: string;
     description: string;
+    primaryActor?: string;
     sideA: { label: string; description: string };
     sideB: { label: string; description: string };
   }> => {
@@ -286,6 +296,7 @@ Try your best to interpret the prompt as a geopolitical scenario. Be creative - 
 Return a JSON object with:
 - title: A concise title for the issue (max 100 chars)
 - description: A brief description of the overall scenario (1-2 sentences)
+- primaryActor: The entity or entities that would be considered to have "succeeded" or "won" if this scenario comes to pass. Can be one or multiple countries, organizations, movements, or groups. If multiple, separate with " and " (e.g., "United States and United Kingdom"). Think: who benefits most or achieves their goal if this happens?
 - sideA: The side that supports/approves/is in favor (object with "label" and "description")
 - sideB: The side that opposes/disapproves/is against (object with "label" and "description")
 
@@ -295,16 +306,45 @@ For example, if the prompt is "US annexation of Greenland", you might return:
 {
   "title": "US Annexation of Greenland",
   "description": "The potential acquisition of Greenland by the United States.",
+  "primaryActor": "United States",
   "sideA": { "label": "Pro-Annexation", "description": "Supports US acquisition of Greenland" },
   "sideB": { "label": "Anti-Annexation", "description": "Opposes US acquisition of Greenland" }
 }
 
-For "Ukraine's accession to the European Union":
+For "Korean reunification under South Korean democracy":
 {
-  "title": "Ukraine's Accession to the European Union",
-  "description": "Ukraine seeks full membership in the EU, prompting diplomatic debate over the political, economic, and security implications.",
-  "sideA": { "label": "Pro-Accession", "description": "Supports Ukraine joining the European Union" },
-  "sideB": { "label": "Anti-Accession", "description": "Opposes Ukraine joining the European Union" }
+  "title": "Korean Reunification Under Democracy",
+  "description": "The reunification of North and South Korea under a democratic government.",
+  "primaryActor": "South Korea",
+  "sideA": { "label": "Pro-Reunification", "description": "Supports democratic Korean reunification" },
+  "sideB": { "label": "Anti-Reunification", "description": "Opposes democratic Korean reunification" }
+}
+
+For "America becomes communist":
+{
+  "title": "Communist Revolution in America",
+  "description": "A scenario where the United States adopts a communist system of government.",
+  "primaryActor": "American Communists",
+  "sideA": { "label": "Pro-Communist", "description": "Supports communist transformation of America" },
+  "sideB": { "label": "Anti-Communist", "description": "Opposes communist transformation of America" }
+}
+
+For "Quebec independence":
+{
+  "title": "Quebec Independence",
+  "description": "Quebec separates from Canada to become an independent nation.",
+  "primaryActor": "Quebec Separatists",
+  "sideA": { "label": "Pro-Independence", "description": "Supports Quebec separating from Canada" },
+  "sideB": { "label": "Anti-Independence", "description": "Opposes Quebec separating from Canada" }
+}
+
+For "AUKUS nuclear submarine program":
+{
+  "title": "AUKUS Nuclear Submarine Program",
+  "description": "Australia acquires nuclear-powered submarines through the AUKUS security pact.",
+  "primaryActor": "Australia, United States, and United Kingdom",
+  "sideA": { "label": "Pro-AUKUS", "description": "Supports the AUKUS submarine program" },
+  "sideB": { "label": "Anti-AUKUS", "description": "Opposes the AUKUS submarine program" }
 }
 
 If the prompt is truly unparseable (gibberish, completely unrelated to world affairs like "make me a sandwich", or too vague to interpret), return:
@@ -312,7 +352,7 @@ If the prompt is truly unparseable (gibberish, completely unrelated to world aff
 
 Only return valid JSON, no additional text.`;
 
-    const MODEL = "openai/gpt-oss-120b:exacto";
+    const MODEL = "z-ai/glm-4.7";
     const { content } = await fetchOpenRouterWithLogging(
       ctx,
       "parsePromptToSides",
@@ -320,7 +360,8 @@ Only return valid JSON, no additional text.`;
       systemPrompt,
       args.prompt,
       openaiApiKey,
-      0.3
+      0.3,
+      20000 // 20 second timeout
     );
 
     const parsed = JSON.parse(content);
@@ -341,6 +382,7 @@ Only return valid JSON, no additional text.`;
     return {
       title: sanitize(parsed.title),
       description: sanitize(parsed.description || ''),
+      primaryActor: parsed.primaryActor ? sanitize(parsed.primaryActor) : undefined,
       sideA: {
         label: sanitize(parsed.sideA.label || 'Supports'),
         description: sanitize(parsed.sideA.description || ''),
@@ -743,7 +785,7 @@ Only return valid JSON, no additional text. Country names must match exactly as 
   // Build user prompt with country context if applicable
   const countryContext = buildCountryContext(countries);
   const userPrompt = `Rate these countries: ${countries.join(", ")}${countryContext}`;
-  const MODEL = "openai/gpt-oss-120b:exacto";
+  const MODEL = "z-ai/glm-4.7";
 
   const { content } = await fetchOpenRouterWithLogging(
     ctx,
@@ -790,7 +832,7 @@ For example, if the prompt is "US annexation of Greenland", you might return:
 
 Only return valid JSON, no additional text.`;
 
-  const MODEL = "openai/gpt-oss-120b:exacto";
+  const MODEL = "z-ai/glm-4.7";
   const { content } = await fetchOpenRouterWithLogging(
     ctx,
     "parsePromptToSidesInternal",
@@ -798,7 +840,8 @@ Only return valid JSON, no additional text.`;
     systemPrompt,
     prompt,
     apiKey,
-    0.3
+    0.3,
+    20000 // 20 second timeout
   );
 
   return JSON.parse(content);

@@ -141,6 +141,7 @@ export const createIssue = mutation({
   args: {
     title: v.string(),
     description: v.string(),
+    primaryActor: v.optional(v.string()),
     sideA: v.object({ label: v.string(), description: v.string() }),
     sideB: v.object({ label: v.string(), description: v.string() }),
     mapVersionId: v.id("mapVersions"),
@@ -152,6 +153,7 @@ export const createIssue = mutation({
     const issueId = await ctx.db.insert("issues", {
       title: args.title,
       description: args.description,
+      primaryActor: args.primaryActor,
       sideA: args.sideA,
       sideB: args.sideB,
       mapVersionId: args.mapVersionId,
@@ -376,6 +378,7 @@ export const initializeScenario = mutation({
   args: {
     title: v.string(),
     description: v.string(),
+    primaryActor: v.optional(v.string()),
     sideA: v.object({ label: v.string(), description: v.string() }),
     sideB: v.object({ label: v.string(), description: v.string() }),
     mapVersionId: v.id("mapVersions"),
@@ -388,6 +391,7 @@ export const initializeScenario = mutation({
     const issueId = await ctx.db.insert("issues", {
       title: args.title,
       description: args.description,
+      primaryActor: args.primaryActor,
       sideA: args.sideA,
       sideB: args.sideB,
       mapVersionId: args.mapVersionId,

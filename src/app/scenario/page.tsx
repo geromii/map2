@@ -13,6 +13,7 @@ type Step = "input" | "confirm" | "generating" | "results";
 interface ParsedScenario {
   title: string;
   description: string;
+  primaryActor?: string;
   sideA: { label: string; description: string };
   sideB: { label: string; description: string };
 }
@@ -27,6 +28,7 @@ interface CurrentIssue {
   id: Id<"issues">;
   title: string;
   description: string;
+  primaryActor?: string;
   sideA: { label: string; description: string };
   sideB: { label: string; description: string };
 }
@@ -35,6 +37,7 @@ interface SavedScenario {
   _id: Id<"issues">;
   title: string;
   description: string;
+  primaryActor?: string;
   sideA: { label: string; description: string };
   sideB: { label: string; description: string };
   generatedAt: number;
@@ -148,6 +151,7 @@ export default function ScenarioPage() {
       const { issueId, jobId: newJobId } = await initializeScenario({
         title: parsedScenario.title,
         description: parsedScenario.description,
+        primaryActor: parsedScenario.primaryActor,
         sideA: parsedScenario.sideA,
         sideB: parsedScenario.sideB,
         mapVersionId: getActiveMapVersion._id,
@@ -162,6 +166,7 @@ export default function ScenarioPage() {
         id: issueId,
         title: parsedScenario.title,
         description: parsedScenario.description,
+        primaryActor: parsedScenario.primaryActor,
         sideA: parsedScenario.sideA,
         sideB: parsedScenario.sideB,
       });
@@ -195,6 +200,7 @@ export default function ScenarioPage() {
         id: scenario._id,
         title: scenario.title,
         description: scenario.description,
+        primaryActor: scenario.primaryActor,
         sideA: scenario.sideA,
         sideB: scenario.sideB,
       });
@@ -329,9 +335,9 @@ export default function ScenarioPage() {
                   <div className="font-medium text-slate-900 text-sm leading-snug pr-6">
                     {scenario.title}
                   </div>
-                  {scenario.description && (
-                    <div className="text-xs text-slate-500 mt-1 line-clamp-2">
-                      {scenario.description}
+                  {scenario.primaryActor && (
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      by {scenario.primaryActor}
                     </div>
                   )}
                   <div className="flex items-center justify-between mt-2">
@@ -441,6 +447,36 @@ export default function ScenarioPage() {
                         >
                           <p className="text-slate-600 text-sm flex-1">{parsedScenario.description}</p>
                           <svg className="w-3 h-3 text-slate-400 group-hover:text-slate-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Primary Actor - click to edit */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-slate-500">Primary Actor:</span>
+                      {editingField === "primaryActor" ? (
+                        <input
+                          type="text"
+                          value={parsedScenario.primaryActor || ""}
+                          onChange={(e) => setParsedScenario({ ...parsedScenario, primaryActor: e.target.value })}
+                          onBlur={() => setEditingField(null)}
+                          onKeyDown={(e) => e.key === "Enter" && setEditingField(null)}
+                          autoFocus
+                          placeholder="e.g., United States, The UN, Western Nations"
+                          className="flex-1 max-w-xs text-slate-900 text-sm px-2 py-1 rounded border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <div
+                          onClick={() => setEditingField("primaryActor")}
+                          className="group flex items-center gap-1.5 cursor-pointer hover:bg-slate-100 rounded px-2 py-1 -mx-2 transition-colors"
+                          title="Click to edit"
+                        >
+                          <span className="text-sm font-medium text-slate-700">
+                            {parsedScenario.primaryActor || "Not specified"}
+                          </span>
+                          <svg className="w-3 h-3 text-slate-400 group-hover:text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                         </div>
@@ -644,17 +680,29 @@ export default function ScenarioPage() {
           {/* Results header (when viewing results) */}
           {hasResults && currentIssue && (
             <div className="bg-slate-100 border-b border-slate-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-slate-900">{currentIssue.title}</h2>
-              <div className="flex items-center gap-4 mt-1 text-sm">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-blue-600" />
-                  <span className="text-blue-700 font-medium">{currentIssue.sideA.label}</span>
-                </span>
-                <span className="text-slate-400">vs</span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-red-600" />
-                  <span className="text-red-700 font-medium">{currentIssue.sideB.label}</span>
-                </span>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900">{currentIssue.title}</h2>
+                  <div className="flex items-center gap-4 mt-1 text-sm">
+                    {currentIssue.primaryActor && (
+                      <>
+                        <span className="text-slate-600">
+                          <span className="text-slate-400">by</span> {currentIssue.primaryActor}
+                        </span>
+                        <span className="text-slate-300">|</span>
+                      </>
+                    )}
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded-full bg-blue-600" />
+                      <span className="text-blue-700 font-medium">{currentIssue.sideA.label}</span>
+                    </span>
+                    <span className="text-slate-400">vs</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded-full bg-red-600" />
+                      <span className="text-red-700 font-medium">{currentIssue.sideB.label}</span>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           )}

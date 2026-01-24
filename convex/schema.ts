@@ -20,6 +20,7 @@ const schema = defineSchema({
   issues: defineTable({
     title: v.string(),
     description: v.string(),
+    primaryActor: v.optional(v.string()), // Entity that "wins" if scenario happens (e.g., "South Korea", "Quebec Separatists")
     sideA: v.object({ label: v.string(), description: v.string() }),
     sideB: v.object({ label: v.string(), description: v.string() }),
     mapVersionId: v.id("mapVersions"), // Links to map version used for generation

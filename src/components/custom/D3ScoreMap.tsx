@@ -28,20 +28,24 @@ type WorldTopology = Topology<{ world: GeometryCollection<{ name: string }> }>;
 
 function scoreToColor(score: number): string {
   // Clamp score to [-1, 1]
-  const s = Math.max(-1, Math.min(1, score));
+  const clamped = Math.max(-1, Math.min(1, score));
 
-  // Apply exponential curve for more visual distinction
-  const intensity = Math.abs(s) ** 1.5;
+  // Apply power transformation to compress scores toward neutral
+  // e.g., -0.3 becomes ~-0.137, making moderate scores appear more neutral
+  const s = Math.sign(clamped) * Math.abs(clamped) ** 1.3;
+
+  // Calculate intensity for saturation/lightness adjustments
+  const intensity = Math.abs(s);
 
   // Blue for positive (Side A), Red for negative (Side B)
   if (s >= 0) {
-    // Blue tones - more saturated and distinct
-    const saturation = 70 + 20 * intensity;
+    // Blue tones - saturation scales from 0 to 90
+    const saturation = 90 * intensity;
     const lightness = 92 - 47 * intensity;
     return `hsl(217, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
   } else {
-    // Red tones - richer crimson shades
-    const saturation = 65 + 25 * intensity;
+    // Red tones - saturation scales from 0 to 90
+    const saturation = 90 * intensity;
     const lightness = 92 - 45 * intensity;
     return `hsl(4, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
   }
