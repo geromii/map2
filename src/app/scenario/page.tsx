@@ -177,8 +177,8 @@ export default function ScenarioPage() {
     try {
       const result = await parsePrompt({ prompt: prompt.trim() });
 
-      // Check if AI returned an error
-      if (result?.error) {
+      // Check if AI returned an error (use 'in' for proper type narrowing)
+      if (result && 'error' in result) {
         setError(result.error);
         return;
       }

@@ -283,7 +283,7 @@ export const parsePromptToSides = action({
     primaryActor?: string;
     sideA: { label: string; description: string };
     sideB: { label: string; description: string };
-  }> => {
+  } | { error: string }> => {
     const openaiApiKey = process.env.OPENROUTER_API_KEY;
     if (!openaiApiKey) {
       throw new Error("OPENROUTER_API_KEY environment variable not set");
