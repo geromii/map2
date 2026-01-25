@@ -25,10 +25,13 @@ const schema = defineSchema({
     sideB: v.object({ label: v.string(), description: v.string() }),
     mapVersionId: v.id("mapVersions"), // Links to map version used for generation
     generatedAt: v.number(),
-    isActive: v.boolean(),
+    isActive: v.boolean(), // false = archived
     source: v.union(v.literal("daily"), v.literal("custom")),
     userId: v.optional(v.string()), // User who created the issue (for custom scenarios)
-  }).index("by_active", ["isActive"]).index("by_user", ["userId"]),
+    imageId: v.optional(v.id("_storage")), // Optional headline image (16:9 aspect ratio)
+    isFeatured: v.optional(v.boolean()), // true for top 2 featured headlines
+    featuredAt: v.optional(v.number()), // timestamp when featured, used for auto-unfeature
+  }).index("by_active", ["isActive"]).index("by_user", ["userId"]).index("by_featured", ["isFeatured"]),
 
   // Country scores per issue
   countryScores: defineTable({

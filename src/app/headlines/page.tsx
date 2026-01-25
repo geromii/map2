@@ -8,6 +8,7 @@ import { CountryDetailModal } from "@/components/custom/CountryDetailModal";
 import { CountryListView } from "@/components/custom/CountryListView";
 import { Id } from "../../../convex/_generated/dataModel";
 import { ArrowLeft, Map, List } from "lucide-react";
+import Image from "next/image";
 
 interface HoveredCountry {
   name: string;
@@ -29,6 +30,129 @@ interface Issue {
   sideA: { label: string; description: string };
   sideB: { label: string; description: string };
   generatedAt: number;
+  imageId?: Id<"_storage">;
+}
+
+// Featured headline card - large with prominent image
+function FeaturedHeadlineCard({
+  issue,
+  onSelect,
+}: {
+  issue: Issue;
+  onSelect: (issue: Issue) => void;
+}) {
+  const imageUrl = useQuery(
+    api.issues.getIssueImageUrl,
+    issue.imageId ? { issueId: issue._id } : "skip"
+  );
+  const counts = useQuery(api.issues.getIssueCounts, { issueId: issue._id });
+
+  return (
+    <button
+      onClick={() => onSelect(issue)}
+      className="w-full text-left rounded-xl border-2 bg-white shadow-sm transition-all hover:shadow-md flex flex-col border-slate-200 hover:border-slate-300 overflow-hidden"
+    >
+      {/* Image area - 16:9 aspect ratio */}
+      {imageUrl && (
+        <div className="relative w-full aspect-video bg-slate-100">
+          <Image
+            src={imageUrl}
+            alt={issue.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        </div>
+      )}
+
+      <div className="p-4 sm:p-5 flex flex-col flex-1">
+        <h2 className="font-semibold text-slate-900 text-base sm:text-lg leading-snug">
+          {issue.title}
+        </h2>
+        {issue.description && (
+          <p className="text-sm sm:text-base text-slate-600 mt-2 line-clamp-3 flex-1">
+            {issue.description}
+          </p>
+        )}
+        <div className="flex items-center gap-3 mt-4 pt-3 border-t border-slate-100">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+            <span className="text-sm text-blue-700 font-medium">
+              {counts ? counts.sideA : "–"} {issue.sideA.label}
+            </span>
+          </span>
+          <span className="text-slate-400 text-sm">vs</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+            <span className="text-sm text-red-700 font-medium">
+              {counts ? counts.sideB : "–"} {issue.sideB.label}
+            </span>
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+// Secondary headline card - compact card for grid layout
+function SecondaryHeadlineCard({
+  issue,
+  onSelect,
+}: {
+  issue: Issue;
+  onSelect: (issue: Issue) => void;
+}) {
+  const imageUrl = useQuery(
+    api.issues.getIssueImageUrl,
+    issue.imageId ? { issueId: issue._id } : "skip"
+  );
+  const counts = useQuery(api.issues.getIssueCounts, { issueId: issue._id });
+
+  return (
+    <button
+      onClick={() => onSelect(issue)}
+      className="w-full text-left rounded-lg border bg-white shadow-sm transition-all hover:shadow-md flex flex-row border-slate-200 hover:border-slate-300 overflow-hidden h-24"
+    >
+      {/* Square thumbnail */}
+      <div className="relative w-24 h-24 flex-shrink-0 bg-slate-100">
+        {imageUrl && (
+          <Image
+            src={imageUrl}
+            alt={issue.title}
+            fill
+            className="object-cover"
+            sizes="96px"
+          />
+        )}
+      </div>
+
+      <div className="p-2.5 flex flex-col flex-1 min-w-0 justify-center">
+        <h3 className="font-medium text-slate-900 text-sm leading-snug line-clamp-1">
+          {issue.title}
+        </h3>
+        {issue.description && (
+          <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+            {issue.description}
+          </p>
+        )}
+        <div className="flex items-center gap-1.5 mt-1.5 text-xs">
+          <span className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <span className="text-blue-600 font-medium truncate">
+              {counts ? counts.sideA : "–"} {issue.sideA.label}
+            </span>
+          </span>
+          <span className="text-slate-400">vs</span>
+          <span className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            <span className="text-red-600 font-medium truncate">
+              {counts ? counts.sideB : "–"} {issue.sideB.label}
+            </span>
+          </span>
+        </div>
+      </div>
+    </button>
+  );
 }
 
 export default function HeadlinesPage() {
@@ -45,13 +169,26 @@ export default function HeadlinesPage() {
   // Selected country for modal
   const [selectedCountry, setSelectedCountry] = useState<SelectedCountry | null>(null);
 
-  // Fetch active daily issues
+  // Fetch featured and active daily issues
+  const featuredIssues = useQuery(api.issues.getFeaturedIssues);
   const activeIssues = useQuery(api.issues.getActiveIssues);
-  const dailyIssues = activeIssues?.filter((issue) => issue.source === "daily") || [];
+
+  // Filter to daily issues only
+  const featuredDailyIssues = featuredIssues?.filter((issue) => issue.source === "daily") || [];
+  const activeDailyIssues = activeIssues?.filter((issue) => issue.source === "daily") || [];
+
+  // Combined for finding selected issue
+  const allDailyIssues = [...featuredDailyIssues, ...activeDailyIssues];
 
   // Fetch scores for selected issue
   const issueScoresQuery = useQuery(
     api.issues.getIssueScores,
+    selectedIssueId ? { issueId: selectedIssueId } : "skip"
+  );
+
+  // Fetch image URL for selected issue
+  const selectedIssueImageUrl = useQuery(
+    api.issues.getIssueImageUrl,
     selectedIssueId ? { issueId: selectedIssueId } : "skip"
   );
 
@@ -66,7 +203,7 @@ export default function HeadlinesPage() {
     }
   }, [issueScoresQuery, selectedIssueId]);
 
-  const selectedIssue = dailyIssues.find((i) => i._id === selectedIssueId);
+  const selectedIssue = allDailyIssues.find((i) => i._id === selectedIssueId);
 
   const handleSelectIssue = useCallback((issue: Issue) => {
     setSelectedIssueId(issue._id);
@@ -108,6 +245,10 @@ export default function HeadlinesPage() {
   const sideALabel = selectedIssue?.sideA.label || "Supports";
   const sideBLabel = selectedIssue?.sideB.label || "Opposes";
 
+  // Loading state
+  const isLoading = featuredIssues === undefined || activeIssues === undefined;
+  const hasNoHeadlines = !isLoading && featuredDailyIssues.length === 0 && activeDailyIssues.length === 0;
+
   // Show headlines list when no issue is selected
   if (!selectedIssueId) {
     return (
@@ -123,47 +264,44 @@ export default function HeadlinesPage() {
 
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6">
           <div className="max-w-6xl mx-auto">
-            {!activeIssues && (
+            {isLoading && (
               <div className="p-8 text-center text-slate-500">Loading...</div>
             )}
 
-            {activeIssues && dailyIssues.length === 0 && (
+            {hasNoHeadlines && (
               <div className="p-8 text-center text-slate-500">
                 No headlines available yet.
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {dailyIssues.map((issue) => (
-                <button
-                  key={issue._id}
-                  onClick={() => handleSelectIssue(issue)}
-                  className="w-full text-left rounded-xl border-2 bg-white shadow-sm transition-all hover:shadow-md flex flex-col border-slate-200 hover:border-slate-300"
-                >
-                  <div className="p-4 sm:p-5 flex flex-col flex-1">
-                    <h2 className="font-semibold text-slate-900 text-base sm:text-lg leading-snug">
-                      {issue.title}
-                    </h2>
-                    {issue.description && (
-                      <p className="text-sm sm:text-base text-slate-600 mt-2 line-clamp-3 flex-1">
-                        {issue.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-3 mt-4 pt-3 border-t border-slate-100">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                        <span className="text-sm text-blue-700 font-medium">{issue.sideA.label}</span>
-                      </span>
-                      <span className="text-slate-400 text-sm">vs</span>
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                        <span className="text-sm text-red-700 font-medium">{issue.sideB.label}</span>
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
+            {/* Featured Headlines - Large cards */}
+            {featuredDailyIssues.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {featuredDailyIssues.map((issue) => (
+                  <FeaturedHeadlineCard
+                    key={issue._id}
+                    issue={issue}
+                    onSelect={handleSelectIssue}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Secondary Headlines - Compact grid */}
+            {activeDailyIssues.length > 0 && (
+              <div className={featuredDailyIssues.length > 0 ? "mt-6" : ""}>
+                <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">More Headlines</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {activeDailyIssues.map((issue) => (
+                    <SecondaryHeadlineCard
+                      key={issue._id}
+                      issue={issue}
+                      onSelect={handleSelectIssue}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -212,9 +350,23 @@ export default function HeadlinesPage() {
           </div>
         </div>
 
+        {/* Issue image banner */}
+        {selectedIssueImageUrl && (
+          <div className="relative w-full h-32 sm:h-48 bg-slate-100">
+            <Image
+              src={selectedIssueImageUrl}
+              alt={selectedIssue?.title || "Headline image"}
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority
+            />
+          </div>
+        )}
+
         {/* Issue info */}
         {selectedIssue && (
-          <div className="px-4 sm:px-6 pb-4">
+          <div className="px-4 sm:px-6 pb-4 pt-4">
             <div className="max-w-4xl">
               <h1 className="text-lg sm:text-xl font-bold text-slate-900">
                 {selectedIssue.title}

@@ -28,14 +28,43 @@ export const isCurrentUserAdmin = query({
   },
 });
 
-// Get current active daily issues (public)
+// Get current active daily issues (public) - excludes featured issues
 export const getActiveIssues = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db
+    const issues = await ctx.db
       .query("issues")
       .withIndex("by_active", (q) => q.eq("isActive", true))
       .collect();
+    // Filter out featured issues (those go in getFeaturedIssues)
+    return issues.filter((issue) => !issue.isFeatured);
+  },
+});
+
+// Get featured daily issues (top 2 headlines with images)
+export const getFeaturedIssues = query({
+  args: {},
+  handler: async (ctx) => {
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_featured", (q) => q.eq("isFeatured", true))
+      .collect();
+    // Only return active featured issues, sorted by featuredAt (newest first)
+    return issues
+      .filter((issue) => issue.isActive)
+      .sort((a, b) => (b.featuredAt ?? 0) - (a.featuredAt ?? 0));
+  },
+});
+
+// Get archived issues (admin only)
+export const getArchivedIssues = query({
+  args: {},
+  handler: async (ctx) => {
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_active", (q) => q.eq("isActive", false))
+      .collect();
+    return issues.filter((issue) => issue.source === "daily");
   },
 });
 
@@ -81,6 +110,50 @@ export const getIssueScores = query({
       score: data.total / data.count,
       reasoning: data.reasoning,
     }));
+  },
+});
+
+// Get country counts by side for an issue (for headline cards)
+export const getIssueCounts = query({
+  args: { issueId: v.id("issues") },
+  handler: async (ctx, args) => {
+    const rawScores = await ctx.db
+      .query("countryScores")
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .collect();
+
+    // Aggregate scores by country (average if multiple entries)
+    const scoreMap = new Map<string, number>();
+    const countMap = new Map<string, number>();
+
+    for (const score of rawScores) {
+      const existing = scoreMap.get(score.countryName);
+      if (existing !== undefined) {
+        scoreMap.set(score.countryName, existing + score.score);
+        countMap.set(score.countryName, (countMap.get(score.countryName) || 0) + 1);
+      } else {
+        scoreMap.set(score.countryName, score.score);
+        countMap.set(score.countryName, 1);
+      }
+    }
+
+    // Count by side using averaged scores
+    let sideA = 0;
+    let sideB = 0;
+    let neutral = 0;
+
+    for (const [countryName, total] of scoreMap) {
+      const avg = total / (countMap.get(countryName) || 1);
+      if (avg > 0.305) {
+        sideA++;
+      } else if (avg < -0.305) {
+        sideB++;
+      } else {
+        neutral++;
+      }
+    }
+
+    return { sideA, sideB, neutral };
   },
 });
 
@@ -391,6 +464,106 @@ export const updateIssueActive = mutation({
   },
 });
 
+// Feature an issue (auto-unfeatures oldest if 2 already featured)
+export const featureIssue = mutation({
+  args: {
+    issueId: v.id("issues"),
+  },
+  handler: async (ctx, args) => {
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) {
+      throw new Error("Issue not found");
+    }
+
+    // Get currently featured issues
+    const featuredIssues = await ctx.db
+      .query("issues")
+      .withIndex("by_featured", (q) => q.eq("isFeatured", true))
+      .collect();
+    const activeFeatured = featuredIssues.filter((i) => i.isActive && i._id !== args.issueId);
+
+    // If already 2 featured, unfeature the oldest one
+    if (activeFeatured.length >= 2) {
+      // Sort by featuredAt ascending (oldest first)
+      activeFeatured.sort((a, b) => (a.featuredAt ?? 0) - (b.featuredAt ?? 0));
+      const oldest = activeFeatured[0];
+      await ctx.db.patch(oldest._id, {
+        isFeatured: false,
+        featuredAt: undefined,
+      });
+    }
+
+    // Feature the new issue
+    await ctx.db.patch(args.issueId, {
+      isFeatured: true,
+      featuredAt: Date.now(),
+      isActive: true, // Ensure it's active
+    });
+
+    return { success: true };
+  },
+});
+
+// Unfeature an issue
+export const unfeatureIssue = mutation({
+  args: {
+    issueId: v.id("issues"),
+  },
+  handler: async (ctx, args) => {
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) {
+      throw new Error("Issue not found");
+    }
+
+    await ctx.db.patch(args.issueId, {
+      isFeatured: false,
+      featuredAt: undefined,
+    });
+
+    return { success: true };
+  },
+});
+
+// Archive an issue (also unfeatures if featured)
+export const archiveIssue = mutation({
+  args: {
+    issueId: v.id("issues"),
+  },
+  handler: async (ctx, args) => {
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) {
+      throw new Error("Issue not found");
+    }
+
+    await ctx.db.patch(args.issueId, {
+      isActive: false,
+      isFeatured: false,
+      featuredAt: undefined,
+    });
+
+    return { success: true };
+  },
+});
+
+// Unarchive an issue (comes back as regular active, not featured)
+export const unarchiveIssue = mutation({
+  args: {
+    issueId: v.id("issues"),
+  },
+  handler: async (ctx, args) => {
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) {
+      throw new Error("Issue not found");
+    }
+
+    await ctx.db.patch(args.issueId, {
+      isActive: true,
+    });
+
+    return { success: true };
+  },
+});
+
 // Create a generation job
 export const createGenerationJob = mutation({
   args: {
@@ -607,5 +780,71 @@ export const createMapVersion = mutation({
     });
 
     return mapVersionId;
+  },
+});
+
+// ============ IMAGE UPLOAD ============
+
+// Generate a presigned URL for uploading an image
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+// Update an issue with an uploaded image
+export const updateIssueImage = mutation({
+  args: {
+    issueId: v.id("issues"),
+    imageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    // Get the existing issue to check for old image
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) {
+      throw new Error("Issue not found");
+    }
+
+    // Delete old image if it exists
+    if (issue.imageId) {
+      await ctx.storage.delete(issue.imageId);
+    }
+
+    // Update issue with new image
+    await ctx.db.patch(args.issueId, { imageId: args.imageId });
+
+    return { success: true };
+  },
+});
+
+// Remove image from an issue
+export const deleteIssueImage = mutation({
+  args: {
+    issueId: v.id("issues"),
+  },
+  handler: async (ctx, args) => {
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) {
+      throw new Error("Issue not found");
+    }
+
+    if (issue.imageId) {
+      await ctx.storage.delete(issue.imageId);
+      await ctx.db.patch(args.issueId, { imageId: undefined });
+    }
+
+    return { success: true };
+  },
+});
+
+// Get the URL for an issue's image
+export const getIssueImageUrl = query({
+  args: { issueId: v.id("issues") },
+  handler: async (ctx, args) => {
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue?.imageId) return null;
+
+    return await ctx.storage.getUrl(issue.imageId);
   },
 });

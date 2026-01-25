@@ -217,14 +217,14 @@ export function CountryTooltip({
   sideBLabel?: string;
 }) {
   const stance =
-    score > 0.3
+    score > 0.305
       ? sideALabel
-      : score < -0.3
+      : score < -0.305
       ? sideBLabel
       : "Neutral";
 
   const stanceColor =
-    score > 0.3 ? "text-blue-700" : score < -0.3 ? "text-red-700" : "text-slate-600";
+    score > 0.305 ? "text-blue-700" : score < -0.305 ? "text-red-700" : "text-slate-600";
 
   return (
     <div className="bg-white rounded-lg shadow-lg border border-slate-200 p-3 max-w-xs">
