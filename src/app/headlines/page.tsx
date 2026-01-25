@@ -311,72 +311,73 @@ export default function HeadlinesPage() {
   // Detail view (selected headline)
   return (
     <div className="h-[calc(100vh-48px)] bg-slate-50 flex flex-col">
-      {/* Detail header */}
-      <div className="bg-white border-b border-slate-200">
-        {/* Top bar with back button and view toggle */}
-        <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
+      {/* Top bar with back button and view toggle */}
+      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between">
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-sm font-medium">Headlines</span>
+        </button>
+
+        {/* Map/List toggle */}
+        <div className="flex bg-slate-100 rounded-lg p-1">
           <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+            onClick={() => setDetailView("map")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              detailView === "map"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Headlines</span>
+            <Map className="w-4 h-4" />
+            <span>Map</span>
           </button>
-
-          {/* Map/List toggle */}
-          <div className="flex bg-slate-100 rounded-lg p-1">
-            <button
-              onClick={() => setDetailView("map")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                detailView === "map"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Map className="w-4 h-4" />
-              <span>Map</span>
-            </button>
-            <button
-              onClick={() => setDetailView("list")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                detailView === "list"
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <List className="w-4 h-4" />
-              <span>List</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setDetailView("list")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              detailView === "list"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <List className="w-4 h-4" />
+            <span>List</span>
+          </button>
         </div>
+      </div>
 
-        {/* Issue image banner */}
-        {selectedIssueImageUrl && (
-          <div className="relative w-full h-32 sm:h-48 bg-slate-100">
-            <Image
-              src={selectedIssueImageUrl}
-              alt={selectedIssue?.title || "Headline image"}
-              fill
-              className="object-cover"
-              sizes="100vw"
-              priority
-            />
-          </div>
-        )}
+      {/* Main content - two column on desktop */}
+      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+        {/* Left column: Image + Text (scrollable on mobile, fixed on desktop) */}
+        <div className="lg:w-[400px] xl:w-[480px] lg:flex-shrink-0 bg-white lg:border-r border-slate-200 overflow-y-auto">
+          {/* Issue image */}
+          {selectedIssueImageUrl && (
+            <div className="relative w-full aspect-video bg-slate-100">
+              <Image
+                src={selectedIssueImageUrl}
+                alt={selectedIssue?.title || "Headline image"}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 480px"
+                priority
+              />
+            </div>
+          )}
 
-        {/* Issue info */}
-        {selectedIssue && (
-          <div className="px-4 sm:px-6 pb-4 pt-4">
-            <div className="max-w-4xl">
+          {/* Issue info */}
+          {selectedIssue && (
+            <div className="p-4 sm:p-6">
               <h1 className="text-lg sm:text-xl font-bold text-slate-900">
                 {selectedIssue.title}
               </h1>
               {selectedIssue.description && (
-                <p className="text-sm sm:text-base text-slate-600 mt-1">
+                <p className="text-sm sm:text-base text-slate-600 mt-2">
                   {selectedIssue.description}
                 </p>
               )}
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-4 text-sm">
                 {selectedIssue.primaryActor && (
                   <>
                     <span className="text-slate-600">
@@ -395,70 +396,95 @@ export default function HeadlinesPage() {
                   <span className="text-red-700 font-medium">{selectedIssue.sideB.label}</span>
                 </span>
               </div>
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* Content area */}
-      <main className="flex-1 overflow-hidden">
-        {detailView === "map" ? (
-          <div className="relative h-full">
-            <D3ScoreMap
-              scores={scores}
-              onCountryHover={handleCountryHover}
-              onCountryClick={handleCountryClick}
-              className="w-full h-full"
-            />
-
-            {/* Legend (floating) */}
-            {hasResults && (
-              <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 px-4 py-3">
-                <ScoreLegend sideALabel={sideALabel} sideBLabel={sideBLabel} />
-              </div>
-            )}
-
-            {/* Tooltip (floating) */}
-            {hoveredCountry && (
-              <div className="absolute top-4 right-4 pointer-events-none">
-                <CountryTooltip
-                  country={hoveredCountry.name}
-                  score={hoveredCountry.score}
-                  reasoning={hoveredCountry.reasoning}
-                  sideALabel={sideALabel}
-                  sideBLabel={sideBLabel}
-                />
-              </div>
-            )}
-
-            {/* Loading state */}
-            {selectedIssue && !hasResults && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="text-center text-slate-500">
-                  <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                  <p>Loading country positions...</p>
+              {/* Side descriptions */}
+              <div className="mt-6 space-y-3">
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    <span className="text-sm font-medium text-blue-800">{selectedIssue.sideA.label}</span>
+                  </div>
+                  <p className="text-sm text-blue-700">{selectedIssue.sideA.description}</p>
+                </div>
+                <div className="p-3 bg-red-50 rounded-lg border border-red-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-red-500" />
+                    <span className="text-sm font-medium text-red-800">{selectedIssue.sideB.label}</span>
+                  </div>
+                  <p className="text-sm text-red-700">{selectedIssue.sideB.description}</p>
                 </div>
               </div>
-            )}
-          </div>
-        ) : hasResults ? (
-          <CountryListView
-            scores={scores}
-            sideALabel={sideALabel}
-            sideBLabel={sideBLabel}
-            onCountryClick={(country, score) =>
-              setSelectedCountry({ name: country, ...score })
-            }
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full text-slate-500">
-            <div className="text-center px-4">
-              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p>Loading country positions...</p>
+
+              {/* Legend - show below text on desktop */}
+              {hasResults && (
+                <div className="mt-6 pt-4 border-t border-slate-200 hidden lg:block">
+                  <ScoreLegend sideALabel={sideALabel} sideBLabel={sideBLabel} />
+                </div>
+              )}
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </div>
+
+        {/* Right column: Map or List */}
+        <main className="flex-1 overflow-hidden">
+          {detailView === "map" ? (
+            <div className="relative h-full">
+              <D3ScoreMap
+                scores={scores}
+                onCountryHover={handleCountryHover}
+                onCountryClick={handleCountryClick}
+                className="w-full h-full"
+              />
+
+              {/* Legend (floating) - only show on mobile */}
+              {hasResults && (
+                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 px-4 py-3 lg:hidden">
+                  <ScoreLegend sideALabel={sideALabel} sideBLabel={sideBLabel} />
+                </div>
+              )}
+
+              {/* Tooltip (floating) */}
+              {hoveredCountry && (
+                <div className="absolute top-4 right-4 pointer-events-none">
+                  <CountryTooltip
+                    country={hoveredCountry.name}
+                    score={hoveredCountry.score}
+                    reasoning={hoveredCountry.reasoning}
+                    sideALabel={sideALabel}
+                    sideBLabel={sideBLabel}
+                  />
+                </div>
+              )}
+
+              {/* Loading state */}
+              {selectedIssue && !hasResults && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="text-center text-slate-500">
+                    <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    <p>Loading country positions...</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : hasResults ? (
+            <CountryListView
+              scores={scores}
+              sideALabel={sideALabel}
+              sideBLabel={sideBLabel}
+              onCountryClick={(country, score) =>
+                setSelectedCountry({ name: country, ...score })
+              }
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-slate-500">
+              <div className="text-center px-4">
+                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <p>Loading country positions...</p>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
 
       {/* Country detail modal */}
       {selectedCountry && (
