@@ -22,8 +22,8 @@ interface SelectedCountry {
   reasoning?: string;
 }
 
-interface Issue {
-  _id: Id<"issues">;
+interface Headline {
+  _id: Id<"headlines">;
   title: string;
   description: string;
   primaryActor?: string;
@@ -35,21 +35,21 @@ interface Issue {
 
 // Featured headline card - large with prominent image
 function FeaturedHeadlineCard({
-  issue,
+  headline,
   onSelect,
 }: {
-  issue: Issue;
-  onSelect: (issue: Issue) => void;
+  headline: Headline;
+  onSelect: (headline: Headline) => void;
 }) {
   const imageUrl = useQuery(
-    api.issues.getIssueImageUrl,
-    issue.imageId ? { issueId: issue._id } : "skip"
+    api.headlines.getHeadlineImageUrl,
+    headline.imageId ? { headlineId: headline._id } : "skip"
   );
-  const counts = useQuery(api.issues.getIssueCounts, { issueId: issue._id });
+  const counts = useQuery(api.headlines.getHeadlineCounts, { headlineId: headline._id });
 
   return (
     <button
-      onClick={() => onSelect(issue)}
+      onClick={() => onSelect(headline)}
       className="w-full text-left rounded-xl border-2 bg-white shadow-sm transition-all hover:shadow-md flex flex-col border-slate-200 hover:border-slate-300 overflow-hidden"
     >
       {/* Image area - 16:9 aspect ratio */}
@@ -57,7 +57,7 @@ function FeaturedHeadlineCard({
         <div className="relative w-full aspect-video bg-slate-100">
           <Image
             src={imageUrl}
-            alt={issue.title}
+            alt={headline.title}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
@@ -67,25 +67,25 @@ function FeaturedHeadlineCard({
 
       <div className="p-4 sm:p-5 flex flex-col flex-1">
         <h2 className="font-semibold text-slate-900 text-base sm:text-lg leading-snug">
-          {issue.title}
+          {headline.title}
         </h2>
-        {issue.description && (
+        {headline.description && (
           <p className="text-sm sm:text-base text-slate-600 mt-2 line-clamp-3 flex-1">
-            {issue.description}
+            {headline.description}
           </p>
         )}
         <div className="flex items-center gap-3 mt-4 pt-3 border-t border-slate-100">
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
             <span className="text-sm text-blue-700 font-medium">
-              {counts ? counts.sideA : "–"} {issue.sideA.label}
+              {counts ? counts.sideA : "–"} {headline.sideA.label}
             </span>
           </span>
           <span className="text-slate-400 text-sm">vs</span>
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
             <span className="text-sm text-red-700 font-medium">
-              {counts ? counts.sideB : "–"} {issue.sideB.label}
+              {counts ? counts.sideB : "–"} {headline.sideB.label}
             </span>
           </span>
         </div>
@@ -96,21 +96,21 @@ function FeaturedHeadlineCard({
 
 // Secondary headline card - compact card for grid layout
 function SecondaryHeadlineCard({
-  issue,
+  headline,
   onSelect,
 }: {
-  issue: Issue;
-  onSelect: (issue: Issue) => void;
+  headline: Headline;
+  onSelect: (headline: Headline) => void;
 }) {
   const imageUrl = useQuery(
-    api.issues.getIssueImageUrl,
-    issue.imageId ? { issueId: issue._id } : "skip"
+    api.headlines.getHeadlineImageUrl,
+    headline.imageId ? { headlineId: headline._id } : "skip"
   );
-  const counts = useQuery(api.issues.getIssueCounts, { issueId: issue._id });
+  const counts = useQuery(api.headlines.getHeadlineCounts, { headlineId: headline._id });
 
   return (
     <button
-      onClick={() => onSelect(issue)}
+      onClick={() => onSelect(headline)}
       className="w-full text-left rounded-lg border bg-white shadow-sm transition-all hover:shadow-md flex flex-row border-slate-200 hover:border-slate-300 overflow-hidden h-24"
     >
       {/* Square thumbnail */}
@@ -118,7 +118,7 @@ function SecondaryHeadlineCard({
         {imageUrl && (
           <Image
             src={imageUrl}
-            alt={issue.title}
+            alt={headline.title}
             fill
             className="object-cover"
             sizes="96px"
@@ -128,25 +128,25 @@ function SecondaryHeadlineCard({
 
       <div className="p-2.5 flex flex-col flex-1 min-w-0 justify-center">
         <h3 className="font-medium text-slate-900 text-sm leading-snug line-clamp-1">
-          {issue.title}
+          {headline.title}
         </h3>
-        {issue.description && (
+        {headline.description && (
           <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
-            {issue.description}
+            {headline.description}
           </p>
         )}
         <div className="flex items-center gap-1.5 mt-1.5 text-xs">
           <span className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
             <span className="text-blue-600 font-medium truncate">
-              {counts ? counts.sideA : "–"} {issue.sideA.label}
+              {counts ? counts.sideA : "–"} {headline.sideA.label}
             </span>
           </span>
           <span className="text-slate-400">vs</span>
           <span className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
             <span className="text-red-600 font-medium truncate">
-              {counts ? counts.sideB : "–"} {issue.sideB.label}
+              {counts ? counts.sideB : "–"} {headline.sideB.label}
             </span>
           </span>
         </div>
@@ -156,8 +156,8 @@ function SecondaryHeadlineCard({
 }
 
 export default function HeadlinesPage() {
-  // Selected issue
-  const [selectedIssueId, setSelectedIssueId] = useState<Id<"issues"> | null>(null);
+  // Selected headline
+  const [selectedHeadlineId, setSelectedHeadlineId] = useState<Id<"headlines"> | null>(null);
   const [scores, setScores] = useState<Record<string, { score: number; reasoning?: string }>>({});
 
   // Detail view mode (map or list) - only relevant when a headline is selected
@@ -169,50 +169,46 @@ export default function HeadlinesPage() {
   // Selected country for modal
   const [selectedCountry, setSelectedCountry] = useState<SelectedCountry | null>(null);
 
-  // Fetch featured and active daily issues
-  const featuredIssues = useQuery(api.issues.getFeaturedIssues);
-  const activeIssues = useQuery(api.issues.getActiveIssues);
+  // Fetch featured and active headlines
+  const featuredHeadlines = useQuery(api.headlines.getFeaturedHeadlines);
+  const activeHeadlines = useQuery(api.headlines.getActiveHeadlines);
 
-  // Filter to daily issues only
-  const featuredDailyIssues = featuredIssues?.filter((issue) => issue.source === "daily") || [];
-  const activeDailyIssues = activeIssues?.filter((issue) => issue.source === "daily") || [];
+  // Combined for finding selected headline
+  const allHeadlines = [...(featuredHeadlines || []), ...(activeHeadlines || [])];
 
-  // Combined for finding selected issue
-  const allDailyIssues = [...featuredDailyIssues, ...activeDailyIssues];
-
-  // Fetch scores for selected issue
-  const issueScoresQuery = useQuery(
-    api.issues.getIssueScores,
-    selectedIssueId ? { issueId: selectedIssueId } : "skip"
+  // Fetch scores for selected headline
+  const headlineScoresQuery = useQuery(
+    api.headlines.getHeadlineScores,
+    selectedHeadlineId ? { headlineId: selectedHeadlineId } : "skip"
   );
 
-  // Fetch image URL for selected issue
-  const selectedIssueImageUrl = useQuery(
-    api.issues.getIssueImageUrl,
-    selectedIssueId ? { issueId: selectedIssueId } : "skip"
+  // Fetch image URL for selected headline
+  const selectedHeadlineImageUrl = useQuery(
+    api.headlines.getHeadlineImageUrl,
+    selectedHeadlineId ? { headlineId: selectedHeadlineId } : "skip"
   );
 
   // Load scores when they arrive
   useEffect(() => {
-    if (issueScoresQuery && selectedIssueId) {
+    if (headlineScoresQuery && selectedHeadlineId) {
       const newScores: Record<string, { score: number; reasoning?: string }> = {};
-      for (const s of issueScoresQuery) {
+      for (const s of headlineScoresQuery) {
         newScores[s.countryName] = { score: s.score, reasoning: s.reasoning };
       }
       setScores(newScores);
     }
-  }, [issueScoresQuery, selectedIssueId]);
+  }, [headlineScoresQuery, selectedHeadlineId]);
 
-  const selectedIssue = allDailyIssues.find((i) => i._id === selectedIssueId);
+  const selectedHeadline = allHeadlines.find((h) => h._id === selectedHeadlineId);
 
-  const handleSelectIssue = useCallback((issue: Issue) => {
-    setSelectedIssueId(issue._id);
+  const handleSelectHeadline = useCallback((headline: Headline) => {
+    setSelectedHeadlineId(headline._id);
     setScores({}); // Clear scores, will load via query
     setDetailView("map"); // Default to map view
   }, []);
 
   const handleBack = useCallback(() => {
-    setSelectedIssueId(null);
+    setSelectedHeadlineId(null);
     setScores({});
   }, []);
 
@@ -240,17 +236,17 @@ export default function HeadlinesPage() {
     []
   );
 
-  const hasResults = selectedIssue && Object.keys(scores).length > 0;
+  const hasResults = selectedHeadline && Object.keys(scores).length > 0;
 
-  const sideALabel = selectedIssue?.sideA.label || "Supports";
-  const sideBLabel = selectedIssue?.sideB.label || "Opposes";
+  const sideALabel = selectedHeadline?.sideA.label || "Supports";
+  const sideBLabel = selectedHeadline?.sideB.label || "Opposes";
 
   // Loading state
-  const isLoading = featuredIssues === undefined || activeIssues === undefined;
-  const hasNoHeadlines = !isLoading && featuredDailyIssues.length === 0 && activeDailyIssues.length === 0;
+  const isLoading = featuredHeadlines === undefined || activeHeadlines === undefined;
+  const hasNoHeadlines = !isLoading && (featuredHeadlines?.length || 0) === 0 && (activeHeadlines?.length || 0) === 0;
 
-  // Show headlines list when no issue is selected
-  if (!selectedIssueId) {
+  // Show headlines list when no headline is selected
+  if (!selectedHeadlineId) {
     return (
       <div className="h-[calc(100vh-48px)] bg-slate-50 flex flex-col overflow-hidden">
         <div className="p-4 sm:p-6">
@@ -275,28 +271,28 @@ export default function HeadlinesPage() {
             )}
 
             {/* Featured Headlines - Large cards */}
-            {featuredDailyIssues.length > 0 && (
+            {featuredHeadlines && featuredHeadlines.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {featuredDailyIssues.map((issue) => (
+                {featuredHeadlines.map((headline) => (
                   <FeaturedHeadlineCard
-                    key={issue._id}
-                    issue={issue}
-                    onSelect={handleSelectIssue}
+                    key={headline._id}
+                    headline={headline}
+                    onSelect={handleSelectHeadline}
                   />
                 ))}
               </div>
             )}
 
             {/* Secondary Headlines - Compact grid */}
-            {activeDailyIssues.length > 0 && (
-              <div className={featuredDailyIssues.length > 0 ? "mt-6" : ""}>
+            {activeHeadlines && activeHeadlines.length > 0 && (
+              <div className={(featuredHeadlines?.length || 0) > 0 ? "mt-6" : ""}>
                 <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">More Headlines</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {activeDailyIssues.map((issue) => (
+                  {activeHeadlines.map((headline) => (
                     <SecondaryHeadlineCard
-                      key={issue._id}
-                      issue={issue}
-                      onSelect={handleSelectIssue}
+                      key={headline._id}
+                      headline={headline}
+                      onSelect={handleSelectHeadline}
                     />
                   ))}
                 </div>
@@ -352,12 +348,12 @@ export default function HeadlinesPage() {
       <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
         {/* Left column: Image + Text (scrollable on mobile, fixed on desktop) */}
         <div className="lg:w-[400px] xl:w-[480px] lg:flex-shrink-0 bg-white lg:border-r border-slate-200 overflow-y-auto">
-          {/* Issue image */}
-          {selectedIssueImageUrl && (
+          {/* Headline image */}
+          {selectedHeadlineImageUrl && (
             <div className="relative w-full aspect-video bg-slate-100">
               <Image
-                src={selectedIssueImageUrl}
-                alt={selectedIssue?.title || "Headline image"}
+                src={selectedHeadlineImageUrl}
+                alt={selectedHeadline?.title || "Headline image"}
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 480px"
@@ -366,34 +362,34 @@ export default function HeadlinesPage() {
             </div>
           )}
 
-          {/* Issue info */}
-          {selectedIssue && (
+          {/* Headline info */}
+          {selectedHeadline && (
             <div className="p-4 sm:p-6">
               <h1 className="text-lg sm:text-xl font-bold text-slate-900">
-                {selectedIssue.title}
+                {selectedHeadline.title}
               </h1>
-              {selectedIssue.description && (
+              {selectedHeadline.description && (
                 <p className="text-sm sm:text-base text-slate-600 mt-2">
-                  {selectedIssue.description}
+                  {selectedHeadline.description}
                 </p>
               )}
               <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-4 text-sm">
-                {selectedIssue.primaryActor && (
+                {selectedHeadline.primaryActor && (
                   <>
                     <span className="text-slate-600">
-                      <span className="text-slate-400">by</span> {selectedIssue.primaryActor}
+                      <span className="text-slate-400">by</span> {selectedHeadline.primaryActor}
                     </span>
                     <span className="text-slate-300 hidden sm:inline">|</span>
                   </>
                 )}
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                  <span className="text-blue-700 font-medium">{selectedIssue.sideA.label}</span>
+                  <span className="text-blue-700 font-medium">{selectedHeadline.sideA.label}</span>
                 </span>
                 <span className="text-slate-400">vs</span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                  <span className="text-red-700 font-medium">{selectedIssue.sideB.label}</span>
+                  <span className="text-red-700 font-medium">{selectedHeadline.sideB.label}</span>
                 </span>
               </div>
 
@@ -402,16 +398,16 @@ export default function HeadlinesPage() {
                 <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="w-2 h-2 rounded-full bg-blue-500" />
-                    <span className="text-sm font-medium text-blue-800">{selectedIssue.sideA.label}</span>
+                    <span className="text-sm font-medium text-blue-800">{selectedHeadline.sideA.label}</span>
                   </div>
-                  <p className="text-sm text-blue-700">{selectedIssue.sideA.description}</p>
+                  <p className="text-sm text-blue-700">{selectedHeadline.sideA.description}</p>
                 </div>
                 <div className="p-3 bg-red-50 rounded-lg border border-red-100">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="w-2 h-2 rounded-full bg-red-500" />
-                    <span className="text-sm font-medium text-red-800">{selectedIssue.sideB.label}</span>
+                    <span className="text-sm font-medium text-red-800">{selectedHeadline.sideB.label}</span>
                   </div>
-                  <p className="text-sm text-red-700">{selectedIssue.sideB.description}</p>
+                  <p className="text-sm text-red-700">{selectedHeadline.sideB.description}</p>
                 </div>
               </div>
 
@@ -457,7 +453,7 @@ export default function HeadlinesPage() {
               )}
 
               {/* Loading state */}
-              {selectedIssue && !hasResults && (
+              {selectedHeadline && !hasResults && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="text-center text-slate-500">
                     <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />

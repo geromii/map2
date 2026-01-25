@@ -16,6 +16,39 @@ const schema = defineSchema({
     isActive: v.boolean(), // Current version for new issues
   }).index("by_active", ["isActive"]),
 
+  // ============================================
+  // HEADLINES (editorial content for /headlines)
+  // ============================================
+  headlines: defineTable({
+    title: v.string(),
+    slug: v.optional(v.string()), // URL-friendly identifier, e.g., "us-china-tariffs-2026"
+    description: v.string(),
+    primaryActor: v.optional(v.string()),
+    sideA: v.object({ label: v.string(), description: v.string() }),
+    sideB: v.object({ label: v.string(), description: v.string() }),
+    mapVersionId: v.id("mapVersions"),
+    generatedAt: v.number(),
+    isActive: v.boolean(), // false = archived
+    imageId: v.optional(v.id("_storage")),
+    isFeatured: v.optional(v.boolean()),
+    featuredAt: v.optional(v.number()),
+  })
+    .index("by_active", ["isActive"])
+    .index("by_slug", ["slug"])
+    .index("by_featured", ["isFeatured"]),
+
+  // Country scores per headline
+  headlineScores: defineTable({
+    headlineId: v.id("headlines"),
+    countryName: v.string(),
+    score: v.float64(), // -1 to 1
+    reasoning: v.optional(v.string()),
+  }).index("by_headline", ["headlineId"]),
+
+  // ============================================
+  // ISSUES (user-generated custom scenarios)
+  // ============================================
+
   // Issues (both daily headlines and custom prompts)
   issues: defineTable({
     title: v.string(),
@@ -56,9 +89,10 @@ const schema = defineSchema({
     error: v.optional(v.string()),
   }).index("by_user", ["userId"]),
 
-  // Job tracking
+  // Job tracking (for both headlines and issues)
   generationJobs: defineTable({
-    issueId: v.id("issues"),
+    headlineId: v.optional(v.id("headlines")), // For editorial headlines
+    issueId: v.optional(v.id("issues")), // For custom scenarios
     status: v.union(
       v.literal("pending"),
       v.literal("running"),
@@ -75,7 +109,10 @@ const schema = defineSchema({
     startedAt: v.optional(v.number()),
     completedAt: v.optional(v.number()),
     error: v.optional(v.string()),
-  }).index("by_status", ["status"]).index("by_issue", ["issueId"]),
+  })
+    .index("by_status", ["status"])
+    .index("by_issue", ["issueId"])
+    .index("by_headline", ["headlineId"]),
 
   // AI request logs (for debugging)
   aiLogs: defineTable({

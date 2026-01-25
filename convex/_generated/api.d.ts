@@ -11,6 +11,7 @@
 import type * as ResendOTP from "../ResendOTP.js";
 import type * as ai from "../ai.js";
 import type * as auth from "../auth.js";
+import type * as headlines from "../headlines.js";
 import type * as http from "../http.js";
 import type * as issues from "../issues.js";
 
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   ResendOTP: typeof ResendOTP;
   ai: typeof ai;
   auth: typeof auth;
+  headlines: typeof headlines;
   http: typeof http;
   issues: typeof issues;
 }>;
