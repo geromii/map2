@@ -49,6 +49,9 @@ export default function ScenarioPage() {
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  // Mobile view toggle: 'map' shows the generator/map, 'scenarios' shows the list
+  const [mobileView, setMobileView] = useState<"map" | "scenarios">("map");
+
   // Parsed scenario for confirmation
   const [parsedScenario, setParsedScenario] = useState<ParsedScenario | null>(null);
   const [isParsing, setIsParsing] = useState(false);
@@ -67,6 +70,9 @@ export default function ScenarioPage() {
 
   // Hover state
   const [hoveredCountry, setHoveredCountry] = useState<HoveredCountry | null>(null);
+
+  // Selected country state (for popup)
+  const [selectedCountry, setSelectedCountry] = useState<HoveredCountry | null>(null);
 
   // Pagination and search state
   const [currentPage, setCurrentPage] = useState(1);
@@ -309,6 +315,8 @@ export default function ScenarioPage() {
       setPrompt("");
       setJobId(null);
       setError(null);
+      // Switch to map view on mobile when selecting a scenario
+      setMobileView("map");
     }
   };
 
@@ -332,6 +340,8 @@ export default function ScenarioPage() {
     setFunFacts([]);
     setFactIndex(0);
     setFactFading(false);
+    // Switch to map/generator view on mobile when creating new scenario
+    setMobileView("map");
   };
 
   const handleCountryHover = useCallback(
@@ -340,6 +350,15 @@ export default function ScenarioPage() {
         setHoveredCountry({ name: country, score: score.score, reasoning: score.reasoning });
       } else {
         setHoveredCountry(null);
+      }
+    },
+    []
+  );
+
+  const handleCountryClick = useCallback(
+    (country: string, score: { score: number; reasoning?: string } | null) => {
+      if (score) {
+        setSelectedCountry({ name: country, score: score.score, reasoning: score.reasoning });
       }
     },
     []
@@ -400,9 +419,48 @@ export default function ScenarioPage() {
       title="AI Scenario Generator"
       description="Create custom geopolitical scenarios and see how countries might align. Sign in to generate your own scenarios."
     >
-      <div className="h-[calc(100vh-48px)] bg-slate-50 flex overflow-hidden">
-        {/* Sidebar - Saved scenarios */}
-        <aside className="w-80 bg-white border-r border-slate-200 flex flex-col min-h-0">
+      <div className="h-[calc(100vh-48px)] bg-slate-50 flex flex-col md:flex-row overflow-hidden">
+        {/* Mobile view toggle */}
+        <div className="md:hidden flex border-b border-slate-200 bg-white">
+          <button
+            onClick={() => setMobileView("map")}
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+              mobileView === "map"
+                ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Generator
+            </span>
+          </button>
+          <button
+            onClick={() => setMobileView("scenarios")}
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+              mobileView === "scenarios"
+                ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              My Scenarios
+              {totalCount > 0 && (
+                <span className="bg-slate-200 text-slate-600 text-xs px-1.5 py-0.5 rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </span>
+          </button>
+        </div>
+
+        {/* Sidebar - Saved scenarios (hidden on mobile when viewing map) */}
+        <aside className={`${mobileView === "scenarios" ? "flex" : "hidden"} md:flex w-full md:w-80 bg-white border-r border-slate-200 flex-col min-h-0 flex-1 md:flex-none`}>
           <div className="p-4 border-b border-slate-200">
             <h1 className="text-lg font-bold text-slate-900">My Scenarios</h1>
             <p className="text-sm text-slate-600 mt-1">
@@ -552,48 +610,48 @@ export default function ScenarioPage() {
           )}
         </aside>
 
-        {/* Main content area */}
-        <div className="flex-1 flex flex-col">
+        {/* Main content area (hidden on mobile when viewing scenarios list) */}
+        <div className={`${mobileView === "map" ? "flex" : "hidden"} md:flex flex-1 flex-col overflow-y-auto md:overflow-hidden`}>
           {/* Header section - only show when creating new scenario */}
           {(step === "input" || step === "confirm" || step === "generating") && (
-            <div className="bg-white border-b border-slate-200 px-6 py-6">
+            <div className="bg-white border-b border-slate-200 px-3 py-3 md:px-6 md:py-6">
               <div className="max-w-3xl">
-                <h2 className="text-xl font-bold text-slate-900 mb-2">
+                <h2 className="text-lg md:text-xl font-bold text-slate-900 mb-1 md:mb-2">
                   {step === "input" && "Create New Scenario"}
                   {step === "confirm" && "Confirm Scenario"}
                   {step === "generating" && "Generating..."}
                 </h2>
-                <p className="text-slate-600 mb-2">
+                <p className="text-slate-600 text-sm md:text-base mb-1 md:mb-2 hidden md:block">
                   Describe a geopolitical scenario and AI will predict how each country might position themselves.
                 </p>
                 {generationUsage && (
-                  <p className={`text-sm mb-4 ${generationUsage.remaining === 0 ? "text-red-600 font-medium" : "text-slate-500"}`}>
+                  <p className={`text-xs md:text-sm mb-2 md:mb-4 ${generationUsage.remaining === 0 ? "text-red-600 font-medium" : "text-slate-500"}`}>
                     {generationUsage.remaining === 0
                       ? `Limit reached. Next available ${generationUsage.nextAvailableAt ? formatTimeUntil(generationUsage.nextAvailableAt) : "soon"}.`
-                      : `${generationUsage.remaining} of ${generationUsage.limit} generations remaining`}
+                      : `${generationUsage.remaining} of ${generationUsage.limit} remaining`}
                   </p>
                 )}
 
                 {/* Step 1: Input prompt */}
                 {step === "input" && (
-                  <form onSubmit={handleParse} className="flex gap-3">
+                  <form onSubmit={handleParse} className="flex gap-2 md:gap-3">
                     <input
                       type="text"
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="e.g., US annexation of Greenland, China invades Taiwan, Global carbon tax..."
+                      placeholder="e.g., US annexation of Greenland..."
                       disabled={isParsing}
-                      className="flex-1 px-4 py-3 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-3 py-2 md:px-4 md:py-3 text-sm md:text-base rounded-lg border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <Button
                       type="submit"
                       disabled={isParsing || !prompt.trim() || generationUsage?.remaining === 0}
-                      className="px-6 py-3 h-auto"
+                      className="px-3 py-2 md:px-6 md:py-3 text-sm md:text-base h-auto"
                     >
                       {isParsing ? (
                         <span className="flex items-center gap-2">
                           <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          Parsing...
+                          <span className="hidden md:inline">Parsing...</span>
                         </span>
                       ) : (
                         "Analyze"
@@ -965,23 +1023,13 @@ export default function ScenarioPage() {
           )}
 
           {/* Map section */}
-          <div className="flex-1 relative">
+          <div className="aspect-[16/10] md:aspect-auto md:flex-1 relative overflow-hidden">
             <D3ScoreMap
               scores={scores}
               onCountryHover={handleCountryHover}
-              className="w-full h-full min-h-[400px]"
+              onCountryClick={handleCountryClick}
+              className="w-full h-full"
             />
-
-            {/* Legend (floating) */}
-            {currentIssue && (step === "generating" || hasResults) && (
-              <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 px-4 py-3">
-                <ScoreLegend
-                  sideALabel={currentIssue.sideA.label}
-                  sideBLabel={currentIssue.sideB.label}
-                  showPending={step === "generating"}
-                />
-              </div>
-            )}
 
             {/* Tooltip (floating) */}
             {hoveredCountry && (
@@ -999,10 +1047,10 @@ export default function ScenarioPage() {
             {/* Empty state */}
             {step === "input" && !isParsing && !currentIssue && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="text-center text-slate-500 max-w-md px-4">
-                  <div className="text-6xl mb-4 opacity-50">🌍</div>
-                  <p className="text-lg">
-                    Enter a geopolitical scenario above to see how countries might align.
+                <div className="text-center text-slate-700 bg-white/60 backdrop-blur-sm rounded-lg shadow border border-slate-200/50 px-4 py-3 md:px-6 md:py-5 mx-4 max-w-xs md:max-w-sm">
+                  <div className="text-3xl md:text-4xl mb-2 md:mb-3">🌍</div>
+                  <p className="text-sm md:text-base">
+                    Enter a scenario above to see how countries might align.
                   </p>
                 </div>
               </div>
@@ -1014,6 +1062,52 @@ export default function ScenarioPage() {
                 <div className="text-center text-slate-500">
                   <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                   <p>Loading country positions...</p>
+                </div>
+              </div>
+            )}
+
+            {/* Country detail popup */}
+            {selectedCountry && (
+              <div
+                className="absolute inset-0 flex items-center justify-center bg-black/30 z-20"
+                onClick={() => setSelectedCountry(null)}
+              >
+                <div
+                  className="bg-white rounded-lg shadow-xl border border-slate-200 p-4 md:p-5 mx-4 max-w-sm md:max-w-md w-full max-h-[80%] overflow-y-auto"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <h3 className="font-semibold text-slate-900 text-lg">{selectedCountry.name}</h3>
+                      <div className={`text-sm font-medium ${
+                        selectedCountry.score > 0.3
+                          ? "text-blue-600"
+                          : selectedCountry.score < -0.3
+                          ? "text-red-600"
+                          : "text-slate-600"
+                      }`}>
+                        {selectedCountry.score > 0.3
+                          ? currentIssue?.sideA.label || "Supports"
+                          : selectedCountry.score < -0.3
+                          ? currentIssue?.sideB.label || "Opposes"
+                          : "Neutral"}{" "}
+                        ({selectedCountry.score > 0 ? "+" : ""}{selectedCountry.score.toFixed(2)})
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSelectedCountry(null)}
+                      className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  {selectedCountry.reasoning ? (
+                    <p className="text-sm text-slate-600 leading-relaxed">{selectedCountry.reasoning}</p>
+                  ) : (
+                    <p className="text-sm text-slate-400 italic">No reasoning available for this country.</p>
+                  )}
                 </div>
               </div>
             )}
