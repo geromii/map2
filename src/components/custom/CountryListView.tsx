@@ -182,7 +182,7 @@ export function CountryListView({
                 {/* Expanded reasoning */}
                 {expandedCountry === country && reasoning && (
                   <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-                    <p className="text-sm text-slate-600 bg-slate-50 rounded-lg p-3">
+                    <p className="text-sm text-slate-600 bg-slate-50 rounded-lg p-3 whitespace-pre-line">
                       {reasoning}
                     </p>
                   </div>

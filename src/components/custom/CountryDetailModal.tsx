@@ -122,7 +122,7 @@ export function CountryDetailModal({
               <h3 className="text-sm font-semibold text-slate-700 mb-1">
                 Reasoning
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
                 {reasoning}
               </p>
             </div>

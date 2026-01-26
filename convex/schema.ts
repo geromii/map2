@@ -45,6 +45,17 @@ const schema = defineSchema({
     reasoning: v.optional(v.string()),
   }).index("by_headline", ["headlineId"]),
 
+  // Draft headlines (auto-saved parsed prompts for admin recovery)
+  draftHeadlines: defineTable({
+    title: v.string(),
+    description: v.string(),
+    primaryActor: v.optional(v.string()),
+    sideA: v.object({ label: v.string(), description: v.string() }),
+    sideB: v.object({ label: v.string(), description: v.string() }),
+    originalPrompt: v.optional(v.string()), // The prompt that was parsed
+    createdAt: v.number(),
+  }).index("by_created", ["createdAt"]),
+
   // ============================================
   // ISSUES (user-generated custom scenarios)
   // ============================================
@@ -73,21 +84,6 @@ const schema = defineSchema({
     score: v.float64(), // -1 to 1
     reasoning: v.optional(v.string()),
   }).index("by_issue", ["issueId"]),
-
-  // Custom prompts (authenticated users)
-  customPrompts: defineTable({
-    userId: v.string(),
-    prompt: v.string(),
-    issueId: v.optional(v.id("issues")),
-    status: v.union(
-      v.literal("pending"),
-      v.literal("processing"),
-      v.literal("completed"),
-      v.literal("failed")
-    ),
-    createdAt: v.number(),
-    error: v.optional(v.string()),
-  }).index("by_user", ["userId"]),
 
   // Job tracking (for both headlines and issues)
   generationJobs: defineTable({

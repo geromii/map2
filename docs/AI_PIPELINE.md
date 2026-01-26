@@ -70,14 +70,6 @@ countryScores
 ├── score: float64 (-1 to 1)
 └── reasoning: string?
 
-customPrompts
-├── userId: string
-├── prompt: string
-├── issueId: Id<issues>?
-├── status: "pending" | "processing" | "completed" | "failed"
-├── createdAt: number
-└── error: string?
-
 generationJobs
 ├── issueId: Id<issues>
 ├── status: "pending" | "running" | "completed" | "failed"
@@ -93,20 +85,17 @@ generationJobs
 - `getIssueScores(issueId)` - Get all country scores for an issue
 - `getIssueById(issueId)` - Get issue details
 - `getActiveMapVersion()` - Get current map version
-- `getUserPrompts()` - User's prompt history (authenticated)
 - `getMapVersionById(mapVersionId)` - Get map version by ID
 
 ### Mutations (`convex/issues.ts`)
 - `createIssue(data)` - Create new issue record
 - `saveCountryScores(issueId, scores[])` - Bulk save scores
-- `submitCustomPrompt(prompt)` - Start custom prompt flow (authenticated)
-- `updatePromptStatus(promptId, status)` - Track processing state
 - `createMapVersion(data)` - Seed map version data
 
 ### Actions (`convex/ai.ts`)
 - `parsePromptToSides(prompt)` - Convert prompt to Side A / Side B
 - `generateBatchScores(issueId)` - Batch mode scoring
-- `processCustomPrompt(promptId)` - Orchestrates full custom prompt flow
+- `processScenarioBatches(issueId, jobId, ...)` - Real-time batch processing with progress updates
 
 ## Frontend Pages
 

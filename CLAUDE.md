@@ -52,7 +52,7 @@ Backend database added via Convex (2026-01-21). Provider set up in `src/app/Conv
 - `/scenario` - Custom prompt generator (requires auth) - Fully functional
 
 **Key Files**:
-- `convex/schema.ts` - Database tables (issues, countryScores, customPrompts, etc.)
+- `convex/schema.ts` - Database tables (issues, countryScores, headlines, etc.)
 - `convex/issues.ts` - Queries and mutations
 - `convex/ai.ts` - AI actions (OpenRouter for non-grounded, Google Gemini 3 Flash for web grounded)
 - `src/components/custom/D3ScoreMap.tsx` - d3-geo map component

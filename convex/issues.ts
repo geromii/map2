@@ -197,21 +197,6 @@ export const getMapVersionById = query({
   },
 });
 
-// Get user's custom prompt history (authenticated)
-export const getUserPrompts = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return [];
-
-    return await ctx.db
-      .query("customPrompts")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .order("desc")
-      .collect();
-  },
-});
-
 // Get user's custom scenarios/issues (authenticated)
 export const getUserScenarios = query({
   args: {},
@@ -270,14 +255,6 @@ export const getUserScenariosPaginated = query({
       totalCount,
       totalPages,
     };
-  },
-});
-
-// Get a specific prompt by ID
-export const getPromptById = query({
-  args: { promptId: v.id("customPrompts") },
-  handler: async (ctx, args) => {
-    return await ctx.db.get(args.promptId);
   },
 });
 
@@ -395,61 +372,6 @@ export const upsertBatchScores = mutation({
     }
 
     return { insertedCount: args.scores.length };
-  },
-});
-
-// Submit a custom prompt (authenticated)
-export const submitCustomPrompt = mutation({
-  args: {
-    prompt: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Authentication required");
-    }
-
-    const promptId = await ctx.db.insert("customPrompts", {
-      userId,
-      prompt: args.prompt,
-      status: "pending",
-      createdAt: Date.now(),
-    });
-
-    return promptId;
-  },
-});
-
-// Update prompt status
-export const updatePromptStatus = mutation({
-  args: {
-    promptId: v.id("customPrompts"),
-    status: v.union(
-      v.literal("pending"),
-      v.literal("processing"),
-      v.literal("completed"),
-      v.literal("failed")
-    ),
-    issueId: v.optional(v.id("issues")),
-    error: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const updateData: {
-      status: "pending" | "processing" | "completed" | "failed";
-      issueId?: typeof args.issueId;
-      error?: string;
-    } = {
-      status: args.status,
-    };
-
-    if (args.issueId) {
-      updateData.issueId = args.issueId;
-    }
-    if (args.error) {
-      updateData.error = args.error;
-    }
-
-    await ctx.db.patch(args.promptId, updateData);
   },
 });
 

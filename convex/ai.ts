@@ -1311,10 +1311,10 @@ export const generateBatchScores = action({
 
     const countries = mapVersion.countries;
 
-    // Accumulate scores across multiple runs
-    const scoreAccumulator: Record<string, { total: number; count: number; reasonings: string[] }> = {};
+    // Accumulate scores across multiple runs (store score with reasoning for median selection)
+    const scoreAccumulator: Record<string, { runs: { score: number; reasoning?: string }[] }> = {};
     countries.forEach((country) => {
-      scoreAccumulator[country] = { total: 0, count: 0, reasonings: [] };
+      scoreAccumulator[country] = { runs: [] };
     });
 
     // Run batch generation multiple times and average
@@ -1336,26 +1336,26 @@ export const generateBatchScores = action({
         // Accumulate scores (skip entries with missing/invalid scores)
         for (const [country, data] of Object.entries(batchScores)) {
           if (scoreAccumulator[country] && typeof data.score === 'number' && !isNaN(data.score)) {
-            scoreAccumulator[country].total += data.score;
-            scoreAccumulator[country].count += 1;
-            if (data.reasoning) {
-              scoreAccumulator[country].reasonings.push(data.reasoning);
-            }
+            scoreAccumulator[country].runs.push({ score: data.score, reasoning: data.reasoning });
           }
         }
       }
     }
 
-    // Calculate averaged scores
+    // Calculate averaged scores, pick reasoning from median run
     const finalScores: CountryScore[] = countries.map((country) => {
       const acc = scoreAccumulator[country];
-      const avgScore = acc.count > 0 ? acc.total / acc.count : 0;
-      // Pick the most common reasoning or first one
-      const reasoning = acc.reasonings.length > 0 ? acc.reasonings[0] : undefined;
+      if (acc.runs.length === 0) {
+        return { countryName: country, score: 0, reasoning: undefined };
+      }
+      const avgScore = acc.runs.reduce((sum, r) => sum + r.score, 0) / acc.runs.length;
+      // Sort by score to find median, pick its reasoning
+      const sorted = [...acc.runs].sort((a, b) => a.score - b.score);
+      const medianRun = sorted[Math.floor(sorted.length / 2)];
       return {
         countryName: country,
         score: Math.max(-1, Math.min(1, avgScore)), // Clamp to [-1, 1]
-        reasoning,
+        reasoning: medianRun.reasoning,
       };
     });
 
@@ -1520,55 +1520,6 @@ OPPOSE (negative scores): ${sideB.label} - ${sideB.description}`;
   return parsed.scores || {};
 }
 
-// Helper function to parse prompt to sides (for internal use)
-async function parsePromptToSidesInternal(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ctx: any,
-  apiKey: string,
-  prompt: string
-): Promise<{
-  title: string;
-  description: string;
-  sideA: { label: string; description: string };
-  sideB: { label: string; description: string };
-}> {
-  const systemPrompt = `You are an expert at analyzing geopolitical scenarios. Given a user prompt describing a scenario or issue, parse it into a structured format with two opposing sides.
-
-Return a JSON object with:
-- title: A concise title for the issue (max 100 chars)
-- description: A brief description of the overall scenario (1-2 sentences)
-- sideA: The side that supports/approves/is in favor (object with "label" and "description")
-- sideB: The side that opposes/disapproves/is against (object with "label" and "description")
-
-IMPORTANT: The "description" for each side should describe the POSITION itself, NOT predict which countries or actors would take that position. That prediction is done separately.
-
-For example, if the prompt is "US annexation of Greenland", you might return:
-{
-  "title": "US Annexation of Greenland",
-  "description": "The potential acquisition of Greenland by the United States.",
-  "sideA": { "label": "Pro-Annexation", "description": "Supports US acquisition of Greenland" },
-  "sideB": { "label": "Anti-Annexation", "description": "Opposes US acquisition of Greenland" }
-}
-
-If the user's message is in a language other than English, please issue your response in that language.
-
-Only return valid JSON, no additional text.`;
-
-  const MODEL = "google/gemini-2.0-flash-001";
-  const { content } = await fetchOpenRouterWithLogging(
-    ctx,
-    "parsePromptToSidesInternal",
-    MODEL,
-    systemPrompt,
-    prompt,
-    apiKey,
-    0.3,
-    20000 // 20 second timeout
-  );
-
-  return JSON.parse(content);
-}
-
 // Generate a fun fact related to the scenario title
 export const generateFunFact = action({
   args: {
@@ -1624,159 +1575,3 @@ Return JSON: { "fact": "Your fun fact here" }`;
   },
 });
 
-// Process a custom prompt end-to-end
-export const processCustomPrompt = action({
-  args: {
-    promptId: v.id("customPrompts"),
-  },
-  handler: async (ctx, args): Promise<{ success: boolean; issueId?: string; error?: string }> => {
-    const openaiApiKey = process.env.OPENROUTER_API_KEY;
-    if (!openaiApiKey) {
-      throw new Error("OPENROUTER_API_KEY environment variable not set");
-    }
-
-    try {
-      // Get the prompt
-      const prompt = await ctx.runQuery(issuesApi.getPromptById, {
-        promptId: args.promptId,
-      });
-
-      if (!prompt) {
-        throw new Error("Prompt not found");
-      }
-
-      // Update status to processing
-      await ctx.runMutation(issuesApi.updatePromptStatus, {
-        promptId: args.promptId,
-        status: "processing",
-      });
-
-      // Get active map version
-      const mapVersion = await ctx.runQuery(issuesApi.getActiveMapVersion, {});
-
-      if (!mapVersion) {
-        throw new Error("No active map version found");
-      }
-
-      // Parse prompt into sides (inline)
-      const parsedIssue = await parsePromptToSidesInternal(ctx, openaiApiKey, prompt.prompt);
-
-      // Create the issue
-      const issueId = await ctx.runMutation(issuesApi.createIssue, {
-        title: parsedIssue.title,
-        description: parsedIssue.description,
-        sideA: parsedIssue.sideA,
-        sideB: parsedIssue.sideB,
-        mapVersionId: mapVersion._id,
-        source: "custom",
-        isActive: false,
-      });
-
-      // Create generation job
-      await ctx.runMutation(issuesApi.createGenerationJob, {
-        issueId,
-      });
-
-      // Generate scores (inline the batch generation logic)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const issue = await (ctx.runQuery as any)(issuesApi.getIssueById, {
-        issueId,
-      }) as IssueType | null;
-
-      if (!issue) {
-        throw new Error("Issue not found");
-      }
-
-      // Get map version separately
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mv = await (ctx.runQuery as any)(issuesApi.getMapVersionById, {
-        mapVersionId: issue.mapVersionId,
-      }) as MapVersionType | null;
-
-      if (!mv) {
-        throw new Error("Map version not found");
-      }
-      const countries = mv.countries;
-
-      // Accumulate scores across multiple runs
-      const scoreAccumulator: Record<string, { total: number; count: number; reasonings: string[] }> = {};
-      countries.forEach((country) => {
-        scoreAccumulator[country] = { total: 0, count: 0, reasonings: [] };
-      });
-
-      // Run batch generation multiple times and average
-      for (let run = 0; run < DEFAULT_NUM_RUNS; run++) {
-        const shuffledCountries = shuffleArray(countries);
-        const batches = batchArray(shuffledCountries, BATCH_SIZE);
-
-        for (const batch of batches) {
-          const batchScores = await generateScoresForBatch(
-            ctx,
-            openaiApiKey,
-            issue.title,
-            issue.description,
-            issue.sideA,
-            issue.sideB,
-            batch
-          );
-
-          // Accumulate scores (skip entries with missing/invalid scores)
-          for (const [country, data] of Object.entries(batchScores)) {
-            if (scoreAccumulator[country] && typeof data.score === 'number' && !isNaN(data.score)) {
-              scoreAccumulator[country].total += data.score;
-              scoreAccumulator[country].count += 1;
-              if (data.reasoning) {
-                scoreAccumulator[country].reasonings.push(data.reasoning);
-              }
-            }
-          }
-        }
-      }
-
-      // Calculate averaged scores
-      const finalScores: CountryScore[] = countries.map((country) => {
-        const acc = scoreAccumulator[country];
-        const avgScore = acc.count > 0 ? acc.total / acc.count : 0;
-        const reasoning = acc.reasonings.length > 0 ? acc.reasonings[0] : undefined;
-        return {
-          countryName: country,
-          score: Math.max(-1, Math.min(1, avgScore)),
-          reasoning,
-        };
-      });
-
-      // Save scores to database
-      await ctx.runMutation(issuesApi.saveCountryScores, {
-        issueId,
-        scores: finalScores,
-      });
-
-      // Update prompt with completed status and issue ID
-      await ctx.runMutation(issuesApi.updatePromptStatus, {
-        promptId: args.promptId,
-        status: "completed",
-        issueId,
-      });
-
-      // Activate the issue
-      await ctx.runMutation(issuesApi.updateIssueActive, {
-        issueId,
-        isActive: true,
-      });
-
-      return { success: true, issueId: issueId };
-    } catch (error) {
-      // Update prompt with failed status
-      await ctx.runMutation(issuesApi.updatePromptStatus, {
-        promptId: args.promptId,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      };
-    }
-  },
-});
