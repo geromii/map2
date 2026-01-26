@@ -124,6 +124,30 @@ const schema = defineSchema({
     error: v.optional(v.string()),
     durationMs: v.optional(v.number()),
   }).index("by_timestamp", ["timestamp"]),
+
+  // ============================================
+  // SUBSCRIPTIONS (Stripe billing)
+  // ============================================
+  subscriptions: defineTable({
+    userId: v.id("users"),
+    stripeCustomerId: v.string(),
+    stripeSubscriptionId: v.optional(v.string()),
+    status: v.union(
+      v.literal("active"),
+      v.literal("canceled"),
+      v.literal("past_due"),
+      v.literal("trialing"),
+      v.literal("free")
+    ),
+    planId: v.optional(v.string()), // "basic", "pro", "advanced"
+    currentPeriodEnd: v.optional(v.number()),
+    cancelAtPeriodEnd: v.optional(v.boolean()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_stripe_customer", ["stripeCustomerId"])
+    .index("by_stripe_subscription", ["stripeSubscriptionId"]),
 });
 
 export default schema;

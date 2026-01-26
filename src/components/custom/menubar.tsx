@@ -169,12 +169,25 @@ const MenuBar = () => {
           <div className="flex items-center gap-2 justify-end">
             {authEnabled && (
               isLoading ? null : isAuthenticated ? (
-                <button
-                  onClick={() => signOut()}
-                  className="px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 rounded-md transition-colors"
-                >
-                  Sign Out
-                </button>
+                <>
+                  <Link
+                    href="/account"
+                    className={cn(
+                      "px-3 py-1.5 text-sm font-medium transition-colors rounded-md",
+                      pathname === "/account"
+                        ? "bg-yellow-400/15 text-yellow-400"
+                        : "text-white/70 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    Account
+                  </Link>
+                  <button
+                    onClick={() => signOut()}
+                    className="px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <Link
                   href="/login"

@@ -67,3 +67,39 @@ Backend database added via Convex (2026-01-21). Provider set up in `src/app/Conv
 - Daily headline generation (scheduled job with news scanning)
 - High-accuracy mode with web search for current events
 - Advanced multi-position scoring mode
+
+### Stripe Subscription Integration (2026-01-26)
+
+**Status**: Basic implementation complete.
+
+**Tiers**: Free, Basic, Pro, Advanced
+
+**Feature Flag**:
+- `NEXT_PUBLIC_STRIPE_ENABLED=true` - Enables subscription management UI (shows "Coming Soon" when disabled/not set)
+
+**Environment Variables** (set in Convex dashboard):
+- `STRIPE_SECRET_KEY` - Stripe API secret key
+- `STRIPE_WEBHOOK_SECRET` - Webhook signing secret for verifying Stripe events
+
+**Pages**:
+- `/account` - Account management page (requires auth)
+  - Subscription status and management
+  - Linked sign-in methods display
+  - Account deletion
+
+**Key Files**:
+- `convex/schema.ts` - `subscriptions` table
+- `convex/subscriptions.ts` - Subscription queries and mutations
+- `convex/stripe.ts` - Stripe checkout and portal session actions
+- `convex/stripeWebhook.ts` - Webhook handler for Stripe events
+- `convex/users.ts` - Account deletion action
+- `src/app/account/page.tsx` - Account management UI
+- `src/components/custom/SubscriptionCard.tsx` - Subscription display/management
+- `src/components/custom/LinkedAccountsCard.tsx` - Auth providers display
+- `src/components/custom/DangerZoneCard.tsx` - Account deletion with confirmation
+
+**Stripe Setup**:
+1. Create products in Stripe: Basic, Pro, Advanced
+2. Configure Customer Portal in Stripe Dashboard
+3. Set up webhook endpoint: `https://<convex-url>/stripe/webhook`
+4. Webhook events handled: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`
