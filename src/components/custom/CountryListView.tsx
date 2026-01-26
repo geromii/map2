@@ -93,13 +93,6 @@ export function CountryListView({
     );
   }, [sortedCountries, search]);
 
-  // Get first sentence of reasoning for preview
-  const getReasoningPreview = (reasoning?: string) => {
-    if (!reasoning) return null;
-    const firstSentence = reasoning.split(/[.!?]/)[0];
-    return firstSentence ? firstSentence.trim() + "." : null;
-  };
-
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Search bar */}
@@ -142,41 +135,47 @@ export function CountryListView({
 
       {/* Country list */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto divide-y divide-slate-100">
           {filteredCountries.length === 0 ? (
             <div className="p-4 text-center text-slate-500">
               {search ? "No countries match your search" : "No country data available"}
             </div>
           ) : (
             filteredCountries.map(({ country, score, reasoning, stance }) => {
-              const preview = getReasoningPreview(reasoning);
+              const scoreColor = stance === "sideA"
+                ? "text-blue-600"
+                : stance === "sideB"
+                  ? "text-red-600"
+                  : "text-slate-500";
+
               return (
                 <button
                   key={country}
                   onClick={() => onCountryClick?.(country, { score, reasoning })}
-                  className="w-full p-3 sm:p-4 text-left hover:bg-slate-50 transition-colors border-b border-slate-100"
+                  className="w-full px-3 sm:px-4 py-3 text-left hover:bg-slate-50 transition-colors"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-slate-900 truncate sm:text-base">
-                      {country}
-                    </span>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <StanceBadge
-                        stance={stance}
-                        sideALabel={sideALabel}
-                        sideBLabel={sideBLabel}
-                      />
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-900">
+                          {country}
+                        </span>
+                        <span className={`text-xs font-medium ${scoreColor}`}>
+                          {score > 0 ? "+" : ""}{score.toFixed(2)}
+                        </span>
+                      </div>
+                      {reasoning && (
+                        <p className="text-sm text-slate-500 mt-1 line-clamp-2">
+                          {reasoning}
+                        </p>
+                      )}
                     </div>
+                    <StanceBadge
+                      stance={stance}
+                      sideALabel={sideALabel}
+                      sideBLabel={sideBLabel}
+                    />
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                    Score: {score > 0 ? "+" : ""}
-                    {score.toFixed(2)}
-                  </div>
-                  {preview && (
-                    <p className="text-xs sm:text-sm text-slate-600 mt-1.5 line-clamp-1">
-                      {preview}
-                    </p>
-                  )}
                 </button>
               );
             })

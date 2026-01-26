@@ -76,7 +76,7 @@ export function D3ScoreMap({
         const { width } = svgRef.current.parentElement.getBoundingClientRect();
         setDimensions({
           width,
-          height: width * 0.5, // 2:1 aspect ratio
+          height: width * 0.58, // ~1.7:1 aspect ratio - more vertical ocean space
         });
       }
     };
@@ -113,7 +113,7 @@ export function D3ScoreMap({
   // Create projection - centered on Europe/Africa, zoomed in to exclude Pacific
   const projection = d3
     .geoNaturalEarth1()
-    .center([20, 10]) // Shift center east (longitude 20) and slightly north
+    .center([10, 10]) // Shift center east (longitude 20) and slightly north
     .rotate([-7, 0, 0]) // Rotate 5 degrees
     .scale(dimensions.width / 4.85) // Zoom level (smaller divisor = more zoom)
     .translate([dimensions.width / 2, dimensions.height / 2]);
@@ -190,18 +190,23 @@ export function D3ScoreMap({
 export function ScoreLegend({
   sideALabel = "Supports",
   sideBLabel = "Opposes",
+  sideACount,
+  sideBCount,
   showPending = false,
 }: {
   sideALabel?: string;
   sideBLabel?: string;
+  sideACount?: number;
+  sideBCount?: number;
   showPending?: boolean;
 }) {
+  // Gradient goes from blue (sideA, left) to red (sideB, right)
   const gradientStops = [
-    { offset: "0%", color: scoreToColor(-1) },
-    { offset: "25%", color: scoreToColor(-0.5) },
+    { offset: "0%", color: scoreToColor(1) },
+    { offset: "25%", color: scoreToColor(0.5) },
     { offset: "50%", color: scoreToColor(0) },
-    { offset: "75%", color: scoreToColor(0.5) },
-    { offset: "100%", color: scoreToColor(1) },
+    { offset: "75%", color: scoreToColor(-0.5) },
+    { offset: "100%", color: scoreToColor(-1) },
   ];
 
   return (
@@ -215,7 +220,10 @@ export function ScoreLegend({
           <span className="text-slate-300">|</span>
         </>
       )}
-      <span className="text-red-700 font-medium">{sideBLabel}</span>
+      <span className="text-blue-700 font-medium">
+        {sideACount !== undefined && <span className="mr-1">{sideACount}</span>}
+        {sideALabel}
+      </span>
       <div className="relative w-32 h-3 rounded-full overflow-hidden">
         <svg width="100%" height="100%">
           <defs>
@@ -228,7 +236,10 @@ export function ScoreLegend({
           <rect width="100%" height="100%" fill="url(#score-gradient)" />
         </svg>
       </div>
-      <span className="text-blue-700 font-medium">{sideALabel}</span>
+      <span className="text-red-700 font-medium">
+        {sideBCount !== undefined && <span className="mr-1">{sideBCount}</span>}
+        {sideBLabel}
+      </span>
     </div>
   );
 }
