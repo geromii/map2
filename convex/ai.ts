@@ -3,9 +3,11 @@ import { action, internalAction, internalMutation, mutation } from "./_generated
 import { internal, api } from "./_generated/api";
 import { GoogleGenAI } from "@google/genai";
 
-// Store api reference to avoid deep type instantiation in actions
+// Store api references to avoid deep type instantiation in actions
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const issuesApi = api.issues as any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const headlinesApi = api.headlines as any;
 
 // Batch size for country grouping
 const BATCH_SIZE = 10;
@@ -231,6 +233,7 @@ async function fetchOpenRouterWithLogging(
 const GEMINI_MODELS = {
   "2.5": "gemini-2.5-flash",
   "3.0": "gemini-3-flash-preview",
+  "3.0-pro": "gemini-3-pro-preview",
 } as const;
 type GeminiModelVersion = keyof typeof GEMINI_MODELS;
 
@@ -447,6 +450,57 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
+// Sliding window rate limiter for API calls
+// Tracks request timestamps and ensures we don't exceed maxRPM requests per minute
+class RateLimiter {
+  private timestamps: number[] = [];
+  private maxRPM: number;
+
+  constructor(maxRPM: number = 20) {
+    this.maxRPM = maxRPM;
+  }
+
+  async waitForSlot(): Promise<void> {
+    const now = Date.now();
+
+    // Remove timestamps older than 60 seconds
+    while (this.timestamps.length > 0 && this.timestamps[0] < now - 60000) {
+      this.timestamps.shift();
+    }
+
+    // If at limit, wait until oldest expires
+    if (this.timestamps.length >= this.maxRPM) {
+      const waitTime = this.timestamps[0] + 60000 - now + 100; // +100ms buffer
+      console.log(`Rate limit reached, waiting ${Math.round(waitTime / 1000)}s...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      // Clean up again after waiting
+      const newNow = Date.now();
+      while (this.timestamps.length > 0 && this.timestamps[0] < newNow - 60000) {
+        this.timestamps.shift();
+      }
+    }
+
+    this.timestamps.push(Date.now());
+  }
+}
+
+// Helper to process batches with rate limiting
+// Fires requests as fast as allowed, doesn't wait for responses between sends
+async function processWithRateLimit<T>(
+  items: T[],
+  processor: (item: T) => Promise<void>,
+  maxRPM: number = 20
+): Promise<PromiseSettledResult<void>[]> {
+  const limiter = new RateLimiter(maxRPM);
+
+  const promises = items.map(async (item) => {
+    await limiter.waitForSlot();
+    return processor(item);
+  });
+
+  return Promise.allSettled(promises);
+}
+
 // Split array into batches
 function batchArray<T>(array: T[], batchSize: number): T[][] {
   const batches: T[][] = [];
@@ -457,7 +511,7 @@ function batchArray<T>(array: T[], batchSize: number): T[][] {
 }
 
 // Model choice type for API
-const modelChoiceValidator = v.optional(v.union(v.literal("2.5"), v.literal("3.0"), v.literal("3.0-fallback")));
+const modelChoiceValidator = v.optional(v.union(v.literal("2.5"), v.literal("3.0"), v.literal("3.0-fallback"), v.literal("3.0-pro")));
 
 // Parse prompt into Side A / Side B structure
 export const parsePromptToSides = action({
@@ -562,7 +616,11 @@ Only return valid JSON, no additional text.`;
       // Determine model version(s) to try
       const tryModels: GeminiModelVersion[] = modelChoice === "3.0-fallback"
         ? ["3.0", "2.5"]
-        : [modelChoice === "3.0" ? "3.0" : "2.5"];
+        : modelChoice === "3.0-pro"
+          ? ["3.0-pro"]
+          : modelChoice === "3.0"
+            ? ["3.0"]
+            : ["2.5"];
 
       let lastError: Error | null = null;
       for (const modelVersion of tryModels) {
@@ -866,20 +924,33 @@ export const processScenarioBatches = action({
         });
       };
 
-      // Create all batch promises across all runs (fully parallel)
-      const allBatchPromises: Promise<void>[] = [];
-
+      // Build all batches across all runs
+      const allBatches: string[][] = [];
       for (let run = 0; run < numRuns; run++) {
         const shuffledCountries = shuffleArray(countries);
         const runBatches = batchArray(shuffledCountries, BATCH_SIZE);
-
-        for (const batch of runBatches) {
-          allBatchPromises.push(processBatch(batch));
-        }
+        allBatches.push(...runBatches);
       }
 
-      // Execute all batches in parallel (use allSettled so one failure doesn't stop others)
-      const results = await Promise.allSettled(allBatchPromises);
+      // Fire first batch and wait (establishes cache for implicit caching)
+      if (allBatches.length > 0) {
+        await processBatch(allBatches[0]);
+      }
+
+      // Fire remaining batches - rate limited for 3.0-pro, parallel for others
+      const remainingBatches = allBatches.slice(1);
+      let results: PromiseSettledResult<void>[];
+
+      if (modelChoice === "3.0-pro" && remainingBatches.length > 0) {
+        // Sliding window rate limit: 20 RPM max
+        // Fires requests continuously, spaced ~3s apart, without waiting for responses
+        results = await processWithRateLimit(remainingBatches, processBatch, 20);
+      } else {
+        // Non-pro models: fire all in parallel
+        results = await Promise.allSettled(
+          remainingBatches.map(batch => processBatch(batch))
+        );
+      }
 
       // Count failures
       const failures = results.filter(r => r.status === "rejected");
@@ -898,7 +969,7 @@ export const processScenarioBatches = action({
 
       await ctx.runMutation(issuesApi.updateJobStatus, {
         jobId: args.jobId,
-        status: failures.length > 0 ? "completed" : "completed", // Could use "partial" status
+        status: "completed",
         progress: 100,
         completedCountries: totalCountries,
         error: failures.length > 0 ? `${failures.length} batches failed` : undefined,
@@ -915,6 +986,292 @@ export const processScenarioBatches = action({
 
       return {
         success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  },
+});
+
+// Process headline batches for a headline (for real-time updates on /admin/headlines)
+export const processHeadlineBatches = action({
+  args: {
+    headlineId: v.id("headlines"),
+    jobId: v.id("generationJobs"),
+    title: v.string(),
+    description: v.string(),
+    sideA: v.object({ label: v.string(), description: v.string() }),
+    sideB: v.object({ label: v.string(), description: v.string() }),
+    numRuns: v.optional(v.number()),
+    useWebGrounding: v.optional(v.boolean()),
+    modelChoice: modelChoiceValidator,
+    batchSize: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<{ success: boolean; error?: string }> => {
+    const openaiApiKey = process.env.OPENROUTER_API_KEY;
+    if (!openaiApiKey) {
+      throw new Error("OPENROUTER_API_KEY environment variable not set");
+    }
+
+    const numRuns = args.numRuns ?? DEFAULT_NUM_RUNS;
+    const batchSize = args.batchSize ?? BATCH_SIZE;
+
+    try {
+      // Get active map version
+      const mapVersion = await ctx.runQuery(headlinesApi.getActiveMapVersion, {}) as MapVersionType | null;
+      if (!mapVersion) {
+        throw new Error("No active map version found");
+      }
+
+      const countries = mapVersion.countries;
+      const totalCountries = countries.length;
+      const batches = batchArray(countries, batchSize);
+      const totalBatches = batches.length * numRuns;
+
+      // Track completed batches and countries (across all parallel requests)
+      let completedBatches = 0;
+      let completedCountries = 0;
+
+      const modelChoice = args.modelChoice || "3.0-fallback";
+
+      // Helper to process a single batch and save scores immediately
+      const processBatch = async (batch: string[]): Promise<void> => {
+        const batchScores = await generateScoresForBatch(
+          ctx,
+          openaiApiKey,
+          args.title,
+          args.description,
+          args.sideA,
+          args.sideB,
+          batch,
+          args.useWebGrounding,
+          modelChoice
+        );
+
+        // Save scores immediately for real-time map updates
+        const scoresToSave = Object.entries(batchScores)
+          .filter(([, data]) => typeof data.score === 'number' && !isNaN(data.score))
+          .map(([countryName, data]) => ({
+            countryName,
+            score: data.score,
+            reasoning: data.reasoning,
+          }));
+
+        if (scoresToSave.length > 0) {
+          await ctx.runMutation(headlinesApi.upsertBatchScores, {
+            headlineId: args.headlineId,
+            scores: scoresToSave,
+          });
+        }
+
+        // Update progress counters
+        completedBatches++;
+        completedCountries += scoresToSave.length;
+        const progress = Math.round((completedBatches / totalBatches) * 100);
+
+        // Cap completedCountries at totalCountries for display purposes
+        const displayedCountries = Math.min(completedCountries, totalCountries);
+
+        await ctx.runMutation(issuesApi.updateJobStatus, {
+          jobId: args.jobId,
+          completedBatches,
+          completedCountries: displayedCountries,
+          progress,
+        });
+      };
+
+      // Build all batches across all runs
+      const allBatches: string[][] = [];
+      for (let run = 0; run < numRuns; run++) {
+        const shuffledCountries = shuffleArray(countries);
+        const runBatches = batchArray(shuffledCountries, batchSize);
+        allBatches.push(...runBatches);
+      }
+
+      // Fire first batch and wait (establishes cache for implicit caching)
+      if (allBatches.length > 0) {
+        await processBatch(allBatches[0]);
+      }
+
+      // Fire remaining batches - rate limited for 3.0-pro, parallel for others
+      const remainingBatches = allBatches.slice(1);
+      let results: PromiseSettledResult<void>[];
+
+      if (modelChoice === "3.0-pro" && remainingBatches.length > 0) {
+        // Sliding window rate limit: 20 RPM max
+        // Fires requests continuously, spaced ~3s apart, without waiting for responses
+        results = await processWithRateLimit(remainingBatches, processBatch, 20);
+      } else {
+        // Non-pro models: fire all in parallel
+        results = await Promise.allSettled(
+          remainingBatches.map(batch => processBatch(batch))
+        );
+      }
+
+      // Count failures
+      const failures = results.filter(r => r.status === "rejected");
+      if (failures.length > 0) {
+        console.error(`${failures.length} of ${results.length} batches failed`);
+        const firstFailure = failures[0] as PromiseRejectedResult;
+        console.error("First failure:", firstFailure.reason);
+      }
+
+      // Mark job complete
+      await ctx.runMutation(issuesApi.updateJobStatus, {
+        jobId: args.jobId,
+        status: "completed",
+        progress: 100,
+        completedCountries: totalCountries,
+        error: failures.length > 0 ? `${failures.length} batches failed` : undefined,
+      });
+
+      return { success: true };
+    } catch (error) {
+      // Mark job as failed
+      await ctx.runMutation(issuesApi.updateJobStatus, {
+        jobId: args.jobId,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Unknown error",
+      }).catch(() => {});
+
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  },
+});
+
+// Re-run scores for missing countries in a headline
+export const rerunMissingHeadlineScores = action({
+  args: {
+    headlineId: v.id("headlines"),
+    useWebGrounding: v.optional(v.boolean()),
+    modelChoice: modelChoiceValidator,
+  },
+  handler: async (ctx, args): Promise<{ success: boolean; rerunCount: number; error?: string }> => {
+    const openaiApiKey = process.env.OPENROUTER_API_KEY;
+    if (!openaiApiKey) {
+      throw new Error("OPENROUTER_API_KEY environment variable not set");
+    }
+
+    try {
+      // Get headline
+      const headline = await ctx.runQuery(headlinesApi.getHeadlineById, {
+        headlineId: args.headlineId,
+      });
+      if (!headline) {
+        throw new Error("Headline not found");
+      }
+
+      // Get missing countries
+      const missingResult = await ctx.runQuery(headlinesApi.getMissingCountries, {
+        headlineId: args.headlineId,
+      }) as { missing: string[]; total: number; scored: number };
+
+      if (missingResult.missing.length === 0) {
+        return { success: true, rerunCount: 0 };
+      }
+
+      const modelChoice = args.modelChoice || "3.0-fallback";
+      const batchSize = BATCH_SIZE;
+      const batches = batchArray(missingResult.missing, batchSize);
+
+      let scoredCount = 0;
+
+      // Process first batch and wait (for caching)
+      if (batches.length > 0) {
+        const firstBatchScores = await generateScoresForBatch(
+          ctx,
+          openaiApiKey,
+          headline.title,
+          headline.description,
+          headline.sideA,
+          headline.sideB,
+          batches[0],
+          args.useWebGrounding,
+          modelChoice
+        );
+
+        const scoresToSave = Object.entries(firstBatchScores)
+          .filter(([, data]) => typeof data.score === 'number' && !isNaN(data.score))
+          .map(([countryName, data]) => ({
+            countryName,
+            score: data.score,
+            reasoning: data.reasoning,
+          }));
+
+        if (scoresToSave.length > 0) {
+          await ctx.runMutation(headlinesApi.upsertBatchScores, {
+            headlineId: args.headlineId,
+            scores: scoresToSave,
+          });
+          scoredCount += scoresToSave.length;
+        }
+      }
+
+      // Process remaining batches - rate limited for 3.0-pro, parallel for others
+      if (batches.length > 1) {
+        const remainingBatches = batches.slice(1);
+
+        const processSingleBatch = async (batch: string[]): Promise<number> => {
+          const batchScores = await generateScoresForBatch(
+            ctx,
+            openaiApiKey,
+            headline.title,
+            headline.description,
+            headline.sideA,
+            headline.sideB,
+            batch,
+            args.useWebGrounding,
+            modelChoice
+          );
+
+          const scoresToSave = Object.entries(batchScores)
+            .filter(([, data]) => typeof data.score === 'number' && !isNaN(data.score))
+            .map(([countryName, data]) => ({
+              countryName,
+              score: data.score,
+              reasoning: data.reasoning,
+            }));
+
+          if (scoresToSave.length > 0) {
+            await ctx.runMutation(headlinesApi.upsertBatchScores, {
+              headlineId: args.headlineId,
+              scores: scoresToSave,
+            });
+          }
+
+          return scoresToSave.length;
+        };
+
+        let results: PromiseSettledResult<number>[];
+
+        if (modelChoice === "3.0-pro") {
+          // Sliding window rate limit: 20 RPM max
+          const limiter = new RateLimiter(20);
+          const promises = remainingBatches.map(async (batch) => {
+            await limiter.waitForSlot();
+            return processSingleBatch(batch);
+          });
+          results = await Promise.allSettled(promises);
+        } else {
+          results = await Promise.allSettled(
+            remainingBatches.map(batch => processSingleBatch(batch))
+          );
+        }
+
+        for (const result of results) {
+          if (result.status === "fulfilled") {
+            scoredCount += result.value;
+          }
+        }
+      }
+
+      return { success: true, rerunCount: scoredCount };
+    } catch (error) {
+      return {
+        success: false,
+        rerunCount: 0,
         error: error instanceof Error ? error.message : "Unknown error",
       };
     }
@@ -1023,42 +1380,12 @@ async function generateScoresForBatch(
   sideB: { label: string; description: string },
   countries: string[],
   useWebGrounding?: boolean,
-  modelChoice?: "2.5" | "3.0" | "3.0-fallback"
+  modelChoice?: "2.5" | "3.0" | "3.0-fallback" | "3.0-pro"
 ): Promise<Record<string, { score: number; reasoning?: string }>> {
-  const webGroundingInstructions = useWebGrounding ? `
-IMPORTANT - WEB SEARCH INSTRUCTIONS:
-For each country, search for official statements, government responses, or credible news coverage about this specific incident/issue. Look for:
-- Official government statements or press releases
-- Foreign ministry responses
-- Statements from heads of state or relevant ministers
-- Credible news reports citing official positions
+  // Static instructions at the start (cacheable across all requests)
+  const staticInstructions = `You are an expert geopolitical analyst rating countries' likely positions on geopolitical issues.
 
-If you find actual statements or reported positions, use those to inform your score and cite them in your reasoning.
-
-If no official position is found for a country:
-- Start reasoning with "[Country] has not issued a statement on this issue, but..." (or similar phrasing)
-- Then justify their expected position based on historical precedent, geopolitical alliances, treaty obligations, regional interests, or past behavior on similar issues
-- Lean towards neutral (score closer to 0) when uncertain, but use your geopolitical expertise to make informed predictions when historical patterns are clear
-- Never say "No official government statement was found" - always provide analysis of their likely position
-
-` : '';
-
-  const systemPrompt = `You are an expert geopolitical analyst. You will rate each country's likely position on a given issue.
-
-SCENARIO: ${title}
-${description}
-${webGroundingInstructions}
-${sideA.label}: ${sideA.description} → positive scores (0 to 1)
-${sideB.label}: ${sideB.description} → negative scores (-1 to 0)
-
-Rate each country from -1 to 1 where:
-- 1.0 = Strongly ${sideA.label.toLowerCase()}
-- 0.5 = Moderately ${sideA.label.toLowerCase()}
-- 0.0 = Neutral / No clear position
-- -0.5 = Moderately ${sideB.label.toLowerCase()}
-- -1.0 = Strongly ${sideB.label.toLowerCase()}
-
-Consider:
+Consider these factors when rating:
 - Current alliances and treaties
 - Economic ties and dependencies
 - Ideological alignment
@@ -1066,15 +1393,24 @@ Consider:
 - Regional interests
 - Domestic political considerations
 
-IMPORTANT FORMATTING RULES:
+RATING SCALE (use ONLY these values: -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1):
+-  1.0  = Extremely supportive
+-  0.75 = Strongly supportive
+-  0.5  = Supportive
+-  0.25 = Slightly supportive
+-  0    = Neutral / No clear position
+- -0.25 = Slightly opposed
+- -0.5  = Opposed
+- -0.75 = Strongly opposed
+- -1.0  = Extremely opposed
+
+FORMATTING RULES:
 - NEVER use "Side A" or "Side B" in your reasoning
 - Use natural language to describe positions. For example, say "leading voice against annexation" rather than "leading Anti-Annexation voice". Describe the stance in plain English rather than inserting stance labels awkwardly.
 - Write in a natural, human tone - like a knowledgeable analyst explaining to a colleague, not a formal report. Vary sentence structure, avoid repetitive phrasing, and don't overuse words like "significant", "notable", "robust", or "multifaceted".
-- Provide detailed reasoning of 4-6 sentences with a paragraph break
-- First paragraph: Explain the country's official position (if known) or historical stance on similar issues
-- Second paragraph: Analyze the geopolitical factors, alliances, and interests that inform their position
-
-If the scenario description is in a language other than English, please issue your response in that language.
+- Provide detailed reasoning of 3-5 sentences with a paragraph break
+- First paragraph (two or three sentences): Explain the country's official position (if known) or historical stance on similar issues
+- Second paragraph (one or two sentences): Analyze the geopolitical factors, alliances, and interests that inform their position
 
 Return a JSON object with this exact structure:
 {
@@ -1084,7 +1420,37 @@ Return a JSON object with this exact structure:
   }
 }
 
-Only return valid JSON, no additional text. Country names must match exactly as provided.`;
+Only return valid JSON, no additional text. Country names must match exactly as provided.
+If the scenario description is in a language other than English, please issue your response in that language.`;
+
+  // Web grounding instructions (static when enabled)
+  const webGroundingInstructions = useWebGrounding ? `
+
+WEB SEARCH INSTRUCTIONS:
+You MUST perform exactly ONE web search for EACH country in the batch. Do not skip any countries.
+
+For each country, search: "[country] [topic in 1-3 words] statement 2026"
+Examples: "Germany Greenland annexation statement 2026" or "Japan tariffs official statement 2026"
+
+You are looking for any indication of opinion from government leaders - it doesn't need to be an official statement, just any reported position or comment from officials.
+
+If you find statements or reported positions, use those to inform your score and cite them in your reasoning.
+
+If no position is found for a country:
+- Say something like (but not exactly) "[Country] has not issued a statement on this issue, but..."
+- Justify their expected position based on historical precedent, geopolitical alliances, treaty obligations, regional interests, or past behavior on similar issues
+- Lean towards neutral (score closer to 0) when uncertain, but use your geopolitical expertise to make informed predictions when historical patterns are clear` : '';
+
+  // Combine static parts first, then variable scenario details
+  const systemPrompt = `${staticInstructions}${webGroundingInstructions}
+
+---
+
+SCENARIO: ${title}
+${description}
+
+SUPPORT (positive scores): ${sideA.label} - ${sideA.description}
+OPPOSE (negative scores): ${sideB.label} - ${sideB.description}`;
 
   // Build user prompt with country context if applicable
   const countryContext = buildCountryContext(countries);
@@ -1103,7 +1469,11 @@ Only return valid JSON, no additional text. Country names must match exactly as 
     const effectiveChoice = modelChoice || "3.0-fallback";
     const tryModels: GeminiModelVersion[] = effectiveChoice === "3.0-fallback"
       ? ["3.0", "2.5"]
-      : [effectiveChoice === "3.0" ? "3.0" : "2.5"];
+      : effectiveChoice === "3.0-pro"
+        ? ["3.0-pro"]
+        : effectiveChoice === "3.0"
+          ? ["3.0"]
+          : ["2.5"];
 
     let lastError: Error | null = null;
     for (const modelVersion of tryModels) {
