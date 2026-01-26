@@ -84,6 +84,43 @@ export const getHeadlineBySlug = query({
   },
 });
 
+// Get scores for map display (scores only, no reasoning - for prefetching)
+export const getHeadlineScoresForMap = query({
+  args: { headlineId: v.id("headlines") },
+  handler: async (ctx, args) => {
+    const rawScores = await ctx.db
+      .query("headlineScores")
+      .withIndex("by_headline", (q) => q.eq("headlineId", args.headlineId))
+      .collect();
+
+    // Aggregate by country (average if multiple)
+    const scoreMap = new Map<string, { total: number; count: number }>();
+
+    for (const score of rawScores) {
+      const existing = scoreMap.get(score.countryName);
+      if (existing) {
+        existing.total += score.score;
+        existing.count += 1;
+      } else {
+        scoreMap.set(score.countryName, {
+          total: score.score,
+          count: 1,
+        });
+      }
+    }
+
+    const result: Array<{ countryName: string; score: number }> = [];
+    scoreMap.forEach((data, countryName) => {
+      result.push({
+        countryName,
+        score: data.total / data.count,
+      });
+    });
+
+    return result;
+  },
+});
+
 // Get scores for a headline (aggregated by country)
 export const getHeadlineScores = query({
   args: { headlineId: v.id("headlines") },

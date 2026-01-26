@@ -1,10 +1,46 @@
 # Global Relations Map - Project Notes
 
-## SEO Priority
-- **SEO is a major priority** for this project
-- All pages should have proper metadata (title, description, OpenGraph, Twitter cards)
-- Use semantic HTML and proper heading hierarchy
-- Ensure pages are server-rendered where possible for better crawlability
+## Next.js + Convex Patterns
+
+### Data Fetching Strategy
+We use a hybrid approach optimized for both SEO and fast navigation:
+
+**List Pages (e.g., `/headlines`):**
+- Server Component with `preloadQuery` from `convex/nextjs`
+- Data is fetched server-side and included in initial HTML
+- Client component receives preloaded data via `usePreloadedQuery`
+- Provides SEO benefits and fast first load
+
+**Detail Pages (e.g., `/headlines/[slug]`):**
+- `generateMetadata` for SEO (title, description, og:image) - runs server-side
+- Page content renders client-side with `useQuery` - uses prefetched Convex cache
+- Prefetching on list page populates client cache for instant navigation
+
+**Why not full SSR for detail pages?**
+- SSR runs on server which has no access to client's Convex cache
+- Each SSR request makes fresh network calls to Convex (slow)
+- Client-side rendering uses already-prefetched data (instant)
+
+### Prefetching Pattern
+On list pages, prefetch data needed by detail pages:
+```tsx
+// In list item component
+useQuery(api.headlines.getHeadlineBySlug, { slug: headline.slug });
+useQuery(api.headlines.getHeadlineScoresForMap, { headlineId: headline._id });
+```
+This populates the Convex client cache so navigation is instant.
+
+### Key Files
+- `src/app/headlines/page.tsx` - Server Component with preloadQuery
+- `src/app/headlines/HeadlinesClient.tsx` - Client component with prefetching
+- `src/app/headlines/[slug]/page.tsx` - generateMetadata + client component
+- `src/app/headlines/[slug]/HeadlineDetailClient.tsx` - Client-side detail view
+
+## SEO Implementation
+- **Meta tags**: Use `generateMetadata` in page.tsx for dynamic SEO
+- **OpenGraph/Twitter cards**: Include images where available
+- **List pages**: SSR with ISR (`revalidate = 60`) - new content appears within a minute
+- **Detail pages**: Meta tags with ISR (`revalidate = 300`), content client-rendered via Convex
 
 ## Color Scheme
 - **Primary**: Blue (HSL 222.2 47.4% 11.2%)
