@@ -32,10 +32,10 @@ export const metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[hsl(222.2,47.4%,11.2%)] relative overflow-hidden">
+    <div className="min-h-screen bg-white relative overflow-hidden">
       {/* Background gradient orbs */}
-      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[hsl(48,96%,53%)] rounded-full opacity-[0.03] blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500 rounded-full opacity-[0.05] blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[hsl(48,96%,53%)] rounded-full opacity-[0.15] blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[hsl(222.2,47.4%,50%)] rounded-full opacity-[0.1] blur-3xl pointer-events-none" />
 
       {/* Main content */}
       <div className="relative z-10 min-h-screen flex flex-col">
@@ -44,14 +44,14 @@ export default function LandingPage() {
           <div className="max-w-5xl w-full">
             {/* Logo & Title */}
             <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-3 mb-6 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+              <div className="inline-flex items-center gap-3 mb-6 px-4 py-2 rounded-full bg-[hsl(222.2,47.4%,11.2%)]/5 border border-[hsl(222.2,47.4%,11.2%)]/10 backdrop-blur-sm">
                 <div className="w-2 h-2 bg-[hsl(48,96%,53%)] rounded-full animate-pulse" />
-                <span className="text-sm text-gray-400 tracking-wide">Visualize Global Geopolitics</span>
+                <span className="text-sm text-[hsl(222.2,47.4%,11.2%)]/60 tracking-wide">Visualize Global Geopolitics</span>
               </div>
-              <h1 className="text-6xl sm:text-7xl lg:text-8xl text-white tracking-tight font-arvo font-medium mb-6">
+              <h1 className="text-6xl sm:text-7xl lg:text-8xl text-[hsl(222.2,47.4%,11.2%)] tracking-tight font-arvo font-medium mb-6">
                 Mapdis
               </h1>
-              <p className="text-2xl sm:text-3xl lg:text-4xl text-secondary font-light max-w-2xl mx-auto leading-relaxed">
+              <p className="text-2xl sm:text-3xl lg:text-4xl text-[hsl(222.2,47.4%,30%)] font-light max-w-2xl mx-auto leading-relaxed">
                 Global Relations Map
               </p>
             </div>
@@ -60,13 +60,11 @@ export default function LandingPage() {
             <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-16">
               {/* Diplomacy Card */}
               <Link href="/diplomacy" className="group">
-                <div className="relative h-full p-8 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 hover:border-[hsl(48,96%,53%)]/50 transition-colors duration-300 overflow-hidden">
-                  {/* Glow effect on hover */}
-                  <div className="absolute inset-0 bg-[hsl(48,96%,53%)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+                <div className="relative h-full p-8 rounded-2xl bg-[hsl(222.2,47.4%,15%)] hover:bg-[hsl(222.2,47.4%,8%)] border border-[hsl(222.2,47.4%,11.2%)]/20 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden">
 
                   <div className="relative z-10">
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="p-3 rounded-xl bg-[hsl(222.2,47.4%,15%)] border border-white/10 group-hover:border-[hsl(48,96%,53%)]/30 transition-colors">
+                      <div className="p-3 rounded-xl bg-white/10 border border-white/10 transition-colors">
                         <Globe className="w-8 h-8 text-[hsl(48,96%,53%)]" />
                       </div>
                       <div>
@@ -89,13 +87,11 @@ export default function LandingPage() {
 
               {/* Conflict Card */}
               <Link href="/conflict" className="group">
-                <div className="relative h-full p-8 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 hover:border-[hsl(48,96%,53%)]/50 transition-colors duration-300 overflow-hidden">
-                  {/* Glow effect on hover */}
-                  <div className="absolute inset-0 bg-[hsl(48,96%,53%)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+                <div className="relative h-full p-8 rounded-2xl bg-[hsl(222.2,47.4%,15%)] hover:bg-[hsl(222.2,47.4%,8%)] border border-[hsl(222.2,47.4%,11.2%)]/20 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden">
 
                   <div className="relative z-10">
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="p-3 rounded-xl bg-[hsl(222.2,47.4%,15%)] border border-white/10 group-hover:border-[hsl(48,96%,53%)]/30 transition-colors">
+                      <div className="p-3 rounded-xl bg-white/10 border border-white/10 transition-colors">
                         <Swords className="w-8 h-8 text-[hsl(48,96%,53%)]" />
                       </div>
                       <div>
@@ -120,34 +116,34 @@ export default function LandingPage() {
             {/* Feature highlights */}
             <div className="grid grid-cols-3 gap-4 lg:gap-8 max-w-3xl mx-auto">
               <div className="text-center p-4">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-3">
-                  <MapPin className="w-5 h-5 text-[hsl(48,96%,53%)]" />
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[hsl(222.2,47.4%,11.2%)]/10 border border-[hsl(222.2,47.4%,11.2%)]/20 mb-3">
+                  <MapPin className="w-5 h-5 text-[hsl(222.2,47.4%,11.2%)]" />
                 </div>
-                <p className="text-sm text-gray-400">All Countries</p>
+                <p className="text-sm text-[hsl(222.2,47.4%,11.2%)]">All Countries</p>
               </div>
               <div className="text-center p-4">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-3">
-                  <Users className="w-5 h-5 text-[hsl(48,96%,53%)]" />
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[hsl(222.2,47.4%,11.2%)]/10 border border-[hsl(222.2,47.4%,11.2%)]/20 mb-3">
+                  <Users className="w-5 h-5 text-[hsl(222.2,47.4%,11.2%)]" />
                 </div>
-                <p className="text-sm text-gray-400">Real Relations Data</p>
+                <p className="text-sm text-[hsl(222.2,47.4%,11.2%)]">Real Relations Data</p>
               </div>
               <div className="text-center p-4">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-3">
-                  <BarChart3 className="w-5 h-5 text-[hsl(48,96%,53%)]" />
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[hsl(222.2,47.4%,11.2%)]/10 border border-[hsl(222.2,47.4%,11.2%)]/20 mb-3">
+                  <BarChart3 className="w-5 h-5 text-[hsl(222.2,47.4%,11.2%)]" />
                 </div>
-                <p className="text-sm text-gray-400">August 2025 Data</p>
+                <p className="text-sm text-[hsl(222.2,47.4%,11.2%)]">August 2025 Data</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <footer className="py-8 px-6 border-t border-white/5">
-          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+        <footer className="py-8 px-6 border-t border-[hsl(222.2,47.4%,11.2%)]/10">
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[hsl(222.2,47.4%,11.2%)]/60">
             <p className="tracking-wide">Interactive Geopolitics Mapping</p>
             <div className="flex items-center gap-6">
-              <Link href="/diplomacy" className="hover:text-gray-300 transition-colors">Diplomacy</Link>
-              <Link href="/conflict" className="hover:text-gray-300 transition-colors">Conflict</Link>
+              <Link href="/diplomacy" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Diplomacy</Link>
+              <Link href="/conflict" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Conflict</Link>
             </div>
           </div>
         </footer>
