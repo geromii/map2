@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Globe, ChevronDown, User, Settings, LogOut, Menu, X } from "lucide-react";
+import { Globe, ChevronDown, CircleUser, Settings, LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -268,14 +268,14 @@ function AccountMenu({ onSignOut }: { onSignOut: () => void }) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200",
+          "flex items-center justify-center transition-all duration-200",
           isOpen || isAccountActive
-            ? "bg-white/70 text-primary"
-            : "bg-white/50 text-primary hover:bg-white/70"
+            ? "text-yellow-400"
+            : "text-white hover:text-yellow-400"
         )}
         aria-label="Account menu"
       >
-        <User className="w-5 h-5" />
+        <CircleUser className="w-6 h-6" />
       </button>
 
       {isOpen && (
@@ -396,13 +396,13 @@ const MenuBar = () => {
                       <Link
                         href="/account"
                         className={cn(
-                          "flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200",
+                          "flex items-center justify-center transition-all duration-200",
                           pathname === "/account"
-                            ? "bg-white/70 text-primary"
-                            : "bg-white/50 text-primary hover:bg-white/70"
+                            ? "text-yellow-400"
+                            : "text-white hover:text-yellow-400"
                         )}
                       >
-                        <User className="w-5 h-5" />
+                        <CircleUser className="w-6 h-6" />
                       </Link>
                     ) : (
                       <Link

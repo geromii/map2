@@ -43,13 +43,6 @@ export default function LandingPage() {
         {/* Hero Section */}
         <div className="flex-1 flex flex-col items-center justify-center px-6 pt-20 pb-8">
           <div className="max-w-5xl w-full">
-            {/* Logo & Title */}
-            <div className="text-center mb-10">
-              <h1 className="text-6xl sm:text-7xl lg:text-8xl text-[hsl(222.2,47.4%,11.2%)] tracking-tight font-arvo font-medium">
-                Mapdis
-              </h1>
-            </div>
-
             {/* Featured Headlines Section */}
             <div className="mb-12">
               <h2 className="text-xl font-semibold text-[hsl(222.2,47.4%,11.2%)] mb-4 text-center">
@@ -59,6 +52,9 @@ export default function LandingPage() {
             </div>
 
             {/* Mode Cards */}
+            <h2 className="text-xl font-semibold text-[hsl(222.2,47.4%,11.2%)] mb-4 text-center">
+              Geopolitics Maps
+            </h2>
             <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-12">
               {/* Diplomacy Card */}
               <Link href="/diplomacy" className="group">
