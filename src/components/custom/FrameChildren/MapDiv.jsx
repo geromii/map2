@@ -15,12 +15,15 @@ import { Tooltip } from "react-tooltip";
 import { getCountryEmoji } from "src/utils/countryEmojis";
 import { abbreviateCountry } from "../../../utils/abbreviateCountry";
 import { IconX } from "@tabler/icons-react";
+import { Share, Check } from "lucide-react";
+import { countryToSlug } from "@/utils/countrySlug";
 const MapDivComponent = ({ mapMode }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [activeCountry, setActiveCountry] = useState(null);
   const [features, setFeatures] = useState(null);
   const [showLoading, setShowLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [copied, setCopied] = useState(false);
 
 
   const mapRef = useRef(null);
@@ -154,6 +157,39 @@ const MapDivComponent = ({ mapMode }) => {
     phase2Countries = ["European Union"];
   }
 
+  // Handle share button click
+  const handleShare = async () => {
+    if (phase2Countries.length !== 1) return;
+
+    const country = phase2Countries[0];
+    const slug = countryToSlug(country);
+    const url = `${window.location.origin}/diplomacy/${slug}`;
+
+    try {
+      // Try Web Share API first (mobile)
+      if (navigator.share) {
+        await navigator.share({
+          title: `${country} - Global Relations Map`,
+          url: url,
+        });
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (err) {
+      // User cancelled share or error - try clipboard as fallback
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        console.error('Failed to copy URL');
+      }
+    }
+  };
+
   const scale = "190";
   const rotation = [-12.5];
 
@@ -173,7 +209,7 @@ const MapDivComponent = ({ mapMode }) => {
         data-mapmode={mapMode}
         className="w-full lg:text-xl overflow-hidden max-w-full"
       >
-        <div className="font-semibold font-serif text-md sm:text-lg lg:text-xl text-center h-10 lg:h-12 bg-gradient-to-b from-slate-50 to-slate-100 rounded-t-lg overflow-hidden px-1 lg:px-4 max-w-full flex items-center justify-center border-2 border-slate-200 shadow-sm mt-1">
+        <div className="relative font-semibold font-serif text-md sm:text-lg lg:text-xl text-center h-10 lg:h-12 bg-gradient-to-b from-slate-50 to-slate-100 rounded-t-lg overflow-hidden px-1 lg:px-4 max-w-full flex items-center justify-center border-2 border-slate-200 shadow-sm mt-1">
           {mapMode === "multi" ? (
             (() => {
               const phase3Countries = Object.keys(countries).filter(
@@ -216,10 +252,25 @@ const MapDivComponent = ({ mapMode }) => {
               }
             })()
           ) : (
-            <div className="truncate w-full">
-              {phase2Countries
-                .map((country) => `${getCountryEmoji(country)} ${country}`)
-                .join(", ")}
+            <div className="flex items-center w-full">
+              <span className="truncate flex-1 text-center">
+                {phase2Countries
+                  .map((country) => `${getCountryEmoji(country)} ${country}`)
+                  .join(", ")}
+              </span>
+              {mapMode === "single" && phase2Countries.length === 1 && phase2Countries[0] !== "European Union" && (
+                <button
+                  onClick={handleShare}
+                  className="flex-shrink-0 p-1 rounded hover:bg-slate-200 transition-colors absolute right-2"
+                  title={copied ? "Copied!" : "Share this country"}
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Share className="w-4 h-4 text-slate-500" />
+                  )}
+                </button>
+              )}
             </div>
           )}
         </div>
