@@ -399,9 +399,36 @@ export const initializeHeadline = mutation({
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    // Handle slug collision by appending a number
+    let finalSlug = args.slug;
+    if (finalSlug) {
+      const baseSlug = finalSlug;
+      const existing = await ctx.db
+        .query("headlines")
+        .withIndex("by_slug", (q) => q.eq("slug", finalSlug))
+        .first();
+
+      if (existing) {
+        // Find a unique slug by appending numbers
+        let counter = 2;
+        while (true) {
+          const candidateSlug = `${baseSlug}-${counter}`;
+          const collision = await ctx.db
+            .query("headlines")
+            .withIndex("by_slug", (q) => q.eq("slug", candidateSlug))
+            .first();
+          if (!collision) {
+            finalSlug = candidateSlug;
+            break;
+          }
+          counter++;
+        }
+      }
+    }
+
     const headlineId = await ctx.db.insert("headlines", {
       title: args.title,
-      slug: args.slug,
+      slug: finalSlug,
       description: args.description,
       primaryActor: args.primaryActor,
       sideA: args.sideA,

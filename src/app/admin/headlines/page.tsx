@@ -10,6 +10,7 @@ import { X, ImageIcon } from "lucide-react";
 
 interface ParsedHeadline {
   title: string;
+  slug: string;
   description: string;
   primaryActor?: string;
   sideA: { label: string; description: string };
@@ -405,6 +406,7 @@ export default function AdminHeadlinesPage() {
 
       const { headlineId, jobId: newJobId } = await initializeHeadline({
         title: parsedHeadline.title,
+        slug: parsedHeadline.slug,
         description: parsedHeadline.description,
         primaryActor: parsedHeadline.primaryActor,
         sideA: parsedHeadline.sideA,
@@ -717,6 +719,28 @@ export default function AdminHeadlinesPage() {
                     className="text-lg font-semibold text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer"
                   >
                     {parsedHeadline.title}
+                  </div>
+                )}
+              </div>
+
+              {/* Slug */}
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">URL Slug</label>
+                {editingField === "slug" ? (
+                  <input
+                    type="text"
+                    value={parsedHeadline.slug}
+                    onChange={(e) => setParsedHeadline({ ...parsedHeadline, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+                    onBlur={() => setEditingField(null)}
+                    autoFocus
+                    className="w-full text-sm font-mono px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                ) : (
+                  <div
+                    onClick={() => setEditingField("slug")}
+                    className="text-sm font-mono text-slate-600 px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer"
+                  >
+                    /headlines/{parsedHeadline.slug}
                   </div>
                 )}
               </div>

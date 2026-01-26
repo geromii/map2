@@ -522,6 +522,7 @@ export const parsePromptToSides = action({
   },
   handler: async (ctx, args): Promise<{
     title: string;
+    slug: string;
     description: string;
     primaryActor?: string;
     sideA: { label: string; description: string };
@@ -544,6 +545,7 @@ Try your best to interpret the prompt as a geopolitical scenario. Be creative - 
 ${webGroundingInstructions}
 Return a JSON object with:
 - title: A concise title for the issue (max 100 chars)
+- slug: A brief URL-friendly slug for shareable links (lowercase, hyphens only, 3-5 words max, e.g., "us-greenland-annexation", "korea-reunification", "quebec-independence")
 - description: ${args.useWebGrounding ? 'A summary of CURRENT NEWS and recent developments on this topic (2-3 sentences). Include specific recent events, dates, or announcements from your web search.' : 'A brief description of the overall scenario (1-2 sentences)'}
 - primaryActor: The entity pushing for or driving this scenario (Side A only). This is who would "win" or "succeed" if the scenario comes to pass. Can be one or multiple countries, organizations, movements, or groups. If multiple, separate with " and " (e.g., "United States and United Kingdom"). This should ONLY represent one side of the issue - the proponents, not both sides.
 - sideA: The side that supports/approves/is in favor (object with "label" and "description")
@@ -554,6 +556,7 @@ IMPORTANT: The "description" for each side should describe the POSITION itself, 
 For example, if the prompt is "US annexation of Greenland", you might return:
 {
   "title": "US Annexation of Greenland",
+  "slug": "us-greenland-annexation",
   "description": "The potential acquisition of Greenland by the United States.",
   "primaryActor": "United States",
   "sideA": { "label": "Pro-Annexation", "description": "Supports US acquisition of Greenland" },
@@ -563,6 +566,7 @@ For example, if the prompt is "US annexation of Greenland", you might return:
 For "Korean reunification under South Korean democracy":
 {
   "title": "Korean Reunification Under Democracy",
+  "slug": "korea-reunification",
   "description": "The reunification of North and South Korea under a democratic government.",
   "primaryActor": "South Korea",
   "sideA": { "label": "Pro-Reunification", "description": "Supports democratic Korean reunification" },
@@ -572,6 +576,7 @@ For "Korean reunification under South Korean democracy":
 For "America becomes communist":
 {
   "title": "Communist Revolution in America",
+  "slug": "america-communist-revolution",
   "description": "A scenario where the United States adopts a communist system of government.",
   "primaryActor": "American Communists",
   "sideA": { "label": "Pro-Communist", "description": "Supports communist transformation of America" },
@@ -581,6 +586,7 @@ For "America becomes communist":
 For "Quebec independence":
 {
   "title": "Quebec Independence",
+  "slug": "quebec-independence",
   "description": "Quebec separates from Canada to become an independent nation.",
   "primaryActor": "Quebec Separatists",
   "sideA": { "label": "Pro-Independence", "description": "Supports Quebec separating from Canada" },
@@ -590,6 +596,7 @@ For "Quebec independence":
 For "AUKUS nuclear submarine program":
 {
   "title": "AUKUS Nuclear Submarine Program",
+  "slug": "aukus-submarines",
   "description": "Australia acquires nuclear-powered submarines through the AUKUS security pact.",
   "primaryActor": "Australia, United States, and United Kingdom",
   "sideA": { "label": "Pro-AUKUS", "description": "Supports the AUKUS submarine program" },
@@ -679,8 +686,13 @@ Only return valid JSON, no additional text.`;
     // Sanitize strings (trim whitespace, remove control characters)
     const sanitize = (s: string) => s?.trim().replace(/[\x00-\x1F\x7F]/g, '') || '';
 
+    // Sanitize slug (lowercase, only alphanumeric and hyphens)
+    const sanitizeSlug = (s: string) =>
+      s?.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || '';
+
     return {
       title: sanitize(parsed.title),
+      slug: sanitizeSlug(parsed.slug || parsed.title),
       description: sanitize(parsed.description || ''),
       primaryActor: parsed.primaryActor ? sanitize(parsed.primaryActor) : undefined,
       sideA: {
