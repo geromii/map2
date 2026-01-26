@@ -126,6 +126,14 @@ const schema = defineSchema({
   }).index("by_timestamp", ["timestamp"]),
 
   // ============================================
+  // RATE LIMITING
+  // ============================================
+  scenarioGenerations: defineTable({
+    userId: v.id("users"),
+    generatedAt: v.number(),
+  }).index("by_user", ["userId"]),
+
+  // ============================================
   // SUBSCRIPTIONS (Stripe billing)
   // ============================================
   subscriptions: defineTable({

@@ -231,14 +231,18 @@ async function fetchOpenRouterWithLogging(
 
 // Gemini model options
 const GEMINI_MODELS = {
-  "2.5": "gemini-2.5-flash",
-  "3.0": "gemini-3-flash-preview",
-  "3.0-pro": "gemini-3-pro-preview",
+  "2.5": "gemini-2.5-flash-preview-05-20",
+  "2.5-scenario": "gemini-2.5-flash-preview-05-20", // For custom scenarios (no web grounding)
+  "3.0": "gemini-2.5-flash-preview-05-20",
+  "3.0-pro": "gemini-2.5-pro-preview-05-20",
 } as const;
 type GeminiModelVersion = keyof typeof GEMINI_MODELS;
 
 // Default model - 3.0 supports JSON + tools together, 2.5 does not
 const DEFAULT_GEMINI_MODEL: GeminiModelVersion = "3.0";
+
+// Model for custom scenarios (uses Gemini directly without web grounding)
+const SCENARIO_MODEL: GeminiModelVersion = "2.5-scenario";
 
 // Helper to make logged Google Gemini requests with search grounding and retry logic
 async function fetchGeminiWithLogging(
@@ -656,17 +660,22 @@ Only return valid JSON, no additional text.`;
       }
       if (lastError) throw lastError;
     } else {
-      // Use OpenRouter for non-grounded requests
-      const BASE_MODEL = "google/gemini-2.0-flash-001";
-      const result = await fetchOpenRouterWithLogging(
+      // Use Gemini directly for non-grounded requests (custom scenarios)
+      const geminiApiKey = process.env.GEMINI_API_KEY;
+      if (!geminiApiKey) {
+        throw new Error("GEMINI_API_KEY environment variable not set");
+      }
+
+      const result = await fetchGeminiWithLogging(
         ctx,
         "parsePromptToSides",
-        BASE_MODEL,
         systemPrompt,
         args.prompt,
-        openaiApiKey,
+        geminiApiKey,
+        false, // no search grounding
         0.3,
-        20000
+        20000,
+        SCENARIO_MODEL
       );
       content = result.content;
     }
@@ -1516,16 +1525,22 @@ OPPOSE (negative scores): ${sideB.label} - ${sideB.description}`;
     }
     if (lastError) throw lastError;
   } else {
-    // Use OpenRouter for non-grounded requests
-    const BASE_MODEL = "google/gemini-2.0-flash-001";
-    const result = await fetchOpenRouterWithLogging(
+    // Use Gemini directly for non-grounded requests (custom scenarios)
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      throw new Error("GEMINI_API_KEY environment variable not set");
+    }
+
+    const result = await fetchGeminiWithLogging(
       ctx,
       "generateScoresForBatch",
-      BASE_MODEL,
       systemPrompt,
       userPrompt,
-      apiKey,
-      0.5
+      geminiApiKey,
+      false, // no search grounding
+      0.5,
+      45000, // 45 second timeout
+      SCENARIO_MODEL
     );
     content = result.content;
   }

@@ -90,6 +90,7 @@ export default function ScenarioPage() {
   const processScenarioBatches = useAction(api.ai.processScenarioBatches);
   const getActiveMapVersion = useQuery(api.issues.getActiveMapVersion);
   const userId = useQuery(api.issues.getCurrentUserId);
+  const generationUsage = useQuery(api.issues.getUserGenerationUsage);
   const scenariosData = useQuery(api.issues.getUserScenariosPaginated, {
     page: currentPage,
     pageSize: PAGE_SIZE,
@@ -379,6 +380,21 @@ export default function ScenarioPage() {
     });
   };
 
+  // Format time until a future timestamp
+  const formatTimeUntil = (timestamp: number) => {
+    const now = Date.now();
+    const diff = timestamp - now;
+    if (diff <= 0) return "now";
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (hours > 0) {
+      return `in ${hours}h ${minutes}m`;
+    }
+    return `in ${minutes}m`;
+  };
+
   return (
     <RequireAuth
       title="AI Scenario Generator"
@@ -547,9 +563,16 @@ export default function ScenarioPage() {
                   {step === "confirm" && "Confirm Scenario"}
                   {step === "generating" && "Generating..."}
                 </h2>
-                <p className="text-slate-600 mb-4">
+                <p className="text-slate-600 mb-2">
                   Describe a geopolitical scenario and AI will predict how each country might position themselves.
                 </p>
+                {generationUsage && (
+                  <p className={`text-sm mb-4 ${generationUsage.remaining === 0 ? "text-red-600 font-medium" : "text-slate-500"}`}>
+                    {generationUsage.remaining === 0
+                      ? `Limit reached. Next available ${generationUsage.nextAvailableAt ? formatTimeUntil(generationUsage.nextAvailableAt) : "soon"}.`
+                      : `${generationUsage.remaining} of ${generationUsage.limit} generations remaining`}
+                  </p>
+                )}
 
                 {/* Step 1: Input prompt */}
                 {step === "input" && (
@@ -564,7 +587,7 @@ export default function ScenarioPage() {
                     />
                     <Button
                       type="submit"
-                      disabled={isParsing || !prompt.trim()}
+                      disabled={isParsing || !prompt.trim() || generationUsage?.remaining === 0}
                       className="px-6 py-3 h-auto"
                     >
                       {isParsing ? (
@@ -782,7 +805,7 @@ export default function ScenarioPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-3 pt-2">
-                      <Button onClick={handleConfirm} className="px-6" disabled={!getActiveMapVersion || isPrimaryActorMissing(parsedScenario.primaryActor)}>
+                      <Button onClick={handleConfirm} className="px-6" disabled={!getActiveMapVersion || isPrimaryActorMissing(parsedScenario.primaryActor) || generationUsage?.remaining === 0}>
                         Generate Predictions
                       </Button>
                       <Button variant="ghost" onClick={handleEdit} className="text-slate-500">

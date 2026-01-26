@@ -197,6 +197,83 @@ export const getMapVersionById = query({
   },
 });
 
+// Rate limiting config
+const GENERATION_LIMIT = 3;
+const RATE_LIMIT_WINDOW_MS = 16 * 60 * 60 * 1000; // 16 hours in milliseconds
+
+// Get user's generation usage (sliding window rate limiting)
+export const getUserGenerationUsage = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return { count: 0, limit: GENERATION_LIMIT, remaining: GENERATION_LIMIT, nextAvailableAt: null };
+
+    const now = Date.now();
+    const windowStart = now - RATE_LIMIT_WINDOW_MS;
+
+    // Get all generations for this user
+    const generations = await ctx.db
+      .query("scenarioGenerations")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    // Filter to those within the rate limit window
+    const recentGenerations = generations.filter((g) => g.generatedAt >= windowStart);
+    const count = recentGenerations.length;
+
+    // Calculate when the next slot becomes available (if at limit)
+    let nextAvailableAt: number | null = null;
+    if (count >= GENERATION_LIMIT) {
+      // Find the oldest generation in the window - that's when a slot opens up
+      const oldestInWindow = recentGenerations
+        .map((g) => g.generatedAt)
+        .sort((a, b) => a - b)[0];
+      nextAvailableAt = oldestInWindow + RATE_LIMIT_WINDOW_MS;
+    }
+
+    return {
+      count,
+      limit: GENERATION_LIMIT,
+      remaining: Math.max(0, GENERATION_LIMIT - count),
+      nextAvailableAt,
+    };
+  },
+});
+
+// Record a scenario generation (for rate limiting)
+export const recordGeneration = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Authentication required");
+
+    await ctx.db.insert("scenarioGenerations", {
+      userId,
+      generatedAt: Date.now(),
+    });
+  },
+});
+
+// Clean up old generation records (older than rate limit window)
+// Can be called periodically or as part of generation
+export const cleanupOldGenerations = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const cutoff = Date.now() - RATE_LIMIT_WINDOW_MS;
+
+    // Get all old records
+    const allGenerations = await ctx.db.query("scenarioGenerations").collect();
+    const oldRecords = allGenerations.filter((g) => g.generatedAt < cutoff);
+
+    // Delete them
+    for (const record of oldRecords) {
+      await ctx.db.delete(record._id);
+    }
+
+    return { deleted: oldRecords.length };
+  },
+});
+
 // Get user's custom scenarios/issues (authenticated)
 export const getUserScenarios = query({
   args: {},
@@ -564,6 +641,33 @@ export const initializeScenario = mutation({
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    // Check rate limit for custom scenarios (skip for daily/admin scenarios)
+    const source = args.source ?? "custom";
+    const authUserId = await getAuthUserId(ctx);
+
+    if (source === "custom" && authUserId) {
+      const now = Date.now();
+      const windowStart = now - RATE_LIMIT_WINDOW_MS;
+
+      // Get user's recent generations
+      const generations = await ctx.db
+        .query("scenarioGenerations")
+        .withIndex("by_user", (q) => q.eq("userId", authUserId))
+        .collect();
+
+      const recentCount = generations.filter((g) => g.generatedAt >= windowStart).length;
+
+      if (recentCount >= GENERATION_LIMIT) {
+        throw new Error(`Rate limit reached. You can generate ${GENERATION_LIMIT} scenarios every 16 hours. Please try again later.`);
+      }
+
+      // Record this generation
+      await ctx.db.insert("scenarioGenerations", {
+        userId: authUserId,
+        generatedAt: now,
+      });
+    }
+
     // Create issue
     const issueId = await ctx.db.insert("issues", {
       title: args.title,
