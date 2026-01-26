@@ -1411,6 +1411,8 @@ FORMATTING RULES:
 - Provide detailed reasoning of 3-5 sentences with a paragraph break
 - First paragraph (two or three sentences): Explain the country's official position (if known) or historical stance on similar issues
 - Second paragraph (one or two sentences): Analyze the geopolitical factors, alliances, and interests that inform their position
+- If you believe their private position is different than their public position, or if they may refrain from a statement due to geopolitical reasons, say so and clearly justify why
+- Public statements should take priority over their expected private stance in the scoring, but do consider expected private stances as a factor
 
 Return a JSON object with this exact structure:
 {
