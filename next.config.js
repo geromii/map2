@@ -9,6 +9,16 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
+  // Allow images from Convex storage
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.convex.cloud',
+      },
+    ],
+  },
+
   // Turbopack configuration for path aliases
   turbopack: {
     resolveAlias: {

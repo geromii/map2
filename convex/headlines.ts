@@ -200,6 +200,160 @@ export const getActiveMapVersion = query({
   },
 });
 
+// Get recent AI logs (admin only)
+export const getRecentAiLogs = query({
+  args: {
+    limit: v.optional(v.number()),
+    sinceTimestamp: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // Check admin status
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
+
+    const user = await ctx.db.get(userId);
+    if (!user || !("email" in user) || !user.email) return [];
+
+    const adminEmails = process.env.ADMIN_EMAILS?.toLowerCase().split(",").map(e => e.trim()) || [];
+    if (!adminEmails.includes((user.email as string).toLowerCase())) return [];
+
+    // Fetch logs
+    const limit = args.limit ?? 20;
+    let logs = await ctx.db
+      .query("aiLogs")
+      .withIndex("by_timestamp")
+      .order("desc")
+      .take(100); // Get more than needed, then filter
+
+    // Filter by timestamp if provided
+    if (args.sinceTimestamp) {
+      logs = logs.filter(log => log.timestamp >= args.sinceTimestamp!);
+    }
+
+    return logs.slice(0, limit);
+  },
+});
+
+// Get recent draft headlines (admin only)
+export const getRecentDrafts = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
+
+    const user = await ctx.db.get(userId);
+    if (!user || !("email" in user) || !user.email) return [];
+
+    const adminEmails = process.env.ADMIN_EMAILS?.toLowerCase().split(",").map(e => e.trim()) || [];
+    if (!adminEmails.includes((user.email as string).toLowerCase())) return [];
+
+    const limit = args.limit ?? 10;
+    return await ctx.db
+      .query("draftHeadlines")
+      .withIndex("by_created")
+      .order("desc")
+      .take(limit);
+  },
+});
+
+// Save a draft headline (admin only)
+export const saveDraft = mutation({
+  args: {
+    title: v.string(),
+    description: v.string(),
+    primaryActor: v.optional(v.string()),
+    sideA: v.object({ label: v.string(), description: v.string() }),
+    sideB: v.object({ label: v.string(), description: v.string() }),
+    originalPrompt: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const user = await ctx.db.get(userId);
+    if (!user || !("email" in user) || !user.email) throw new Error("User not found");
+
+    const adminEmails = process.env.ADMIN_EMAILS?.toLowerCase().split(",").map(e => e.trim()) || [];
+    if (!adminEmails.includes((user.email as string).toLowerCase())) {
+      throw new Error("Not authorized");
+    }
+
+    // Delete old drafts (keep only last 20)
+    const oldDrafts = await ctx.db
+      .query("draftHeadlines")
+      .withIndex("by_created")
+      .order("asc")
+      .collect();
+
+    if (oldDrafts.length >= 20) {
+      const toDelete = oldDrafts.slice(0, oldDrafts.length - 19);
+      for (const draft of toDelete) {
+        await ctx.db.delete(draft._id);
+      }
+    }
+
+    return await ctx.db.insert("draftHeadlines", {
+      title: args.title,
+      description: args.description,
+      primaryActor: args.primaryActor,
+      sideA: args.sideA,
+      sideB: args.sideB,
+      originalPrompt: args.originalPrompt,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+// Get missing countries for a headline (countries in mapVersion but not in headlineScores)
+export const getMissingCountries = query({
+  args: { headlineId: v.id("headlines") },
+  handler: async (ctx, args) => {
+    const headline = await ctx.db.get(args.headlineId);
+    if (!headline) return { missing: [], total: 0 };
+
+    const mapVersion = await ctx.db.get(headline.mapVersionId);
+    if (!mapVersion) return { missing: [], total: 0 };
+
+    const allCountries = new Set(mapVersion.countries);
+
+    // Get countries that have scores
+    const scores = await ctx.db
+      .query("headlineScores")
+      .withIndex("by_headline", (q) => q.eq("headlineId", args.headlineId))
+      .collect();
+
+    const countriesWithScores = new Set(scores.map(s => s.countryName));
+
+    // Find missing countries
+    const missing = [...allCountries].filter(c => !countriesWithScores.has(c));
+
+    return {
+      missing,
+      total: allCountries.size,
+      scored: countriesWithScores.size,
+    };
+  },
+});
+
+// Delete a draft headline (admin only)
+export const deleteDraft = mutation({
+  args: { draftId: v.id("draftHeadlines") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const user = await ctx.db.get(userId);
+    if (!user || !("email" in user) || !user.email) throw new Error("User not found");
+
+    const adminEmails = process.env.ADMIN_EMAILS?.toLowerCase().split(",").map(e => e.trim()) || [];
+    if (!adminEmails.includes((user.email as string).toLowerCase())) {
+      throw new Error("Not authorized");
+    }
+
+    await ctx.db.delete(args.draftId);
+  },
+});
+
 // ============ MUTATIONS ============
 
 // Create a new headline
