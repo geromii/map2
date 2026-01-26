@@ -1,5 +1,11 @@
 # Global Relations Map - Project Notes
 
+## SEO Priority
+- **SEO is a major priority** for this project
+- All pages should have proper metadata (title, description, OpenGraph, Twitter cards)
+- Use semantic HTML and proper heading hierarchy
+- Ensure pages are server-rendered where possible for better crawlability
+
 ## Color Scheme
 - **Primary**: Blue (HSL 222.2 47.4% 11.2%)
 - **Secondary**: Yellow (HSL 48 96% 53%)

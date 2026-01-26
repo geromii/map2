@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, X, ChevronDown, ArrowUpDown } from "lucide-react";
+import { Search, X, ArrowUpDown } from "lucide-react";
 
 interface CountryScore {
   score: number;
@@ -59,7 +59,6 @@ export function CountryListView({
 }: CountryListViewProps) {
   const [search, setSearch] = useState("");
   const [flipped, setFlipped] = useState(false);
-  const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
 
   // Convert scores to sorted array
   const sortedCountries = useMemo(() => {
@@ -69,16 +68,15 @@ export function CountryListView({
       stance: getStance(data.score),
     }));
 
-    // Group by stance: Side A → Neutral → Side B (or reversed)
-    const sideA = entries
-      .filter((e) => e.stance === "sideA")
-      .sort((a, b) => b.score - a.score);
-    const neutral = entries
-      .filter((e) => e.stance === "neutral")
-      .sort((a, b) => b.score - a.score);
-    const sideB = entries
-      .filter((e) => e.stance === "sideB")
-      .sort((a, b) => b.score - a.score);
+    // Sort comparator: descending by default, ascending when flipped
+    const sortFn = flipped
+      ? (a: { score: number }, b: { score: number }) => a.score - b.score
+      : (a: { score: number }, b: { score: number }) => b.score - a.score;
+
+    // Group by stance: Side A → Neutral → Side B (or reversed when flipped)
+    const sideA = entries.filter((e) => e.stance === "sideA").sort(sortFn);
+    const neutral = entries.filter((e) => e.stance === "neutral").sort(sortFn);
+    const sideB = entries.filter((e) => e.stance === "sideB").sort(sortFn);
 
     if (flipped) {
       return [...sideB, ...neutral, ...sideA];
@@ -95,8 +93,11 @@ export function CountryListView({
     );
   }, [sortedCountries, search]);
 
-  const handleToggleExpand = (country: string) => {
-    setExpandedCountry((prev) => (prev === country ? null : country));
+  // Get first sentence of reasoning for preview
+  const getReasoningPreview = (reasoning?: string) => {
+    if (!reasoning) return null;
+    const firstSentence = reasoning.split(/[.!?]/)[0];
+    return firstSentence ? firstSentence.trim() + "." : null;
   };
 
   return (
@@ -147,14 +148,13 @@ export function CountryListView({
               {search ? "No countries match your search" : "No country data available"}
             </div>
           ) : (
-            filteredCountries.map(({ country, score, reasoning, stance }) => (
-              <div key={country} className="border-b border-slate-100">
+            filteredCountries.map(({ country, score, reasoning, stance }) => {
+              const preview = getReasoningPreview(reasoning);
+              return (
                 <button
-                  onClick={() => {
-                    handleToggleExpand(country);
-                    onCountryClick?.(country, { score, reasoning });
-                  }}
-                  className="w-full p-3 sm:p-4 text-left hover:bg-slate-50 transition-colors"
+                  key={country}
+                  onClick={() => onCountryClick?.(country, { score, reasoning })}
+                  className="w-full p-3 sm:p-4 text-left hover:bg-slate-50 transition-colors border-b border-slate-100"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium text-slate-900 truncate sm:text-base">
@@ -166,29 +166,20 @@ export function CountryListView({
                         sideALabel={sideALabel}
                         sideBLabel={sideBLabel}
                       />
-                      <ChevronDown
-                        className={`w-4 h-4 text-slate-400 transition-transform ${
-                          expandedCountry === country ? "rotate-180" : ""
-                        }`}
-                      />
                     </div>
                   </div>
                   <div className="text-xs sm:text-sm text-slate-500 mt-0.5">
                     Score: {score > 0 ? "+" : ""}
                     {score.toFixed(2)}
                   </div>
-                </button>
-
-                {/* Expanded reasoning */}
-                {expandedCountry === country && reasoning && (
-                  <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-                    <p className="text-sm text-slate-600 bg-slate-50 rounded-lg p-3 whitespace-pre-line">
-                      {reasoning}
+                  {preview && (
+                    <p className="text-xs sm:text-sm text-slate-600 mt-1.5 line-clamp-1">
+                      {preview}
                     </p>
-                  </div>
-                )}
-              </div>
-            ))
+                  )}
+                </button>
+              );
+            })
           )}
         </div>
       </div>

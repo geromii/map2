@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Globe, Swords, MapPin, Users, BarChart3, ArrowRight } from "lucide-react";
+import { HomeFeaturedHeadlines, HomeNavigationCards } from "./HomeClient";
 
 export const metadata = {
   title: "Mapdis - Interactive Global Relations & Conflict Map",
@@ -43,21 +44,22 @@ export default function LandingPage() {
         <div className="flex-1 flex flex-col items-center justify-center px-6 pt-20 pb-8">
           <div className="max-w-5xl w-full">
             {/* Logo & Title */}
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-3 mb-6 px-4 py-2 rounded-full bg-[hsl(222.2,47.4%,11.2%)]/5 border border-[hsl(222.2,47.4%,11.2%)]/10 backdrop-blur-sm">
-                <div className="w-2 h-2 bg-[hsl(48,96%,53%)] rounded-full animate-pulse" />
-                <span className="text-sm text-[hsl(222.2,47.4%,11.2%)]/60 tracking-wide">Visualize Global Geopolitics</span>
-              </div>
-              <h1 className="text-6xl sm:text-7xl lg:text-8xl text-[hsl(222.2,47.4%,11.2%)] tracking-tight font-arvo font-medium mb-6">
+            <div className="text-center mb-10">
+              <h1 className="text-6xl sm:text-7xl lg:text-8xl text-[hsl(222.2,47.4%,11.2%)] tracking-tight font-arvo font-medium">
                 Mapdis
               </h1>
-              <p className="text-2xl sm:text-3xl lg:text-4xl text-[hsl(222.2,47.4%,30%)] font-light max-w-2xl mx-auto leading-relaxed">
-                Global Relations Map
-              </p>
+            </div>
+
+            {/* Featured Headlines Section */}
+            <div className="mb-12">
+              <h2 className="text-xl font-semibold text-[hsl(222.2,47.4%,11.2%)] mb-4 text-center">
+                Featured Headlines
+              </h2>
+              <HomeFeaturedHeadlines />
             </div>
 
             {/* Mode Cards */}
-            <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-16">
+            <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-12">
               {/* Diplomacy Card */}
               <Link href="/diplomacy" className="group">
                 <div className="relative h-full p-8 rounded-2xl bg-[hsl(222.2,47.4%,15%)] hover:bg-[hsl(222.2,47.4%,8%)] border border-[hsl(222.2,47.4%,11.2%)]/20 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden">
@@ -113,6 +115,11 @@ export default function LandingPage() {
               </Link>
             </div>
 
+            {/* Navigation Cards - Headlines & Scenarios */}
+            <div className="mb-12">
+              <HomeNavigationCards />
+            </div>
+
             {/* Feature highlights */}
             <div className="grid grid-cols-3 gap-4 lg:gap-8 max-w-3xl mx-auto">
               <div className="text-center p-4">
@@ -144,6 +151,8 @@ export default function LandingPage() {
             <div className="flex items-center gap-6">
               <Link href="/diplomacy" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Diplomacy</Link>
               <Link href="/conflict" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Conflict</Link>
+              <Link href="/headlines" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Headlines</Link>
+              <Link href="/scenario" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Scenarios</Link>
             </div>
           </div>
         </footer>
