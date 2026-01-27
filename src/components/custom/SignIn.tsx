@@ -172,7 +172,7 @@ export function SignIn() {
   const subheadingClass = "text-sm text-gray-500 mt-1";
   const inputClass = "h-9 rounded-md border-gray-200 bg-gray-50 focus:bg-white focus:border-[hsl(48,96%,53%)] focus:ring-1 focus:ring-[hsl(48,96%,53%)] transition-colors";
   const primaryBtnClass = "w-full h-9 rounded-md bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors";
-  const googleBtnClass = "flex items-center justify-center gap-2 w-full h-10 bg-[hsl(222.2,47.4%,11.2%)] border border-[hsl(222.2,47.4%,11.2%)] rounded-md text-sm font-medium text-white hover:bg-[hsl(222.2,47.4%,18%)] transition-all";
+  const googleBtnClass = "flex items-center w-full h-9 bg-[#4285F4] rounded text-sm font-medium text-white hover:bg-[#3b78e7] transition-all overflow-hidden";
 
   // Password Reset: Request Code
   if (flow === "reset") {
@@ -310,8 +310,10 @@ export function SignIn() {
 
       <div className="space-y-4">
         <button type="button" onClick={handleGoogleSignIn} className={googleBtnClass}>
-          <GoogleIcon className="w-4 h-4" />
-          Continue with Google
+          <span className="bg-white m-0.5 rounded-sm h-8 w-8 flex items-center justify-center shrink-0">
+            <GoogleIcon className="w-4 h-4" />
+          </span>
+          <span className="flex-1 pr-8">{flow === "signIn" ? "Sign in with Google" : "Sign up with Google"}</span>
         </button>
 
         <div className="relative">
@@ -415,6 +417,13 @@ export function SignIn() {
         >
           {flow === "signIn" ? "Sign up" : "Sign in"}
         </button>
+      </p>
+
+      <p className="text-center text-xs text-gray-400 mt-4">
+        By continuing, you agree to our{" "}
+        <a href="/terms" className="underline hover:text-gray-600">Terms of Service</a>
+        {" "}and{" "}
+        <a href="/privacy" className="underline hover:text-gray-600">Privacy Policy</a>.
       </p>
     </div>
   );

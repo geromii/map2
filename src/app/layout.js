@@ -84,13 +84,18 @@ export default function RootLayout({ children }) {
           </main>
           <Analytics />
           <footer className="flex flex-col items-center bg-slate-200 mt-auto">
-          <p className="text-xs  my-2">
-            Made by Jeremy Russell (<a href="https://twitter.com/geromi_" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">X/Twitter</a>, <a href="https://www.reddit.com/user/RagtagJack" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">Reddit</a>), 2024.
+          <p className="text-xs my-2">
+            Made by Jeremy Russell (<a href="https://twitter.com/geromi_" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">X/Twitter</a>), 2024-2026.
           </p>
           <p className="text-xs mb-2">
             <a href="https://docs.google.com/forms/d/e/1FAIpQLScCY1IVKzNa9fM46kAcJUWT0zvLA99NnbDozmU1qZ8ZhwYg0w/viewform" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">
               Please share your feedback (takes 15 seconds)
             </a>
+          </p>
+          <p className="text-xs mb-2">
+            <a href="/privacy" className="underline hover:text-blue-600">Privacy Policy</a>
+            {" · "}
+            <a href="/terms" className="underline hover:text-blue-600">Terms of Service</a>
           </p>
           </footer>
           <SpeedInsights />
