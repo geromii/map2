@@ -29,9 +29,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: `https://www.mapdis.com/diplomacy/${slug}`,
       siteName: "Mapdis",
       images: [{
-        url: "https://www.mapdis.com/singleimage.png",
-        width: 800,
-        height: 600,
+        url: `https://www.mapdis.com/og/diplomacy/${slug}.jpg`,
+        width: 1200,
+        height: 630,
         alt: `${countryName} on the Global Relations Map`,
       }],
       type: "website",
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       title: `${countryName} - Global Relations Map | Mapdis`,
       description: `Explore ${countryName}'s diplomatic relationships and geopolitical position.`,
-      images: ["https://www.mapdis.com/singleimage.png"],
+      images: [`https://www.mapdis.com/og/diplomacy/${slug}.jpg`],
     },
   };
 }
