@@ -32,13 +32,14 @@ interface Headline {
 }
 
 type Step = "input" | "confirm" | "generating";
-type ModelChoice = "2.5" | "3.0" | "3.0-fallback" | "3.0-pro";
+type ModelChoice = "2.0-flash" | "2.5-flash" | "3.0-flash" | "3.0-flash-fallback" | "3.0-pro";
 
 const MODEL_OPTIONS: { value: ModelChoice; label: string }[] = [
-  { value: "3.0-fallback", label: "Flash 3.0 (fallback to 2.5)" },
-  { value: "3.0", label: "Flash 3.0" },
+  { value: "3.0-flash-fallback", label: "Flash 3.0 (fallback to 2.5)" },
+  { value: "3.0-flash", label: "Flash 3.0" },
   { value: "3.0-pro", label: "Pro 3.0" },
-  { value: "2.5", label: "Flash 2.5" },
+  { value: "2.5-flash", label: "Flash 2.5" },
+  { value: "2.0-flash", label: "Flash 2.0" },
 ];
 
 type TabType = "featured" | "active" | "archived";
@@ -277,8 +278,8 @@ export default function AdminHeadlinesPage() {
   const [prompt, setPrompt] = useState("");
   const [useWebGroundingParse, setUseWebGroundingParse] = useState(true);
   const [useWebGroundingScores, setUseWebGroundingScores] = useState(true);
-  const [modelParse, setModelParse] = useState<ModelChoice>("3.0-fallback");
-  const [modelScores, setModelScores] = useState<ModelChoice>("3.0-fallback");
+  const [modelParse, setModelParse] = useState<ModelChoice>("3.0-flash-fallback");
+  const [modelScores, setModelScores] = useState<ModelChoice>("3.0-flash-fallback");
   const [isParsing, setIsParsing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("featured");
   const [parsedHeadline, setParsedHeadline] = useState<ParsedHeadline | null>(null);

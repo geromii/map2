@@ -231,18 +231,18 @@ async function fetchOpenRouterWithLogging(
 
 // Gemini model options
 const GEMINI_MODELS = {
-  "2.5": "gemini-2.5-flash-preview-05-20",
-  "2.5-scenario": "gemini-2.5-flash-preview-05-20", // For custom scenarios (no web grounding)
-  "3.0": "gemini-2.5-flash-preview-05-20",
-  "3.0-pro": "gemini-2.5-pro-preview-05-20",
+  "2.0-flash": "gemini-2.0-flash",
+  "2.5-flash": "gemini-2.5-flash-preview-05-20",
+  "3.0-flash": "gemini-3-flash-preview",
+  "3.0-pro": "gemini-3-pro-preview",
 } as const;
 type GeminiModelVersion = keyof typeof GEMINI_MODELS;
 
-// Default model - 3.0 supports JSON + tools together, 2.5 does not
-const DEFAULT_GEMINI_MODEL: GeminiModelVersion = "3.0";
+// Default model for headline generation
+const DEFAULT_GEMINI_MODEL: GeminiModelVersion = "3.0-flash";
 
 // Model for custom scenarios (uses Gemini directly without web grounding)
-const SCENARIO_MODEL: GeminiModelVersion = "2.5-scenario";
+const SCENARIO_MODEL: GeminiModelVersion = "2.0-flash";
 
 // Helper to make logged Google Gemini requests with search grounding and retry logic
 async function fetchGeminiWithLogging(
@@ -271,8 +271,8 @@ async function fetchGeminiWithLogging(
   // Add search grounding tool if enabled
   if (useSearchGrounding) {
     config.tools = [{ googleSearch: {} }];
-    // Only 3.0 supports JSON response format with tools
-    if (modelVersion === "3.0") {
+    // 3.0 models support JSON response format with tools
+    if (modelVersion === "3.0-flash" || modelVersion === "3.0-pro") {
       config.responseMimeType = "application/json";
     }
   } else {
@@ -515,7 +515,13 @@ function batchArray<T>(array: T[], batchSize: number): T[][] {
 }
 
 // Model choice type for API
-const modelChoiceValidator = v.optional(v.union(v.literal("2.5"), v.literal("3.0"), v.literal("3.0-fallback"), v.literal("3.0-pro")));
+const modelChoiceValidator = v.optional(v.union(
+  v.literal("2.0-flash"),
+  v.literal("2.5-flash"),
+  v.literal("3.0-flash"),
+  v.literal("3.0-flash-fallback"),
+  v.literal("3.0-pro")
+));
 
 // Parse prompt into Side A / Side B structure
 export const parsePromptToSides = action({
@@ -615,7 +621,7 @@ If the user's message is in a language other than English, please issue your res
 Only return valid JSON, no additional text.`;
 
     let content!: string; // Assigned in either branch below, or we throw
-    const modelChoice = args.modelChoice || "3.0-fallback";
+    const modelChoice = args.modelChoice || "3.0-flash-fallback";
 
     // Use Gemini with search grounding when web grounding is enabled
     if (args.useWebGrounding) {
@@ -625,13 +631,9 @@ Only return valid JSON, no additional text.`;
       }
 
       // Determine model version(s) to try
-      const tryModels: GeminiModelVersion[] = modelChoice === "3.0-fallback"
-        ? ["3.0", "2.5"]
-        : modelChoice === "3.0-pro"
-          ? ["3.0-pro"]
-          : modelChoice === "3.0"
-            ? ["3.0"]
-            : ["2.5"];
+      const tryModels: GeminiModelVersion[] = modelChoice === "3.0-flash-fallback"
+        ? ["3.0-flash", "2.5-flash"]
+        : [modelChoice as GeminiModelVersion];
 
       let lastError: Error | null = null;
       for (const modelVersion of tryModels) {
@@ -895,7 +897,7 @@ export const processScenarioBatches = action({
       let completedBatches = 0;
       let completedCountries = 0;
 
-      const modelChoice = args.modelChoice || "3.0-fallback";
+      const modelChoice = args.modelChoice || "3.0-flash-fallback";
 
       // Helper to process a single batch and save scores immediately
       const processBatch = async (batch: string[]): Promise<void> => {
@@ -1052,7 +1054,7 @@ export const processHeadlineBatches = action({
       let completedBatches = 0;
       let completedCountries = 0;
 
-      const modelChoice = args.modelChoice || "3.0-fallback";
+      const modelChoice = args.modelChoice || "3.0-flash-fallback";
 
       // Helper to process a single batch and save scores immediately
       const processBatch = async (batch: string[]): Promise<void> => {
@@ -1193,7 +1195,7 @@ export const rerunMissingHeadlineScores = action({
         return { success: true, rerunCount: 0 };
       }
 
-      const modelChoice = args.modelChoice || "3.0-fallback";
+      const modelChoice = args.modelChoice || "3.0-flash-fallback";
       const batchSize = BATCH_SIZE;
       const batches = batchArray(missingResult.missing, batchSize);
 
@@ -1401,7 +1403,7 @@ async function generateScoresForBatch(
   sideB: { label: string; description: string },
   countries: string[],
   useWebGrounding?: boolean,
-  modelChoice?: "2.5" | "3.0" | "3.0-fallback" | "3.0-pro"
+  modelChoice?: "2.0-flash" | "2.5-flash" | "3.0-flash" | "3.0-flash-fallback" | "3.0-pro"
 ): Promise<Record<string, { score: number; reasoning?: string }>> {
   // Static instructions at the start (cacheable across all requests)
   const staticInstructions = `You are an expert geopolitical analyst rating countries' likely positions on geopolitical issues.
@@ -1489,14 +1491,10 @@ OPPOSE (negative scores): ${sideB.label} - ${sideB.description}`;
     }
 
     // Determine model version(s) to try
-    const effectiveChoice = modelChoice || "3.0-fallback";
-    const tryModels: GeminiModelVersion[] = effectiveChoice === "3.0-fallback"
-      ? ["3.0", "2.5"]
-      : effectiveChoice === "3.0-pro"
-        ? ["3.0-pro"]
-        : effectiveChoice === "3.0"
-          ? ["3.0"]
-          : ["2.5"];
+    const effectiveChoice = modelChoice || "3.0-flash-fallback";
+    const tryModels: GeminiModelVersion[] = effectiveChoice === "3.0-flash-fallback"
+      ? ["3.0-flash", "2.5-flash"]
+      : [effectiveChoice as GeminiModelVersion];
 
     let lastError: Error | null = null;
     for (const modelVersion of tryModels) {
