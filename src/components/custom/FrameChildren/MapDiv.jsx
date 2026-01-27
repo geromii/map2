@@ -17,6 +17,19 @@ import { abbreviateCountry } from "../../../utils/abbreviateCountry";
 import { IconX } from "@tabler/icons-react";
 import { Share, Check } from "lucide-react";
 import { countryToSlug } from "@/utils/countrySlug";
+import { useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+// Get or create session ID for analytics
+const getSessionId = () => {
+  if (typeof window === "undefined") return null;
+  let sessionId = sessionStorage.getItem("mapSessionId");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    sessionStorage.setItem("mapSessionId", sessionId);
+  }
+  return sessionId;
+};
+
 const MapDivComponent = ({ mapMode }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [activeCountry, setActiveCountry] = useState(null);
@@ -25,6 +38,7 @@ const MapDivComponent = ({ mapMode }) => {
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const recordClick = useMutation(api.analytics.recordCountryClick);
 
   const mapRef = useRef(null);
 
@@ -146,6 +160,14 @@ const MapDivComponent = ({ mapMode }) => {
       }
     } else {
       setActiveCountry(country)
+    }
+
+    // Track the click for analytics
+    const sessionId = getSessionId();
+    if (sessionId) {
+      recordClick({ country, sessionId }).catch(() => {
+        // Silently ignore analytics errors
+      });
     }
   };
 

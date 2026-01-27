@@ -134,6 +134,21 @@ const schema = defineSchema({
   }).index("by_user", ["userId"]),
 
   // ============================================
+  // ANALYTICS
+  // ============================================
+  countryClickCounts: defineTable({
+    country: v.string(),
+    clicks: v.number(),
+  }).index("by_country", ["country"]),
+
+  clickSessions: defineTable({
+    sessionId: v.string(),
+    clickCount: v.number(),
+    firstClickAt: v.number(),
+    lastClickAt: v.number(),
+  }).index("by_session", ["sessionId"]),
+
+  // ============================================
   // SUBSCRIPTIONS (Stripe billing)
   // ============================================
   subscriptions: defineTable({
