@@ -414,10 +414,74 @@ export default function ScenarioPage() {
     return `in ${minutes}m`;
   };
 
+  const heroContent = (
+    <div className="space-y-8">
+      {/* Example maps grid */}
+      <div className="grid grid-cols-3 gap-2 md:gap-6 max-w-sm md:max-w-none mx-auto">
+        {/* Global Carbon Tax */}
+        <div className="group">
+          <h3 className="font-semibold text-slate-900 text-xs md:text-base mb-1 md:mb-2 text-center">Global Carbon Tax</h3>
+          <div className="rounded-lg md:rounded-2xl shadow-md md:shadow-lg overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+            <div className="aspect-video relative">
+              <img src="/images/globalcarbontax.jpg" alt="Global carbon tax scenario" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+        {/* Trump Third Term */}
+        <div className="group">
+          <h3 className="font-semibold text-slate-900 text-xs md:text-base mb-1 md:mb-2 text-center">Trump Third Term</h3>
+          <div className="rounded-lg md:rounded-2xl shadow-md md:shadow-lg overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+            <div className="aspect-video relative">
+              <img src="/images/trumpthirdterm.jpg" alt="Trump third term scenario" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+        {/* Reparations */}
+        <div className="group">
+          <h3 className="font-semibold text-slate-900 text-xs md:text-base mb-1 md:mb-2 text-center">Colonial Reparations</h3>
+          <div className="rounded-lg md:rounded-2xl shadow-md md:shadow-lg overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+            <div className="aspect-video relative">
+              <img src="/images/reparations.jpg" alt="Reparations for colonialism scenario" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Features list */}
+      <div className="flex flex-wrap justify-center gap-8 text-sm">
+        <div className="flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-sm border border-indigo-100">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center">
+            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <span className="font-medium text-slate-700">AI-powered analysis</span>
+        </div>
+        <div className="flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-sm border border-amber-100">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center">
+            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <span className="font-medium text-slate-700">190+ countries</span>
+        </div>
+        <div className="flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-sm border border-emerald-100">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center">
+            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <span className="font-medium text-slate-700">Shareable results</span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <RequireAuth
-      title="AI Scenario Generator"
-      description="Create custom geopolitical scenarios and see how countries might align. Sign in to generate your own scenarios."
+      title="Create Your Own Maps"
+      description="What would the world look like if...? Explore any geopolitical scenario and watch AI predict how every country might respond."
+      heroContent={heroContent}
     >
       <div className="h-[calc(100vh-48px)] bg-slate-50 flex flex-col md:flex-row overflow-hidden">
         {/* Mobile view toggle */}
