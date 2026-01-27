@@ -421,7 +421,7 @@ export default function ScenarioPage() {
         {/* Global Carbon Tax */}
         <div className="group">
           <h3 className="font-semibold text-slate-900 text-xs md:text-base mb-1 md:mb-2 text-center">Global Carbon Tax</h3>
-          <div className="rounded-lg md:rounded-2xl shadow-md md:shadow-lg overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+          <div className="rounded-lg md:rounded-2xl shadow-md md:shadow-lg overflow-hidden transition-all duration-300">
             <div className="aspect-video relative">
               <img src="/images/globalcarbontax.jpg" alt="Global carbon tax scenario" className="w-full h-full object-cover" />
             </div>
@@ -430,7 +430,7 @@ export default function ScenarioPage() {
         {/* Trump Third Term */}
         <div className="group">
           <h3 className="font-semibold text-slate-900 text-xs md:text-base mb-1 md:mb-2 text-center">Trump Third Term</h3>
-          <div className="rounded-lg md:rounded-2xl shadow-md md:shadow-lg overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+          <div className="rounded-lg md:rounded-2xl shadow-md md:shadow-lg overflow-hidden transition-all duration-300">
             <div className="aspect-video relative">
               <img src="/images/trumpthirdterm.jpg" alt="Trump third term scenario" className="w-full h-full object-cover" />
             </div>
@@ -439,7 +439,7 @@ export default function ScenarioPage() {
         {/* Reparations */}
         <div className="group">
           <h3 className="font-semibold text-slate-900 text-xs md:text-base mb-1 md:mb-2 text-center">Colonial Reparations</h3>
-          <div className="rounded-lg md:rounded-2xl shadow-md md:shadow-lg overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+          <div className="rounded-lg md:rounded-2xl shadow-md md:shadow-lg overflow-hidden transition-all duration-300">
             <div className="aspect-video relative">
               <img src="/images/reparations.jpg" alt="Reparations for colonialism scenario" className="w-full h-full object-cover" />
             </div>
