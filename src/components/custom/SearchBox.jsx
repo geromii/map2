@@ -3,8 +3,7 @@
 import * as React from "react";
 import { SearchCountry } from "./SearchCountry";
 import useCountryStore from "@/app/useCountryStore";
-import { IconSquareX } from "@tabler/icons-react";
-import { abbreviateCountry } from "../../utils/abbreviateCountry";
+import { X } from "lucide-react";
 
 export function SearchBox() {
   const { setCountryPhase, countries } = useCountryStore((state) => ({
@@ -12,97 +11,78 @@ export function SearchBox() {
     countries: state.countries,
   }));
 
-  const phaseColorMap = {
-    0: "#cccccc",
-    1: "#474747",
-    2: "#000099",
-    3: "#990000",
+  const phaseStyles = {
+    0: "text-gray-400",
+    1: "text-gray-600",
+    2: "text-blue-700 font-semibold",
+    3: "text-red-700 font-semibold",
   };
 
   const handleClose = (country) => {
     setCountryPhase(country, 0);
   };
 
+  const selectedCountries = Object.entries(countries)
+    .filter(([_, country]) => country.nonInitial)
+    .sort(([, a], [, b]) => a.selectionOrder - b.selectionOrder);
+
   return (
-    <div className="w-full h-full m flex flex-col pt-1 md:p-0.5 lg:p-0">
+    <div className="w-full h-full flex flex-col">
       <SearchCountry countries={countries} />
-      <div className="flex flex-col w-full h-full items-start overflow-y-scroll overflow-x-hidden">
-        <div
-          className=" mt-3 h-full w-full"
-          style={{ maxHeight: "calc(100% - 1.5rem)" }}
-        >
-          {Object.entries(countries) // Change from Object.values to Object.entries
-            .filter(([_, country]) => country.nonInitial) // Destructure to get the country object
-            .sort(([, a], [, b]) => a.selectionOrder - b.selectionOrder) // Adjust sort to handle entries
-            .map(
-              (
-                [countryName, country] // Destructure to get countryName and country
-              ) => (
-                <div
-                  key={countryName} // Use countryName as the key
-                  className="flex space-x-1 items-center whitespace-nowrap font-semibold border-b-1 mt-[-2px] border-accent overflow-hidden"
+      <div className="flex-1 overflow-y-auto overflow-x-hidden mt-1">
+        {selectedCountries.length > 0 && (
+          <div className="space-y-0">
+            {selectedCountries.map(([countryName, country]) => (
+              <div
+                key={countryName}
+                className="flex items-center gap-1.5 py-0.5 px-0.5 rounded hover:bg-gray-50"
+              >
+                <button
+                  onClick={() => handleClose(countryName)}
+                  className="p-0.5 rounded hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                  title="Remove"
                 >
-                  <div className="flex relative shadow-sm space items-center flex-shrink-0">
-                  <button
-                      onClick={() => handleClose(countryName)} // Pass countryName handleClose function
-                      className="flex text-red-500 flex-shrink-0"
-                    >
-                      <IconSquareX  size = {19} />
-                    </button>
-                    <Squares
-                      country={countryName} // Pass countryName here
-                      setCountryPhase={setCountryPhase}
-                    />
-                  </div>
-                  <div className=""></div>
-                  <div
-                    className="truncate text-sm max-w-[100px] sm:max-w-[120px] lg:max-w-[150px]"
-                    style={{ color: phaseColorMap[country.phase] }}
-                    title={countryName}
-                  >
-                    {abbreviateCountry(countryName)}
-                  </div>
-                </div>
-              )
-            )}
-        </div>
+                  <X size={12} />
+                </button>
+                <PhaseButtons
+                  country={countryName}
+                  currentPhase={country.phase}
+                  setCountryPhase={setCountryPhase}
+                />
+                <span
+                  className={`text-sm truncate ${phaseStyles[country.phase]}`}
+                  title={countryName}
+                >
+                  {countryName}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// both from Tabler Icons
-
-function Squares({ scale = 1, setCountryPhase, country }) {
-  // Define a common style for all buttons, excluding the backgroundColor
-  const commonStyle = {
-    transform: `scale(${scale})`,
-    marginRight: "-2px",
-    border: "1px solid #000000",
-  };
-
-  let swatchClassNames = "w-4 h-4";
-
-  // Define an array of color codes for your buttons
-  const colors = ["#cccccc", "#990000", "#000099", "#646464"];
+function PhaseButtons({ setCountryPhase, country, currentPhase }) {
+  const phases = [
+    { phase: "neutral", color: "bg-gray-500", ring: currentPhase === 1 },
+    { phase: "blue", color: "bg-blue-700", ring: currentPhase === 2 },
+    { phase: "red", color: "bg-red-700", ring: currentPhase === 3 },
+  ];
 
   return (
-    <div className= "flex">
-      <button
-        style={{ ...commonStyle, backgroundColor: colors[3] }}
-        onClick={() => setCountryPhase(country, "neutral")}
-        className={swatchClassNames}
-      />
-      <button
-        style={{ ...commonStyle, backgroundColor: colors[2] }}
-        onClick={() => setCountryPhase(country, "blue")}
-        className={swatchClassNames}
-      />
-      <button
-        style={{ ...commonStyle, backgroundColor: colors[1] }}
-        onClick={() => setCountryPhase(country, "red")}
-        className={swatchClassNames}
-      />
+    <div className="flex gap-px flex-shrink-0">
+      {phases.map(({ phase, color, ring }) => (
+        <button
+          key={phase}
+          onClick={() => setCountryPhase(country, phase)}
+          className={`w-3.5 h-3.5 rounded-sm ${color} transition-all ${
+            ring ? "ring-1 ring-offset-1 ring-yellow-400" : "hover:opacity-80"
+          }`}
+          title={`Set to ${phase}`}
+        />
+      ))}
     </div>
   );
 }
