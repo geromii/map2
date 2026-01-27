@@ -17,6 +17,7 @@ import { abbreviateCountry } from "../../../utils/abbreviateCountry";
 import { IconX } from "@tabler/icons-react";
 import { Share, Check } from "lucide-react";
 import { countryToSlug } from "@/utils/countrySlug";
+import { generateMatchupSlug } from "@/utils/conflictSlug";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 // Get or create session ID for analytics
@@ -179,19 +180,48 @@ const MapDivComponent = ({ mapMode }) => {
     phase2Countries = ["European Union"];
   }
 
+  // Get phase 3 countries for multi-country sharing
+  const phase3Countries = Object.keys(countries).filter(
+    (key) => countries[key].phase === 3
+  );
+
   // Handle share button click
   const handleShare = async () => {
-    if (phase2Countries.length !== 1) return;
+    let url, title;
 
-    const country = phase2Countries[0];
-    const slug = countryToSlug(country);
-    const url = `${window.location.origin}/diplomacy/${slug}`;
+    if (mapMode === "single") {
+      // Single country mode (diplomacy)
+      if (phase2Countries.length !== 1) return;
+      const country = phase2Countries[0];
+      const slug = countryToSlug(country);
+      url = `${window.location.origin}/diplomacy/${slug}`;
+      title = `${country} - Global Relations Map`;
+    } else {
+      // Multi-country mode (conflict/ww3)
+      if (phase2Countries.length === 0 || phase3Countries.length === 0) return;
+
+      // Generate matchup slug for clean URLs
+      const matchupSlug = generateMatchupSlug(phase2Countries, phase3Countries);
+
+      // Determine page type from current URL
+      const isWW3 = window.location.pathname.includes('/ww3');
+      const pageType = isWW3 ? 'ww3' : 'conflict';
+      url = `${window.location.origin}/${pageType}/${matchupSlug}`;
+
+      // Generate title
+      const formatSide = (countries) => {
+        if (countries.length === 1) return countries[0];
+        if (countries.length === 2) return `${countries[0]} & ${countries[1]}`;
+        return `${countries.length} countries`;
+      };
+      title = `${formatSide(phase2Countries)} vs ${formatSide(phase3Countries)} - ${isWW3 ? 'WW3 Map' : 'Conflict Map'}`;
+    }
 
     try {
       // Try Web Share API first (mobile)
       if (navigator.share) {
         await navigator.share({
-          title: `${country} - Global Relations Map`,
+          title: title,
           url: url,
         });
       } else {
@@ -211,6 +241,11 @@ const MapDivComponent = ({ mapMode }) => {
       }
     }
   };
+
+  // Check if sharing is available
+  const canShare = mapMode === "single"
+    ? (phase2Countries.length === 1 && phase2Countries[0] !== "European Union")
+    : (phase2Countries.length >= 1 && phase3Countries.length >= 1);
 
   const scale = "190";
   const rotation = [-12.5];
@@ -245,31 +280,54 @@ const MapDivComponent = ({ mapMode }) => {
                 return "";
               }
               
+              const ShareBtn = () => (
+                <button
+                  onClick={handleShare}
+                  className="flex-shrink-0 p-1 rounded hover:bg-slate-200 transition-colors absolute right-2"
+                  title={copied ? "Copied!" : "Share this matchup"}
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Share className="w-4 h-4 text-slate-500" />
+                  )}
+                </button>
+              );
+
               if (phase3CountriesCount === 1 && phase2CountriesCount === 1) {
                 return (
-                  <div className="grid grid-cols-[1fr,auto,1fr] items-center w-full">
-                    <span className="text-blue-600 truncate text-right pr-1">{getCountryEmoji(phase2Countries[0])} {abbreviateCountry(phase2Countries[0])}</span>
-                    <span className="px-1"> vs </span>
-                    <span className="text-red-600 truncate text-left pl-1">{getCountryEmoji(phase3Countries[0])} {abbreviateCountry(phase3Countries[0])}</span>
-                  </div>
+                  <>
+                    <div className="grid grid-cols-[1fr,auto,1fr] items-center w-full">
+                      <span className="text-blue-600 truncate text-right pr-1">{getCountryEmoji(phase2Countries[0])} {abbreviateCountry(phase2Countries[0])}</span>
+                      <span className="px-1"> vs </span>
+                      <span className="text-red-600 truncate text-left pl-1">{getCountryEmoji(phase3Countries[0])} {abbreviateCountry(phase3Countries[0])}</span>
+                    </div>
+                    <ShareBtn />
+                  </>
                 );
               } else if (phase3CountriesCount + phase2CountriesCount <= 5) {
                 const blueEmojis = phase2Countries.map(country => getCountryEmoji(country)).join(" ");
                 const redEmojis = phase3Countries.map(country => getCountryEmoji(country)).join(" ");
                 return (
-                  <div className="grid grid-cols-[1fr,auto,1fr] items-center w-full">
-                    <span className="truncate text-right pr-1">{blueEmojis}</span>
-                    <span className="px-1"> vs </span>
-                    <span className="truncate text-left pl-1">{redEmojis}</span>
-                  </div>
+                  <>
+                    <div className="grid grid-cols-[1fr,auto,1fr] items-center w-full">
+                      <span className="truncate text-right pr-1">{blueEmojis}</span>
+                      <span className="px-1"> vs </span>
+                      <span className="truncate text-left pl-1">{redEmojis}</span>
+                    </div>
+                    <ShareBtn />
+                  </>
                 );
               } else {
                 return (
-                  <div className="flex items-center justify-center w-full">
-                    <span className="text-blue-600">{phase2CountriesCount} countries</span>
-                    <span className="mx-3 flex-shrink-0"> vs </span>
-                    <span className="text-red-600">{phase3CountriesCount} countries</span>
-                  </div>
+                  <>
+                    <div className="flex items-center justify-center w-full">
+                      <span className="text-blue-600">{phase2CountriesCount} countries</span>
+                      <span className="mx-3 flex-shrink-0"> vs </span>
+                      <span className="text-red-600">{phase3CountriesCount} countries</span>
+                    </div>
+                    <ShareBtn />
+                  </>
                 );
               }
             })()

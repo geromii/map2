@@ -1,57 +1,72 @@
 "use client";
 
-import React, {  useEffect} from "react";
-
-import "./multiapp.css";
-import useCountryStore from "../useCountryStore";
+import React, { useEffect } from "react";
+import Link from "next/link";
+import "../../conflict/multiapp.css";
+import useCountryStore from "../../useCountryStore";
 import { SearchBox } from "@/components/custom/SearchBox";
-import {
-  IconTrash,
-} from "@tabler/icons-react";
-import ShuffleCountries from "../../components/custom/shuffle";
-import TabDiv from "../../components/custom/FrameChildren/TabDiv";
+import { IconTrash } from "@tabler/icons-react";
+import ShuffleCountries from "@/components/custom/shuffle";
+import TabDiv from "@/components/custom/FrameChildren/TabDiv";
 import { MapDiv } from "@/components/custom/FrameChildren/MapDiv";
-import IconButton from "../../components/custom/boxbutton";
+import IconButton from "@/components/custom/boxbutton";
 import MapFrame from "@/components/custom/FrameMapAndSidebar";
+import { ConflictMatchup } from "@/utils/conflictSlug";
 
-// const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+interface WW3MatchupClientProps {
+  matchup: ConflictMatchup | null;
+}
 
-/*
-Future goals for this project:
-1. Demographic information of each side
-2. better scale the data? perhaps square all values?
-3. change the color scheme multiplier from 0.5 to 1
-4. decide to delete or fix the second order setting
-5 . Toggle between: different projections? different color schemes? different data?
-6. Option to amplify/bolden when the projections are small
-7. Text based summary using GPT
-
-
-Possible in the backened I need to weigh the importance of each relationship.
-
-1. Add prominent conflicts to the map
-2. Demographic information of each side
-
-*/
-
-export default function MapChart() {
+export function WW3MatchupClient({ matchup }: WW3MatchupClientProps) {
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
-  const { setMapMode } = useCountryStore((state) => ({
-    setMapMode: state.setMapMode,
-  }));
+  const setCountryPhase = useCountryStore((state) => state.setCountryPhase);
+  const setMapMode = useCountryStore((state) => state.setMapMode);
 
   useEffect(() => {
-    resetAllExcept();
-    setMapMode("default");
-  }, [resetAllExcept, setMapMode]);
+    setMapMode("war"); // WW3 uses war mode
+
+    if (matchup) {
+      resetAllExcept();
+      // Set blue countries (phase 2)
+      matchup.blueCountries.forEach((country) => {
+        setCountryPhase(country, 2);
+      });
+      // Set red countries (phase 3) with small delay to ensure proper state update
+      setTimeout(() => {
+        matchup.redCountries.forEach((country) => {
+          setCountryPhase(country, 3);
+        });
+      }, 10);
+    } else {
+      resetAllExcept();
+    }
+  }, [matchup, resetAllExcept, setCountryPhase, setMapMode]);
+
+  if (matchup === null) {
+    return (
+      <div className="h-[calc(100vh-48px)] bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-xl font-bold text-slate-900 mb-2">Scenario not found</h1>
+          <p className="text-slate-600 mb-4">This WW3 scenario doesn&apos;t exist or contains invalid countries.</p>
+          <Link
+            href="/ww3"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700"
+          >
+            ← Back to WW3 Map
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <MapFrame
-    LeftSidebar={LeftSidebar}
-    RightSidebar={RightSidebar}
-    TabDiv = {TabDiv}
-    MapDiv = {MapDiv}
-    pageMode = "multi"
-  />
+      LeftSidebar={LeftSidebar}
+      RightSidebar={RightSidebar}
+      TabDiv={TabDiv}
+      MapDiv={MapDiv}
+      pageMode="multi"
+    />
   );
 }
 
@@ -59,7 +74,7 @@ const RightSidebar = () => {
   return (
     <div className="h-full w-full flex items-start justify-center px-1 pt-4 sm:pt-2 xl:pt-4 overflow-hidden">
       <div className="w-full h-full flex flex-col">
-        <h2 className=" font-semibold mb-2 pl-3 flex-shrink-0">Country Search</h2>
+        <h2 className="font-semibold mb-2 pl-3 flex-shrink-0">Country Search</h2>
         <div className="flex-1 min-h-0 overflow-hidden">
           <SearchBox />
         </div>
@@ -70,16 +85,16 @@ const RightSidebar = () => {
 
 const LeftSidebar = () => {
   return (
-    <div className="flex flex-col justify-evenly  mb-3  ">
+    <div className="flex flex-col justify-evenly mb-3">
       <div className="h-1/3 p-2 border-muted">
-          <div className="flex justify-evenly mb-4 mt-4">
-            <ShuffleCountries />
-            <ResetCountries />
-          </div>
+        <div className="flex justify-evenly mb-4 mt-4">
+          <ShuffleCountries />
+          <ResetCountries />
+        </div>
       </div>
 
       <div className="h-1/3 p-1 border-muted w-full">
-        <h2 className=" font-semibold">Presets</h2>
+        <h2 className="font-semibold">Presets</h2>
         <div className="mt-2 overflow-hidden">
           <PresetPairings />
         </div>
@@ -105,15 +120,13 @@ const morePresets = [
   { value: "Turkey - Greece", label: "Turkey vs Greece" },
   { value: "Armenia - Azerbaijan", label: "Armenia vs Azerbaijan" },
   { value: "Ethiopia - Egypt", label: "Ethiopia vs Egypt" },
-  { value: "Syria - Turkey", label: "Syria vs Turkey" },
-  { value: "Saudi Arabia - Yemen", label: "Saudi Arabia vs Yemen" },
 ];
 
 const PresetPairings = () => {
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   const setCountryPhase = useCountryStore((state) => state.setCountryPhase);
 
-  const handlePresetClick = (value) => {
+  const handlePresetClick = (value: string) => {
     const [country1, country2] = value.split("-");
     resetAllExcept();
     setCountryPhase(country1.trim(), 2);
@@ -124,7 +137,7 @@ const PresetPairings = () => {
     }
   };
 
-  const handleDropdownChange = (event) => {
+  const handleDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     if (event.target.value) {
       handlePresetClick(event.target.value);
       event.target.value = "";
@@ -146,7 +159,7 @@ const PresetPairings = () => {
       </div>
       <select
         className="rounded shadow bg-primary-foreground text-sm py-1 px-2 w-full"
-        aria-label="More conflict presets"
+        aria-label="More WW3 scenario presets"
         onChange={handleDropdownChange}
         defaultValue=""
       >
@@ -161,13 +174,12 @@ const PresetPairings = () => {
   );
 };
 
-// clear button to reset all countries
 const ResetCountries = () => {
   const resetAllExcept = useCountryStore((state) => state.resetAllExcept);
   return (
     <IconButton
       icon={IconTrash}
-      size = "medium"
+      size="medium"
       aria-label="Clear map - reset all countries"
       onClick={() => {
         resetAllExcept();
@@ -175,4 +187,3 @@ const ResetCountries = () => {
     />
   );
 };
-

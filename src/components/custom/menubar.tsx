@@ -14,8 +14,9 @@ const scenariosEnabled = process.env.NEXT_PUBLIC_SCENARIOS_ENABLED === "true";
 
 // Legacy nav items (when scenarios disabled)
 const legacyNavItems = [
-  { href: "/diplomacy", label: "Single Country", shortLabel: "Single" },
-  { href: "/conflict", label: "Conflict Mode", shortLabel: "Conflict" },
+  { href: "/diplomacy", label: "Global Relations", shortLabel: "Relations" },
+  { href: "/conflict", label: "Conflict", shortLabel: "Conflict" },
+  { href: "/ww3", label: "World War 3", shortLabel: "WW3" },
 ];
 
 // New dropdown structure (when scenarios enabled)
@@ -40,11 +41,12 @@ const navDropdowns: NavDropdown[] = [
     ],
   },
   {
-    label: "Global Relations",
-    shortLabel: "Relations",
+    label: "Interactive",
+    shortLabel: "Interactive",
     items: [
-      { href: "/diplomacy", label: "Single Country" },
+      { href: "/diplomacy", label: "Global Relations" },
       { href: "/conflict", label: "Conflict" },
+      { href: "/ww3", label: "World War 3" },
     ],
   },
 ];
@@ -120,12 +122,14 @@ const allNavItems = scenariosEnabled
   ? [
       { href: "/headlines", label: "Headlines", section: "Scenarios" },
       { href: "/scenario", label: "Custom Scenario", section: "Scenarios" },
-      { href: "/diplomacy", label: "Single Country", section: "Global Relations" },
-      { href: "/conflict", label: "Conflict Mode", section: "Global Relations" },
+      { href: "/diplomacy", label: "Global Relations", section: "Interactive" },
+      { href: "/conflict", label: "Conflict", section: "Interactive" },
+      { href: "/ww3", label: "World War 3", section: "Interactive" },
     ]
   : [
-      { href: "/diplomacy", label: "Single Country" },
-      { href: "/conflict", label: "Conflict Mode" },
+      { href: "/diplomacy", label: "Global Relations" },
+      { href: "/conflict", label: "Conflict" },
+      { href: "/ww3", label: "World War 3" },
     ];
 
 function MobileMenu({
