@@ -27,6 +27,7 @@ interface HoveredCountry {
 
 interface CurrentIssue {
   id: Id<"issues">;
+  slug?: string;
   title: string;
   description: string;
   primaryActor?: string;
@@ -36,6 +37,7 @@ interface CurrentIssue {
 
 interface SavedScenario {
   _id: Id<"issues">;
+  slug?: string;
   title: string;
   description: string;
   primaryActor?: string;
@@ -68,6 +70,9 @@ export default function ScenarioPage() {
   const [funFacts, setFunFacts] = useState<string[]>([]);
   const [factIndex, setFactIndex] = useState(0);
   const [factFading, setFactFading] = useState(false);
+
+  // Share state
+  const [copied, setCopied] = useState(false);
 
   // Hover state
   const [hoveredCountry, setHoveredCountry] = useState<HoveredCountry | null>(null);
@@ -253,7 +258,7 @@ export default function ScenarioPage() {
       const totalBatches = Math.ceil(totalCountries / BATCH_SIZE) * numRuns;
 
       // Initialize scenario (fast mutation - returns immediately)
-      const { issueId, jobId: newJobId } = await initializeScenario({
+      const { issueId, jobId: newJobId, slug: newSlug } = await initializeScenario({
         title: parsedScenario.title,
         description: parsedScenario.description,
         primaryActor: parsedScenario.primaryActor,
@@ -270,6 +275,7 @@ export default function ScenarioPage() {
       setJobId(newJobId);
       setCurrentIssue({
         id: issueId,
+        slug: newSlug,
         title: parsedScenario.title,
         description: parsedScenario.description,
         primaryActor: parsedScenario.primaryActor,
@@ -304,6 +310,7 @@ export default function ScenarioPage() {
     } else {
       setCurrentIssue({
         id: scenario._id,
+        slug: scenario.slug,
         title: scenario.title,
         description: scenario.description,
         primaryActor: scenario.primaryActor,
@@ -341,6 +348,7 @@ export default function ScenarioPage() {
     setFunFacts([]);
     setFactIndex(0);
     setFactFading(false);
+    setCopied(false);
     // Switch to map/generator view on mobile when creating new scenario
     setMobileView("map");
   };
@@ -1074,7 +1082,36 @@ export default function ScenarioPage() {
             <div className="bg-slate-100 border-b border-slate-200 px-6 py-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">{currentIssue.title}</h2>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-lg font-semibold text-slate-900">{currentIssue.title}</h2>
+                    {currentIssue.slug && (
+                      <button
+                        onClick={() => {
+                          const url = `${window.location.origin}/scenario/${currentIssue.slug}`;
+                          navigator.clipboard.writeText(url);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-400 transition-colors"
+                      >
+                        {copied ? (
+                          <>
+                            <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span className="text-green-600">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                            </svg>
+                            Share
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                   {currentIssue.description && (
                     <p className="text-sm text-slate-600 mt-1">{currentIssue.description}</p>
                   )}

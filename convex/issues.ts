@@ -2,6 +2,16 @@ import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
+// Generate a random slug (8 chars, alphanumeric)
+function generateRandomSlug(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < 8; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return result;
+}
+
 // ============ QUERIES ============
 
 // Get current authenticated user ID
@@ -204,6 +214,18 @@ export const getIssueById = query({
   args: { issueId: v.id("issues") },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.issueId);
+  },
+});
+
+// Get issue by slug (for shareable URLs)
+export const getIssueBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .collect();
+    return issues[0] ?? null;
   },
 });
 
@@ -713,9 +735,21 @@ export const initializeScenario = mutation({
       });
     }
 
+    // Generate unique slug
+    let slug = generateRandomSlug();
+    // Check for collision (extremely unlikely with 8 alphanumeric chars)
+    const existing = await ctx.db
+      .query("issues")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .first();
+    if (existing) {
+      slug = generateRandomSlug();
+    }
+
     // Create issue
     const issueId = await ctx.db.insert("issues", {
       title: args.title,
+      slug,
       description: args.description,
       primaryActor: args.primaryActor,
       sideA: args.sideA,
@@ -741,7 +775,7 @@ export const initializeScenario = mutation({
       startedAt: Date.now(),
     });
 
-    return { issueId, jobId };
+    return { issueId, jobId, slug };
   },
 });
 
@@ -1027,6 +1061,38 @@ export const getIssuesNeedingMigration = query({
     return issues
       .filter((i) => !i.mapScores || i.mapScores.length === 0)
       .map((i) => ({ _id: i._id, title: i.title }));
+  },
+});
+
+// Get issues that need slug backfill
+export const getIssuesNeedingSlugs = query({
+  args: {},
+  handler: async (ctx) => {
+    const issues = await ctx.db.query("issues").collect();
+    return issues
+      .filter((i) => !i.slug)
+      .map((i) => ({ _id: i._id, title: i.title }));
+  },
+});
+
+// Backfill a slug for an existing issue
+export const backfillSlug = mutation({
+  args: { issueId: v.id("issues") },
+  handler: async (ctx, args) => {
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue || issue.slug) return;
+
+    let slug = generateRandomSlug();
+    const existing = await ctx.db
+      .query("issues")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .first();
+    if (existing) {
+      slug = generateRandomSlug();
+    }
+
+    await ctx.db.patch(args.issueId, { slug });
+    return slug;
   },
 });
 

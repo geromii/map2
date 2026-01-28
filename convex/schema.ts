@@ -82,6 +82,7 @@ const schema = defineSchema({
   // Issues (both daily headlines and custom prompts)
   issues: defineTable({
     title: v.string(),
+    slug: v.optional(v.string()), // URL-friendly identifier for shareable links
     description: v.string(),
     primaryActor: v.optional(v.string()), // Entity that "wins" if scenario happens (e.g., "South Korea", "Quebec Separatists")
     sideA: v.object({ label: v.string(), description: v.string() }),
@@ -117,7 +118,8 @@ const schema = defineSchema({
     .index("by_user", ["userId"])
     .index("by_featured", ["isFeatured"])
     .index("by_source", ["source"])
-    .index("by_active_source", ["isActive", "source"]),
+    .index("by_active_source", ["isActive", "source"])
+    .index("by_slug", ["slug"]),
 
   // Country scores per issue
   countryScores: defineTable({
