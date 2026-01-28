@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -79,6 +79,13 @@ export function SignIn() {
   const [resetEmail, setResetEmail] = useState("");
   const [verifyEmail, setVerifyEmail] = useState("");
   const [resent, setResent] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   const parseError = (message: string): { text: string; suggestGoogle: boolean } => {
     const lowerMessage = message.toLowerCase();
@@ -151,6 +158,7 @@ export function SignIn() {
       } else if (result && typeof result === "object" && "signingIn" in result && !result.signingIn) {
         setVerifyEmail(formData.get("email") as string);
         setFlow("email-verification");
+        setResendCooldown(30);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Authentication failed";
@@ -210,6 +218,9 @@ export function SignIn() {
             />
           </div>
 
+          {resent && !error && (
+            <p className="text-sm text-green-600">New code sent!</p>
+          )}
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <Button type="submit" disabled={loading} className={primaryBtnClass}>
@@ -220,7 +231,12 @@ export function SignIn() {
         <p className="text-center text-sm text-gray-500 mt-6">
           <button
             type="button"
-            className="text-[hsl(222.2,47.4%,11.2%)] hover:text-[hsl(222.2,47.4%,25%)] underline underline-offset-2 font-medium"
+            disabled={resendCooldown > 0 || loading}
+            className={`font-medium underline underline-offset-2 ${
+              resendCooldown > 0
+                ? "text-gray-400 cursor-not-allowed no-underline"
+                : "text-[hsl(222.2,47.4%,11.2%)] hover:text-[hsl(222.2,47.4%,25%)]"
+            }`}
             onClick={async () => {
               setError(null);
               setLoading(true);
@@ -230,6 +246,7 @@ export function SignIn() {
                 formData.set("email", verifyEmail);
                 await signIn("password", formData);
                 setResent(true);
+                setResendCooldown(30);
               } catch (err) {
                 setError(err instanceof Error ? err.message : "Failed to resend code");
               } finally {
@@ -237,7 +254,9 @@ export function SignIn() {
               }
             }}
           >
-            Didn&apos;t receive a code? Try again
+            {resendCooldown > 0
+              ? `Resend code in ${resendCooldown}s`
+              : "Didn\u0027t receive a code? Try again"}
           </button>
         </p>
       </div>

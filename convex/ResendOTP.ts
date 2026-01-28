@@ -13,7 +13,7 @@ export const ResendOTP = Email({
     const { error } = await resend.emails.send({
       from: "Mapdis <noreply@mapdis.com>",
       to: [email],
-      subject: "Your Mapdis verification code",
+      subject: `${token} is your Mapdis verification code`,
       html: `
         <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto;">
           <h2>Your verification code</h2>
