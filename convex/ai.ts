@@ -1710,7 +1710,7 @@ RATING SCALE (use ONLY these values: -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75,
 FORMATTING RULES:
 - NEVER use "Side A" or "Side B" in your reasoning
 - Use natural language to describe positions
-- Provide reasoning in 1-2 concise sentences only. Be brief and direct.
+- Provide reasoning in 2 concise sentences. Be brief and direct.
 
 Return a JSON object with this exact structure:
 {
