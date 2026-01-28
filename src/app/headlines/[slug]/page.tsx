@@ -1,10 +1,9 @@
-import { fetchQuery } from "convex/nextjs";
+import { fetchQuery, preloadQuery } from "convex/nextjs";
 import { api } from "../../../../convex/_generated/api";
 import { HeadlineDetailClient } from "./HeadlineDetailClient";
 import type { Metadata } from "next";
 
 // Revalidate every 5 minutes - headlines rarely change after creation
-// Content is still fresh via client-side Convex, only metadata is cached
 export const revalidate = 300;
 
 interface PageProps {
@@ -46,8 +45,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-// Page renders client component - uses prefetched Convex cache for instant navigation
+// Preload data server-side and pass to client for instant hydration
 export default async function HeadlineDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  return <HeadlineDetailClient slug={slug} />;
+
+  // Preload headline data - client will hydrate instantly with this
+  const preloadedHeadline = await preloadQuery(api.headlines.getHeadlineBySlug, { slug });
+
+  return <HeadlineDetailClient slug={slug} preloadedHeadline={preloadedHeadline} />;
 }

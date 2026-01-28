@@ -843,6 +843,11 @@ export const generateScoresWithProgress = action({
         isActive: true,
       });
 
+      // Update embedded scores for bandwidth optimization
+      await ctx.runMutation(issuesApi.updateEmbeddedScores, {
+        issueId,
+      }).catch((err: Error) => console.error("Failed to update embedded scores:", err));
+
       await ctx.runMutation(issuesApi.updateJobStatus, {
         jobId,
         status: "completed",
@@ -989,6 +994,11 @@ export const processScenarioBatches = action({
         issueId: args.issueId,
         isActive: true,
       });
+
+      // Update embedded scores for bandwidth optimization
+      await ctx.runMutation(issuesApi.updateEmbeddedScores, {
+        issueId: args.issueId,
+      }).catch((err: Error) => console.error("Failed to update embedded scores:", err));
 
       await ctx.runMutation(issuesApi.updateJobStatus, {
         jobId: args.jobId,
@@ -1137,6 +1147,11 @@ export const processHeadlineBatches = action({
         const firstFailure = failures[0] as PromiseRejectedResult;
         console.error("First failure:", firstFailure.reason);
       }
+
+      // Update embedded scores for bandwidth optimization
+      await ctx.runMutation(headlinesApi.updateEmbeddedScores, {
+        headlineId: args.headlineId,
+      }).catch((err: Error) => console.error("Failed to update embedded scores:", err));
 
       // Mark job complete
       await ctx.runMutation(issuesApi.updateJobStatus, {
@@ -1290,6 +1305,11 @@ export const rerunMissingHeadlineScores = action({
         }
       }
 
+      // Update embedded scores for bandwidth optimization
+      await ctx.runMutation(headlinesApi.updateEmbeddedScores, {
+        headlineId: args.headlineId,
+      }).catch((err: Error) => console.error("Failed to update embedded scores:", err));
+
       return { success: true, rerunCount: scoredCount };
     } catch (error) {
       return {
@@ -1387,6 +1407,11 @@ export const generateBatchScores = action({
       issueId: args.issueId,
       scores: finalScores,
     });
+
+    // Update embedded scores for bandwidth optimization
+    await ctx.runMutation(issuesApi.updateEmbeddedScores, {
+      issueId: args.issueId,
+    }).catch((err: Error) => console.error("Failed to update embedded scores:", err));
 
     return { success: true, scoreCount: finalScores.length };
   },

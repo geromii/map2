@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { useQuery } from "convex/react";
+import { useQuery, usePreloadedQuery, Preloaded } from "convex/react";
 import Link from "next/link";
 import { api } from "../../../../convex/_generated/api";
 import { D3ScoreMap, ScoreLegend, CountryTooltip } from "@/components/custom/D3ScoreMap";
@@ -24,11 +24,17 @@ interface SelectedCountry {
 
 interface HeadlineDetailClientProps {
   slug: string;
+  preloadedHeadline?: Preloaded<typeof api.headlines.getHeadlineBySlug>;
 }
 
-export function HeadlineDetailClient({ slug }: HeadlineDetailClientProps) {
-  // Fetch headline by slug - should be instant if prefetched on list page
-  const headline = useQuery(api.headlines.getHeadlineBySlug, { slug });
+export function HeadlineDetailClient({ slug, preloadedHeadline }: HeadlineDetailClientProps) {
+  // Use preloaded data if available (instant), otherwise fetch client-side
+  const preloadedData = preloadedHeadline ? usePreloadedQuery(preloadedHeadline) : undefined;
+  const queryData = useQuery(
+    api.headlines.getHeadlineBySlug,
+    preloadedHeadline ? "skip" : { slug }
+  );
+  const headline = preloadedData ?? queryData;
 
   // Detail view mode (map or list) - used for desktop only
   const [detailView, setDetailView] = useState<"map" | "list">("map");
@@ -42,16 +48,19 @@ export function HeadlineDetailClient({ slug }: HeadlineDetailClientProps) {
   // Selected country for modal
   const [selectedCountry, setSelectedCountry] = useState<SelectedCountry | null>(null);
 
-  // Fetch map scores - should be instant if prefetched on list page
+  // Use embedded mapScores if available (bandwidth optimized - 1 doc read)
+  // Includes reasoning preview for hover tooltips
+  const hasEmbeddedScores = headline?.mapScores && headline.mapScores.length > 0;
   const mapScoresQuery = useQuery(
     api.headlines.getHeadlineScoresForMap,
-    headline?._id ? { headlineId: headline._id } : "skip"
+    headline?._id && !hasEmbeddedScores ? { headlineId: headline._id } : "skip"
   );
 
-  // Fetch full scores with reasoning
+  // Fetch full scores with reasoning only when user clicks for detail
+  // (reasoning preview is embedded in mapScores for hover)
   const fullScoresQuery = useQuery(
     api.headlines.getHeadlineScores,
-    headline?._id ? { headlineId: headline._id } : "skip"
+    headline?._id && !hasEmbeddedScores ? { headlineId: headline._id } : "skip"
   );
 
   // Fetch image URL
@@ -60,23 +69,33 @@ export function HeadlineDetailClient({ slug }: HeadlineDetailClientProps) {
     headline?._id ? { headlineId: headline._id } : "skip"
   );
 
-  // Fetch country counts for each side
-  const counts = useQuery(
+  // Use embedded scoreCounts if available (bandwidth optimized)
+  const countsQuery = useQuery(
     api.headlines.getHeadlineCounts,
-    headline?._id ? { headlineId: headline._id } : "skip"
+    headline?._id && !headline?.scoreCounts ? { headlineId: headline._id } : "skip"
   );
+  const counts = headline?.scoreCounts
+    ? { sideA: headline.scoreCounts.a, sideB: headline.scoreCounts.b, neutral: headline.scoreCounts.n }
+    : countsQuery;
 
-  // Compute scores directly from queries
+  // Compute scores - prefer embedded mapScores (includes reasoning preview), then query
   const scores = useMemo(() => {
     const result: Record<string, { score: number; reasoning?: string }> = {};
 
-    if (mapScoresQuery) {
+    // First, populate from embedded mapScores if available (includes reasoning preview)
+    if (hasEmbeddedScores && headline?.mapScores) {
+      for (const s of headline.mapScores) {
+        result[s.c] = { score: s.s, reasoning: s.r };
+      }
+    } else if (mapScoresQuery) {
+      // Fall back to query result (also includes reasoning now)
       for (const s of mapScoresQuery) {
-        result[s.countryName] = { score: s.score };
+        result[s.countryName] = { score: s.score, reasoning: s.reasoning };
       }
     }
 
-    if (fullScoresQuery) {
+    // Merge full reasoning from full scores query (only for unmigrated data)
+    if (fullScoresQuery && !hasEmbeddedScores) {
       for (const s of fullScoresQuery) {
         if (result[s.countryName]) {
           result[s.countryName].reasoning = s.reasoning;
@@ -87,9 +106,9 @@ export function HeadlineDetailClient({ slug }: HeadlineDetailClientProps) {
     }
 
     return result;
-  }, [mapScoresQuery, fullScoresQuery]);
+  }, [hasEmbeddedScores, headline?.mapScores, mapScoresQuery, fullScoresQuery]);
 
-  const hasMapScores = mapScoresQuery && mapScoresQuery.length > 0;
+  const hasMapScores = hasEmbeddedScores || (mapScoresQuery && mapScoresQuery.length > 0);
 
   const handleCountryHover = useCallback(
     (country: string | null, score: { score: number; reasoning?: string } | null) => {

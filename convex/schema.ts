@@ -32,6 +32,24 @@ const schema = defineSchema({
     imageId: v.optional(v.id("_storage")),
     isFeatured: v.optional(v.boolean()),
     featuredAt: v.optional(v.number()),
+    // Embedded scores for bandwidth optimization (1 doc read vs 200+)
+    mapScores: v.optional(
+      v.array(
+        v.object({
+          c: v.string(), // countryName (short key to save bytes)
+          s: v.float64(), // score (-1 to 1)
+          r: v.optional(v.string()), // reasoning preview (~160 chars, truncated at last space/period)
+        })
+      )
+    ),
+    // Pre-calculated counts for list views
+    scoreCounts: v.optional(
+      v.object({
+        a: v.number(), // sideA count (score > 0.1)
+        b: v.number(), // sideB count (score < -0.1)
+        n: v.number(), // neutral count
+      })
+    ),
   })
     .index("by_active", ["isActive"])
     .index("by_slug", ["slug"])
@@ -75,7 +93,30 @@ const schema = defineSchema({
     imageId: v.optional(v.id("_storage")), // Optional headline image (16:9 aspect ratio)
     isFeatured: v.optional(v.boolean()), // true for top 2 featured headlines
     featuredAt: v.optional(v.number()), // timestamp when featured, used for auto-unfeature
-  }).index("by_active", ["isActive"]).index("by_user", ["userId"]).index("by_featured", ["isFeatured"]),
+    // Embedded scores for bandwidth optimization (1 doc read vs 200+)
+    mapScores: v.optional(
+      v.array(
+        v.object({
+          c: v.string(), // countryName (short key to save bytes)
+          s: v.float64(), // score (-1 to 1)
+          r: v.optional(v.string()), // reasoning preview (~160 chars, truncated at last space/period)
+        })
+      )
+    ),
+    // Pre-calculated counts for list views
+    scoreCounts: v.optional(
+      v.object({
+        a: v.number(), // sideA count (score > 0.1)
+        b: v.number(), // sideB count (score < -0.1)
+        n: v.number(), // neutral count
+      })
+    ),
+  })
+    .index("by_active", ["isActive"])
+    .index("by_user", ["userId"])
+    .index("by_featured", ["isFeatured"])
+    .index("by_source", ["source"])
+    .index("by_active_source", ["isActive", "source"]),
 
   // Country scores per issue
   countryScores: defineTable({
@@ -131,7 +172,9 @@ const schema = defineSchema({
   scenarioGenerations: defineTable({
     userId: v.id("users"),
     generatedAt: v.number(),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_date", ["userId", "generatedAt"]),
 
   // ============================================
   // ANALYTICS

@@ -71,6 +71,40 @@ This populates the Convex client cache so navigation is instant.
 
 Backend database added via Convex (2026-01-21). Provider set up in `src/app/ConvexClientProvider.tsx`.
 
+### Bandwidth & Cost Optimization
+
+**Convex Billing Model:**
+- **DB Bandwidth** = "Document and index data transferred between Convex functions and the underlying database" — **this is what you pay for**
+- **Return Size** (data sent from function to client via WebSocket) — **not billed separately**
+- Free tier: 1 GB/month included, then $0.22/GB overage
+- Pro tier: 50 GB/month included, then $0.20/GB overage
+
+This means a function that reads 200 documents (290 KB) but returns aggregated data (8 KB) is charged for 290 KB, not 8 KB. Optimization focus should be on reducing documents read, not return size.
+
+**Important Nuances:**
+- **Cache hits are free** — if a query result is cached, no DB bandwidth is incurred
+- **`.filter()` still reads all scanned documents** — filtering happens after the read, so all documents from `.collect()` count toward bandwidth even if filtered out
+- **Bandwidth rounds up to nearest KB per document** — not worth optimizing at byte level
+- **Subscription updates re-send entire query result** — not just the diff, so large subscribed queries can be costly when data changes frequently
+
+**Optimization Strategies:**
+- Use indexes to avoid scanning unnecessary documents
+- Structure queries to read fewer documents rather than filtering large collections
+- Consider denormalization for frequently joined/aggregated data
+- Store pre-computed aggregates if reading many docs just to count/summarize
+- Be cautious with prefetching — each prefetched query incurs full DB read costs
+- Leverage caching — high cache hit rates mean lower bandwidth costs
+
+**Embedded Scores (2026-01-28):**
+Country scores are embedded directly on `headlines` and `issues` documents to reduce bandwidth from 200+ doc reads to 1:
+- `mapScores`: Array of `{ c: countryName, s: score, r: reasoningPreview }` (~35KB for 200 countries)
+- `scoreCounts`: Pre-calculated `{ a: sideA, b: sideB, n: neutral }` counts
+- Reasoning preview (`r`) is truncated at ~160 chars for hover tooltips
+- Full reasoning remains in `headlineScores`/`countryScores` tables for on-demand loading
+- Migration script: `npx tsx scripts/migrate-embedded-scores.ts`
+
+**Monitoring:** Convex Dashboard → Functions tab shows invocations, cache hit rate, and execution time. Logs tab shows per-call details including documents accessed and bytes read.
+
 ### Authentication Setup (2026-01-22)
 - **Convex Auth** configured with Email/Password and Google OAuth
 - Auth files: `convex/auth.ts`, `convex/auth.config.ts`, `convex/http.ts`

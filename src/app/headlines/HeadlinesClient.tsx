@@ -2,10 +2,37 @@
 
 import { usePreloadedQuery, useQuery } from "convex/react";
 import { Preloaded } from "convex/react";
+import { useRef, useState, useEffect } from "react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import Image from "next/image";
 import Link from "next/link";
+
+// Hook to detect when element enters viewport (for prefetch on visible)
+function useInViewport() {
+  const ref = useRef<HTMLAnchorElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect(); // Only need to detect once
+        }
+      },
+      { threshold: 0.1, rootMargin: "100px" } // Prefetch slightly before visible
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, isVisible };
+}
 
 interface Headline {
   _id: Id<"headlines">;
@@ -17,6 +44,9 @@ interface Headline {
   sideB: { label: string; description: string };
   generatedAt: number;
   imageId?: Id<"_storage">;
+  // Embedded scores for bandwidth optimization
+  scoreCounts?: { a: number; b: number; n: number };
+  mapScores?: Array<{ c: string; s: number; r?: string }>; // r = reasoning preview
 }
 
 // Featured headline card - large with prominent image
@@ -25,17 +55,32 @@ function FeaturedHeadlineCard({
 }: {
   headline: Headline;
 }) {
-  // Always fetch - query returns null if no image
+  const { ref, isVisible } = useInViewport();
+
+  // Fetch image URL (still needed as it's a storage URL)
   const imageUrl = useQuery(api.headlines.getHeadlineImageUrl, { headlineId: headline._id });
-  const counts = useQuery(api.headlines.getHeadlineCounts, { headlineId: headline._id });
-  // Prefetch for instant navigation to detail page
-  useQuery(api.headlines.getHeadlineScoresForMap, { headlineId: headline._id });
-  useQuery(api.headlines.getHeadlineBySlug, { slug: headline.slug || "" });
+
+  // Use embedded scoreCounts if available (bandwidth optimized)
+  // Fall back to query only for unmigrated data
+  const countsQuery = useQuery(
+    api.headlines.getHeadlineCounts,
+    headline.scoreCounts ? "skip" : { headlineId: headline._id }
+  );
+  const counts = headline.scoreCounts
+    ? { sideA: headline.scoreCounts.a, sideB: headline.scoreCounts.b, neutral: headline.scoreCounts.n }
+    : countsQuery;
+
+  // Prefetch detail page data when card becomes visible (for instant navigation)
+  useQuery(
+    api.headlines.getHeadlineBySlug,
+    isVisible && headline.slug ? { slug: headline.slug } : "skip"
+  );
 
   const href = headline.slug ? `/headlines/${headline.slug}` : `/headlines`;
 
   return (
     <Link
+      ref={ref}
       href={href}
       className="w-full text-left rounded-xl border-2 bg-white shadow-sm transition-all hover:shadow-md flex flex-col border-slate-200 hover:border-slate-300 overflow-hidden"
     >
@@ -87,17 +132,32 @@ function SecondaryHeadlineCard({
 }: {
   headline: Headline;
 }) {
-  // Always fetch - query returns null if no image
+  const { ref, isVisible } = useInViewport();
+
+  // Fetch image URL (still needed as it's a storage URL)
   const imageUrl = useQuery(api.headlines.getHeadlineImageUrl, { headlineId: headline._id });
-  const counts = useQuery(api.headlines.getHeadlineCounts, { headlineId: headline._id });
-  // Prefetch for instant navigation to detail page
-  useQuery(api.headlines.getHeadlineScoresForMap, { headlineId: headline._id });
-  useQuery(api.headlines.getHeadlineBySlug, { slug: headline.slug || "" });
+
+  // Use embedded scoreCounts if available (bandwidth optimized)
+  // Fall back to query only for unmigrated data
+  const countsQuery = useQuery(
+    api.headlines.getHeadlineCounts,
+    headline.scoreCounts ? "skip" : { headlineId: headline._id }
+  );
+  const counts = headline.scoreCounts
+    ? { sideA: headline.scoreCounts.a, sideB: headline.scoreCounts.b, neutral: headline.scoreCounts.n }
+    : countsQuery;
+
+  // Prefetch detail page data when card becomes visible (for instant navigation)
+  useQuery(
+    api.headlines.getHeadlineBySlug,
+    isVisible && headline.slug ? { slug: headline.slug } : "skip"
+  );
 
   const href = headline.slug ? `/headlines/${headline.slug}` : `/headlines`;
 
   return (
     <Link
+      ref={ref}
       href={href}
       className="w-full text-left rounded-lg border bg-white shadow-sm transition-all hover:shadow-md flex flex-row border-slate-200 hover:border-slate-300 overflow-hidden h-24"
     >

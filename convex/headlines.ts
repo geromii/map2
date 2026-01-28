@@ -84,17 +84,30 @@ export const getHeadlineBySlug = query({
   },
 });
 
-// Get scores for map display (scores only, no reasoning - for prefetching)
+// Get scores for map display (with reasoning preview for hover)
+// Uses embedded mapScores if available (1 doc read), falls back to table query (200+ doc reads)
 export const getHeadlineScoresForMap = query({
   args: { headlineId: v.id("headlines") },
   handler: async (ctx, args) => {
+    // Try to use embedded scores first (bandwidth optimized)
+    const headline = await ctx.db.get(args.headlineId);
+    if (headline?.mapScores && headline.mapScores.length > 0) {
+      // Convert from compact format { c, s, r } to { countryName, score, reasoning }
+      return headline.mapScores.map((s) => ({
+        countryName: s.c,
+        score: s.s,
+        reasoning: s.r, // Truncated preview for hover
+      }));
+    }
+
+    // Fallback: query headlineScores table (for unmigrated data)
     const rawScores = await ctx.db
       .query("headlineScores")
       .withIndex("by_headline", (q) => q.eq("headlineId", args.headlineId))
       .collect();
 
     // Aggregate by country (average if multiple)
-    const scoreMap = new Map<string, { total: number; count: number }>();
+    const scoreMap = new Map<string, { total: number; count: number; reasoning?: string }>();
 
     for (const score of rawScores) {
       const existing = scoreMap.get(score.countryName);
@@ -105,15 +118,17 @@ export const getHeadlineScoresForMap = query({
         scoreMap.set(score.countryName, {
           total: score.score,
           count: 1,
+          reasoning: score.reasoning,
         });
       }
     }
 
-    const result: Array<{ countryName: string; score: number }> = [];
+    const result: Array<{ countryName: string; score: number; reasoning?: string }> = [];
     scoreMap.forEach((data, countryName) => {
       result.push({
         countryName,
         score: data.total / data.count,
+        reasoning: data.reasoning,
       });
     });
 
@@ -161,9 +176,21 @@ export const getHeadlineScores = query({
 });
 
 // Get country counts by side (for headline cards)
+// Uses embedded scoreCounts if available (already loaded with headline), falls back to table query
 export const getHeadlineCounts = query({
   args: { headlineId: v.id("headlines") },
   handler: async (ctx, args) => {
+    // Try to use embedded counts first (bandwidth optimized - headline already loaded)
+    const headline = await ctx.db.get(args.headlineId);
+    if (headline?.scoreCounts) {
+      return {
+        sideA: headline.scoreCounts.a,
+        sideB: headline.scoreCounts.b,
+        neutral: headline.scoreCounts.n,
+      };
+    }
+
+    // Fallback: query headlineScores table (for unmigrated data)
     const rawScores = await ctx.db
       .query("headlineScores")
       .withIndex("by_headline", (q) => q.eq("headlineId", args.headlineId))
@@ -682,5 +709,172 @@ export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
     return await ctx.storage.generateUploadUrl();
+  },
+});
+
+// ============ MIGRATION MUTATIONS ============
+
+// Helper: Truncate text at last space or period before maxLength
+function truncateReasoning(text: string | undefined, maxLength: number = 160): string | undefined {
+  if (!text) return undefined;
+  if (text.length <= maxLength) return text;
+
+  // Find last space or period before maxLength
+  const truncated = text.slice(0, maxLength);
+  const lastPeriod = truncated.lastIndexOf(".");
+  const lastSpace = truncated.lastIndexOf(" ");
+
+  // Prefer period if it's reasonably close to the end (within 40 chars)
+  if (lastPeriod > maxLength - 40) {
+    return text.slice(0, lastPeriod + 1);
+  }
+  // Otherwise use last space
+  if (lastSpace > 0) {
+    return text.slice(0, lastSpace) + "...";
+  }
+  // Fallback: hard truncate
+  return truncated + "...";
+}
+
+// Migrate a single headline to use embedded scores
+export const migrateHeadlineScores = mutation({
+  args: { headlineId: v.id("headlines") },
+  handler: async (ctx, args) => {
+    const headline = await ctx.db.get(args.headlineId);
+    if (!headline) throw new Error("Headline not found");
+
+    // Skip if already migrated
+    if (headline.mapScores && headline.mapScores.length > 0) {
+      return { skipped: true, message: "Already migrated" };
+    }
+
+    // Fetch all scores from headlineScores table
+    const rawScores = await ctx.db
+      .query("headlineScores")
+      .withIndex("by_headline", (q) => q.eq("headlineId", args.headlineId))
+      .collect();
+
+    if (rawScores.length === 0) {
+      return { skipped: true, message: "No scores to migrate" };
+    }
+
+    // Aggregate by country (average if multiple, keep first reasoning)
+    const scoreMap = new Map<string, { total: number; count: number; reasoning?: string }>();
+    for (const score of rawScores) {
+      const existing = scoreMap.get(score.countryName);
+      if (existing) {
+        existing.total += score.score;
+        existing.count += 1;
+      } else {
+        scoreMap.set(score.countryName, {
+          total: score.score,
+          count: 1,
+          reasoning: score.reasoning,
+        });
+      }
+    }
+
+    // Build mapScores array and calculate counts
+    const mapScores: Array<{ c: string; s: number; r?: string }> = [];
+    let sideA = 0;
+    let sideB = 0;
+    let neutral = 0;
+
+    scoreMap.forEach((data, countryName) => {
+      const avgScore = data.total / data.count;
+      mapScores.push({
+        c: countryName,
+        s: avgScore,
+        r: truncateReasoning(data.reasoning),
+      });
+
+      if (avgScore > 0.305) {
+        sideA++;
+      } else if (avgScore < -0.305) {
+        sideB++;
+      } else {
+        neutral++;
+      }
+    });
+
+    // Update headline with embedded scores
+    await ctx.db.patch(args.headlineId, {
+      mapScores,
+      scoreCounts: { a: sideA, b: sideB, n: neutral },
+    });
+
+    return {
+      migrated: true,
+      countriesCount: mapScores.length,
+      scoreCounts: { sideA, sideB, neutral },
+    };
+  },
+});
+
+// Get all headlines that need migration
+export const getHeadlinesNeedingMigration = query({
+  args: {},
+  handler: async (ctx) => {
+    const headlines = await ctx.db.query("headlines").collect();
+    return headlines
+      .filter((h) => !h.mapScores || h.mapScores.length === 0)
+      .map((h) => ({ _id: h._id, title: h.title }));
+  },
+});
+
+// Update embedded scores for a headline (called after score generation)
+export const updateEmbeddedScores = mutation({
+  args: { headlineId: v.id("headlines") },
+  handler: async (ctx, args) => {
+    const rawScores = await ctx.db
+      .query("headlineScores")
+      .withIndex("by_headline", (q) => q.eq("headlineId", args.headlineId))
+      .collect();
+
+    // Aggregate by country (keep first reasoning)
+    const scoreMap = new Map<string, { total: number; count: number; reasoning?: string }>();
+    for (const score of rawScores) {
+      const existing = scoreMap.get(score.countryName);
+      if (existing) {
+        existing.total += score.score;
+        existing.count += 1;
+      } else {
+        scoreMap.set(score.countryName, {
+          total: score.score,
+          count: 1,
+          reasoning: score.reasoning,
+        });
+      }
+    }
+
+    // Build mapScores and counts
+    const mapScores: Array<{ c: string; s: number; r?: string }> = [];
+    let sideA = 0;
+    let sideB = 0;
+    let neutral = 0;
+
+    scoreMap.forEach((data, countryName) => {
+      const avgScore = data.total / data.count;
+      mapScores.push({
+        c: countryName,
+        s: avgScore,
+        r: truncateReasoning(data.reasoning),
+      });
+
+      if (avgScore > 0.305) {
+        sideA++;
+      } else if (avgScore < -0.305) {
+        sideB++;
+      } else {
+        neutral++;
+      }
+    });
+
+    await ctx.db.patch(args.headlineId, {
+      mapScores,
+      scoreCounts: { a: sideA, b: sideB, n: neutral },
+    });
+
+    return { updated: true, countriesCount: mapScores.length };
   },
 });
