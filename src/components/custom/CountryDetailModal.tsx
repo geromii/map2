@@ -14,6 +14,7 @@ interface CountryDetailModalProps {
   sideBLabel: string;
   onClose: () => void;
   headlineId?: Id<"headlines">;
+  issueId?: Id<"issues">;
 }
 
 function scoreToColor(score: number): string {
@@ -40,16 +41,23 @@ export function CountryDetailModal({
   sideBLabel,
   onClose,
   headlineId,
+  issueId,
 }: CountryDetailModalProps) {
-  // Fetch full reasoning on-demand when headlineId is provided
-  const fullReasoning = useQuery(
+  // Fetch full reasoning on-demand when headlineId or issueId is provided
+  const headlineReasoning = useQuery(
     api.headlines.getCountryFullReasoning,
     headlineId ? { headlineId, countryName: country } : "skip"
   );
+  const issueReasoning = useQuery(
+    api.issues.getCountryFullReasoning,
+    issueId ? { issueId, countryName: country } : "skip"
+  );
+
+  const fullReasoning = headlineId ? headlineReasoning : issueReasoning;
 
   // Use full reasoning if available, otherwise fall back to preview
   const displayReasoning = fullReasoning ?? reasoning;
-  const isLoadingReasoning = headlineId && fullReasoning === undefined;
+  const isLoadingReasoning = (headlineId || issueId) && fullReasoning === undefined;
 
   // Close on escape key
   useEffect(() => {

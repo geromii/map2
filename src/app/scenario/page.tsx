@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { D3ScoreMap, ScoreLegend, CountryTooltip } from "@/components/custom/D3ScoreMap";
+import { CountryDetailModal } from "@/components/custom/CountryDetailModal";
 import { Button } from "@/components/ui/button";
 import { Id } from "../../../convex/_generated/dataModel";
 import { RequireAuth } from "@/components/custom/RequireAuth";
@@ -247,7 +248,7 @@ export default function ScenarioPage() {
 
     try {
       // Calculate batch info for initialization
-      const BATCH_SIZE = 10;
+      const BATCH_SIZE = 5;
       const totalCountries = getActiveMapVersion.countries.length;
       const totalBatches = Math.ceil(totalCountries / BATCH_SIZE) * numRuns;
 
@@ -692,7 +693,7 @@ export default function ScenarioPage() {
                   <p className={`text-xs md:text-sm mb-2 md:mb-4 ${generationUsage.remaining === 0 ? "text-red-600 font-medium" : "text-slate-500"}`}>
                     {generationUsage.remaining === 0
                       ? `Limit reached. Next available ${generationUsage.nextAvailableAt ? formatTimeUntil(generationUsage.nextAvailableAt) : "soon"}.`
-                      : `${generationUsage.remaining} of ${generationUsage.limit} remaining`}
+                      : `${generationUsage.remaining} of ${generationUsage.limit} remaining today`}
                   </p>
                 )}
 
@@ -945,6 +946,9 @@ export default function ScenarioPage() {
                           <option value={2}>2 (balanced)</option>
                           <option value={3}>3 (most accurate)</option>
                         </select>
+                        {numRuns > 1 && (
+                          <span className="text-xs text-amber-600">Uses {numRuns} of your daily quota</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1130,53 +1134,21 @@ export default function ScenarioPage() {
               </div>
             )}
 
-            {/* Country detail popup */}
-            {selectedCountry && (
-              <div
-                className="absolute inset-0 flex items-center justify-center bg-black/30 z-20"
-                onClick={() => setSelectedCountry(null)}
-              >
-                <div
-                  className="bg-white rounded-lg shadow-xl border border-slate-200 p-4 md:p-5 mx-4 max-w-sm md:max-w-md w-full max-h-[80%] overflow-y-auto"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div>
-                      <h3 className="font-semibold text-slate-900 text-lg">{selectedCountry.name}</h3>
-                      <div className={`text-sm font-medium ${
-                        selectedCountry.score > 0.3
-                          ? "text-blue-600"
-                          : selectedCountry.score < -0.3
-                          ? "text-red-600"
-                          : "text-slate-600"
-                      }`}>
-                        {selectedCountry.score > 0.3
-                          ? currentIssue?.sideA.label || "Supports"
-                          : selectedCountry.score < -0.3
-                          ? currentIssue?.sideB.label || "Opposes"
-                          : "Neutral"}{" "}
-                        ({selectedCountry.score > 0 ? "+" : ""}{selectedCountry.score.toFixed(2)})
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setSelectedCountry(null)}
-                      className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                  {selectedCountry.reasoning ? (
-                    <p className="text-sm text-slate-600 leading-relaxed">{selectedCountry.reasoning}</p>
-                  ) : (
-                    <p className="text-sm text-slate-400 italic">No reasoning available for this country.</p>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Country detail modal */}
+        {selectedCountry && (
+          <CountryDetailModal
+            country={selectedCountry.name}
+            score={selectedCountry.score}
+            reasoning={selectedCountry.reasoning}
+            sideALabel={currentIssue?.sideA.label || "Supports"}
+            sideBLabel={currentIssue?.sideB.label || "Opposes"}
+            onClose={() => setSelectedCountry(null)}
+            issueId={currentIssue?.id}
+          />
+        )}
       </div>
     </RequireAuth>
   );

@@ -10,7 +10,7 @@ const issuesApi = api.issues as any;
 const headlinesApi = api.headlines as any;
 
 // Batch size for country grouping
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 5;
 const DEFAULT_NUM_RUNS = 2; // Default number of runs to average (user configurable)
 
 // Geopolitical context updates for countries (to update AI beyond training cutoff)
@@ -875,12 +875,10 @@ export const processScenarioBatches = action({
     sideA: v.object({ label: v.string(), description: v.string() }),
     sideB: v.object({ label: v.string(), description: v.string() }),
     numRuns: v.optional(v.number()),
-    useWebGrounding: v.optional(v.boolean()),
-    modelChoice: modelChoiceValidator,
   },
   handler: async (ctx, args): Promise<{ success: boolean; error?: string }> => {
-    const openaiApiKey = process.env.OPENROUTER_API_KEY;
-    if (!openaiApiKey) {
+    const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+    if (!openRouterApiKey) {
       throw new Error("OPENROUTER_API_KEY environment variable not set");
     }
 
@@ -902,20 +900,16 @@ export const processScenarioBatches = action({
       let completedBatches = 0;
       let completedCountries = 0;
 
-      const modelChoice = args.modelChoice || "3.0-flash-fallback";
-
       // Helper to process a single batch and save scores immediately
       const processBatch = async (batch: string[]): Promise<void> => {
-        const batchScores = await generateScoresForBatch(
+        const batchScores = await generateScoresForBatchOpenRouter(
           ctx,
-          openaiApiKey,
+          openRouterApiKey,
           args.title,
           args.description,
           args.sideA,
           args.sideB,
           batch,
-          args.useWebGrounding,
-          modelChoice
         );
 
         // Save scores immediately for real-time map updates
@@ -960,31 +954,15 @@ export const processScenarioBatches = action({
         allBatches.push(...runBatches);
       }
 
-      // Fire first batch and wait (establishes cache for implicit caching)
-      if (allBatches.length > 0) {
-        await processBatch(allBatches[0]);
-      }
-
-      // Fire remaining batches - rate limited for 3.0-pro, parallel for others
-      const remainingBatches = allBatches.slice(1);
-      let results: PromiseSettledResult<void>[];
-
-      if (modelChoice === "3.0-pro" && remainingBatches.length > 0) {
-        // Sliding window rate limit: 20 RPM max
-        // Fires requests continuously, spaced ~3s apart, without waiting for responses
-        results = await processWithRateLimit(remainingBatches, processBatch, 20);
-      } else {
-        // Non-pro models: fire all in parallel
-        results = await Promise.allSettled(
-          remainingBatches.map(batch => processBatch(batch))
-        );
-      }
+      // Fire all batches in parallel
+      const results = await Promise.allSettled(
+        allBatches.map(batch => processBatch(batch))
+      );
 
       // Count failures
       const failures = results.filter(r => r.status === "rejected");
       if (failures.length > 0) {
         console.error(`${failures.length} of ${results.length} batches failed`);
-        // Log first failure reason
         const firstFailure = failures[0] as PromiseRejectedResult;
         console.error("First failure:", firstFailure.reason);
       }
@@ -1569,6 +1547,90 @@ OPPOSE (negative scores): ${sideB.label} - ${sideB.description}`;
   }
 
   const parsed = JSON.parse(content);
+  return parsed.scores || {};
+}
+
+// Scenario-specific batch scoring via OpenRouter (separate from headline scoring)
+const SCENARIO_OPENROUTER_MODEL = "google/gemini-2.5-flash-lite-preview-09-2025";
+
+async function generateScoresForBatchOpenRouter(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ctx: any,
+  apiKey: string,
+  title: string,
+  description: string,
+  sideA: { label: string; description: string },
+  sideB: { label: string; description: string },
+  countries: string[],
+): Promise<Record<string, { score: number; reasoning?: string }>> {
+  // Same prompt as headline scoring
+  const staticInstructions = `You are an expert geopolitical analyst rating countries' likely positions on geopolitical issues.
+
+Consider these factors when rating:
+- Current alliances and treaties
+- Economic ties and dependencies
+- Ideological alignment
+- Historical relationships
+- Regional interests
+- Domestic political considerations
+
+RATING SCALE (use ONLY these values: -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1):
+-  1.0  = Extremely supportive
+-  0.75 = Strongly supportive
+-  0.5  = Supportive
+-  0.25 = Slightly supportive
+-  0    = Neutral / No clear position
+- -0.25 = Slightly opposed
+- -0.5  = Opposed
+- -0.75 = Strongly opposed
+- -1.0  = Extremely opposed
+
+FORMATTING RULES:
+- NEVER use "Side A" or "Side B" in your reasoning
+- Use natural language to describe positions. For example, say "leading voice against annexation" rather than "leading Anti-Annexation voice". Describe the stance in plain English rather than inserting stance labels awkwardly.
+- Write in a natural, human tone - like a knowledgeable analyst explaining to a colleague, not a formal report. Vary sentence structure, avoid repetitive phrasing, and don't overuse words like "significant", "notable", "robust", or "multifaceted".
+- Provide detailed reasoning of 4-6 sentences with a paragraph break
+- First paragraph (two or three sentences): Explain the country's official position (if known) or historical stance on similar issues
+- Second paragraph (one or two sentences): Analyze the geopolitical factors, alliances, and interests that inform their position
+- If you believe their private position is different than their public position, or if they may refrain from a statement due to geopolitical reasons, say so and clearly justify why
+- Public statements should take priority over their expected private stance in the scoring, but do consider expected private stances as a factor
+
+Return a JSON object with this exact structure:
+{
+  "scores": {
+    "CountryName": { "score": 0.5, "reasoning": "First paragraph about position...\\n\\nSecond paragraph about factors..." },
+    ...
+  }
+}
+
+Only return valid JSON, no additional text. Country names must match exactly as provided.
+If the scenario description is in a language other than English, please issue your response in that language.`;
+
+  const systemPrompt = `${staticInstructions}
+
+---
+
+SCENARIO: ${title}
+${description}
+
+SUPPORT (positive scores): ${sideA.label} - ${sideA.description}
+OPPOSE (negative scores): ${sideB.label} - ${sideB.description}`;
+
+  const countryContext = buildCountryContext(countries);
+  const userPrompt = `Rate these countries: ${countries.join(", ")}${countryContext}`;
+
+  const result = await fetchOpenRouterWithLogging(
+    ctx,
+    "generateScoresForBatch",
+    SCENARIO_OPENROUTER_MODEL,
+    systemPrompt,
+    userPrompt,
+    apiKey,
+    0.5,
+    45000
+  );
+
+  const parsed = JSON.parse(result.content);
   return parsed.scores || {};
 }
 

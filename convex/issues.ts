@@ -77,6 +77,23 @@ export const getAllDailyIssues = query({
   },
 });
 
+// Get full reasoning for a single country (on-demand when user clicks for detail)
+export const getCountryFullReasoning = query({
+  args: {
+    issueId: v.id("issues"),
+    countryName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const score = await ctx.db
+      .query("countryScores")
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .filter((q) => q.eq(q.field("countryName"), args.countryName))
+      .first();
+
+    return score?.reasoning ?? null;
+  },
+});
+
 // Get all country scores for an issue (aggregated/averaged by country)
 // Uses embedded mapScores if available (1 doc read), falls back to table query (200+ doc reads)
 export const getIssueScores = query({
