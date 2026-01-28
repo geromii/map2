@@ -136,6 +136,23 @@ export const getHeadlineScoresForMap = query({
   },
 });
 
+// Get full reasoning for a single country (on-demand when user clicks for detail)
+export const getCountryFullReasoning = query({
+  args: {
+    headlineId: v.id("headlines"),
+    countryName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const score = await ctx.db
+      .query("headlineScores")
+      .withIndex("by_headline", (q) => q.eq("headlineId", args.headlineId))
+      .filter((q) => q.eq(q.field("countryName"), args.countryName))
+      .first();
+
+    return score?.reasoning ?? null;
+  },
+});
+
 // Get scores for a headline (aggregated by country)
 export const getHeadlineScores = query({
   args: { headlineId: v.id("headlines") },
@@ -324,6 +341,7 @@ export const getRecentDrafts = query({
 export const saveDraft = mutation({
   args: {
     title: v.string(),
+    slug: v.optional(v.string()),
     description: v.string(),
     primaryActor: v.optional(v.string()),
     sideA: v.object({ label: v.string(), description: v.string() }),
@@ -358,6 +376,7 @@ export const saveDraft = mutation({
 
     return await ctx.db.insert("draftHeadlines", {
       title: args.title,
+      slug: args.slug,
       description: args.description,
       primaryActor: args.primaryActor,
       sideA: args.sideA,
@@ -715,9 +734,11 @@ export const generateUploadUrl = mutation({
 // ============ MIGRATION MUTATIONS ============
 
 // Helper: Truncate text at last space or period before maxLength
+// Always adds ellipsis to indicate there's more content available
 function truncateReasoning(text: string | undefined, maxLength: number = 160): string | undefined {
   if (!text) return undefined;
-  if (text.length <= maxLength) return text;
+  // Always add ellipsis even if text fits - indicates full reasoning is available on click
+  if (text.length <= maxLength) return text + "...";
 
   // Find last space or period before maxLength
   const truncated = text.slice(0, maxLength);
@@ -726,7 +747,7 @@ function truncateReasoning(text: string | undefined, maxLength: number = 160): s
 
   // Prefer period if it's reasonably close to the end (within 40 chars)
   if (lastPeriod > maxLength - 40) {
-    return text.slice(0, lastPeriod + 1);
+    return text.slice(0, lastPeriod + 1) + "..";
   }
   // Otherwise use last space
   if (lastSpace > 0) {

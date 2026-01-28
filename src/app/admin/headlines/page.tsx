@@ -363,6 +363,7 @@ export default function AdminHeadlinesPage() {
       // Auto-save as draft
       await saveDraft({
         title: result.title,
+        slug: result.slug,
         description: result.description,
         primaryActor: result.primaryActor,
         sideA: result.sideA,
@@ -383,6 +384,7 @@ export default function AdminHeadlinesPage() {
   const handleLoadDraft = (draft: NonNullable<typeof recentDrafts>[number]) => {
     setParsedHeadline({
       title: draft.title,
+      slug: draft.slug || "",
       description: draft.description,
       primaryActor: draft.primaryActor,
       sideA: draft.sideA,

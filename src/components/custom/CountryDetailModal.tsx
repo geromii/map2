@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { Id } from "../../../convex/_generated/dataModel";
 import { X } from "lucide-react";
 
 interface CountryDetailModalProps {
@@ -10,6 +13,7 @@ interface CountryDetailModalProps {
   sideALabel: string;
   sideBLabel: string;
   onClose: () => void;
+  headlineId?: Id<"headlines">;
 }
 
 function scoreToColor(score: number): string {
@@ -35,7 +39,18 @@ export function CountryDetailModal({
   sideALabel,
   sideBLabel,
   onClose,
+  headlineId,
 }: CountryDetailModalProps) {
+  // Fetch full reasoning on-demand when headlineId is provided
+  const fullReasoning = useQuery(
+    api.headlines.getCountryFullReasoning,
+    headlineId ? { headlineId, countryName: country } : "skip"
+  );
+
+  // Use full reasoning if available, otherwise fall back to preview
+  const displayReasoning = fullReasoning ?? reasoning;
+  const isLoadingReasoning = headlineId && fullReasoning === undefined;
+
   // Close on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -117,14 +132,21 @@ export function CountryDetailModal({
           </div>
 
           {/* Reasoning */}
-          {reasoning && (
+          {(displayReasoning || isLoadingReasoning || reasoning) && (
             <div className="mt-4">
-              <h3 className="text-sm font-semibold text-slate-700 mb-1">
-                Reasoning
-              </h3>
-              <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
-                {reasoning}
-              </p>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-sm font-semibold text-slate-700">
+                  Reasoning
+                </h3>
+                {isLoadingReasoning && (
+                  <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                )}
+              </div>
+              <div className="min-h-[300px]">
+                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                  {displayReasoning || reasoning}
+                </p>
+              </div>
             </div>
           )}
         </div>

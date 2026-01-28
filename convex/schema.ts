@@ -66,6 +66,7 @@ const schema = defineSchema({
   // Draft headlines (auto-saved parsed prompts for admin recovery)
   draftHeadlines: defineTable({
     title: v.string(),
+    slug: v.optional(v.string()),
     description: v.string(),
     primaryActor: v.optional(v.string()),
     sideA: v.object({ label: v.string(), description: v.string() }),

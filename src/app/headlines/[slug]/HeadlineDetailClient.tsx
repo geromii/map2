@@ -458,6 +458,7 @@ export function HeadlineDetailClient({ slug, preloadedHeadline }: HeadlineDetail
           sideALabel={sideALabel}
           sideBLabel={sideBLabel}
           onClose={() => setSelectedCountry(null)}
+          headlineId={headline._id}
         />
       )}
 
