@@ -53,9 +53,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=10.0, user-scalable=yes" />
-        
-        <link rel="preload" href="/map_design_2025_08.json" as="fetch" crossOrigin="anonymous" />
-        
+
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-KSKH6FD6PY"
           strategy="afterInteractive"
