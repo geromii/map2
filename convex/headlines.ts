@@ -4,6 +4,44 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 
 // ============ QUERIES ============
 
+// Helper: compute counts from headlineScores table (fallback for unmigrated data)
+async function computeCountsFromScores(
+  ctx: { db: any },
+  headlineId: any
+): Promise<{ sideA: number; sideB: number; neutral: number }> {
+  const rawScores = await ctx.db
+    .query("headlineScores")
+    .withIndex("by_headline", (q: any) => q.eq("headlineId", headlineId))
+    .collect();
+
+  const scoreMap = new Map<string, number>();
+  const countMap = new Map<string, number>();
+
+  for (const score of rawScores) {
+    const existing = scoreMap.get(score.countryName);
+    if (existing !== undefined) {
+      scoreMap.set(score.countryName, existing + score.score);
+      countMap.set(score.countryName, (countMap.get(score.countryName) || 0) + 1);
+    } else {
+      scoreMap.set(score.countryName, score.score);
+      countMap.set(score.countryName, 1);
+    }
+  }
+
+  let sideA = 0;
+  let sideB = 0;
+  let neutral = 0;
+
+  scoreMap.forEach((total, countryName) => {
+    const avg = total / (countMap.get(countryName) || 1);
+    if (avg > 0.305) sideA++;
+    else if (avg < -0.305) sideB++;
+    else neutral++;
+  });
+
+  return { sideA, sideB, neutral };
+}
+
 // Check if current user is an admin
 export const isCurrentUserAdmin = query({
   args: {},
@@ -35,7 +73,7 @@ export const getActiveHeadlines = query({
         imageUrl: h.imageId ? await ctx.storage.getUrl(h.imageId) : null,
         counts: h.scoreCounts
           ? { sideA: h.scoreCounts.a, sideB: h.scoreCounts.b, neutral: h.scoreCounts.n }
-          : null,
+          : await computeCountsFromScores(ctx, h._id),
       }))
     );
   },
@@ -59,7 +97,7 @@ export const getFeaturedHeadlines = query({
         imageUrl: h.imageId ? await ctx.storage.getUrl(h.imageId) : null,
         counts: h.scoreCounts
           ? { sideA: h.scoreCounts.a, sideB: h.scoreCounts.b, neutral: h.scoreCounts.n }
-          : null,
+          : await computeCountsFromScores(ctx, h._id),
       }))
     );
   },
