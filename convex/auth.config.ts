@@ -1,7 +1,7 @@
 export default {
   providers: [
     {
-      domain: "https://bold-goldfish-991.convex.site",
+      domain: process.env.CONVEX_SITE_URL,
       applicationID: "convex",
     },
   ],
