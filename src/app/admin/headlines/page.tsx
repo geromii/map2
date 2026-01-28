@@ -311,7 +311,7 @@ export default function AdminHeadlinesPage() {
   const featureHeadlineMutation = useMutation(api.headlines.featureHeadline);
   const unfeatureHeadlineMutation = useMutation(api.headlines.unfeatureHeadline);
   const archiveHeadlineMutation = useMutation(api.headlines.archiveHeadline);
-  const unarchiveHeadlineMutation = useMutation(api.headlines.unarchiveHeadline);
+  const activateHeadlineMutation = useMutation(api.headlines.activateHeadline);
   const generateUploadUrl = useMutation(api.headlines.generateUploadUrl);
   const updateHeadlineImage = useMutation(api.headlines.updateHeadlineImage);
   const deleteHeadlineImage = useMutation(api.headlines.deleteHeadlineImage);
@@ -418,7 +418,7 @@ export default function AdminHeadlinesPage() {
         totalBatches,
         totalRuns: numRuns,
         totalCountries,
-        isActive: true,
+        isActive: false,
       });
 
       setJobId(newJobId);
@@ -475,7 +475,7 @@ export default function AdminHeadlinesPage() {
   // Unarchive a headline
   const handleUnarchive = async (headlineId: Id<"headlines">) => {
     try {
-      await unarchiveHeadlineMutation({ headlineId });
+      await activateHeadlineMutation({ headlineId });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to unarchive");
     }

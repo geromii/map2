@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { D3ScoreMap, ScoreLegend, CountryTooltip } from "@/components/custom/D3ScoreMap";
@@ -366,6 +366,18 @@ export default function ScenarioPage() {
   );
 
   const hasResults = currentIssue && Object.keys(scores).length > 0;
+
+  // Compute for/against/neutral counts from scores
+  const scoreCounts = useMemo(() => {
+    if (!hasResults) return null;
+    let sideA = 0, sideB = 0, neutral = 0;
+    for (const { score } of Object.values(scores)) {
+      if (score > 0.305) sideA++;
+      else if (score < -0.305) sideB++;
+      else neutral++;
+    }
+    return { sideA, sideB, neutral };
+  }, [scores, hasResults]);
 
   // Check if primary actor is missing or invalid
   const isPrimaryActorMissing = (actor: string | undefined): boolean => {
@@ -1077,12 +1089,18 @@ export default function ScenarioPage() {
                     )}
                     <span className="flex items-center gap-1.5">
                       <span className="w-3 h-3 rounded-full bg-blue-600" />
-                      <span className="text-blue-700 font-medium">{currentIssue.sideA.label}</span>
+                      <span className="text-blue-700 font-medium">
+                        {scoreCounts && <span className="mr-1">{scoreCounts.sideA}</span>}
+                        {currentIssue.sideA.label}
+                      </span>
                     </span>
                     <span className="text-slate-400">vs</span>
                     <span className="flex items-center gap-1.5">
                       <span className="w-3 h-3 rounded-full bg-red-600" />
-                      <span className="text-red-700 font-medium">{currentIssue.sideB.label}</span>
+                      <span className="text-red-700 font-medium">
+                        {scoreCounts && <span className="mr-1">{scoreCounts.sideB}</span>}
+                        {currentIssue.sideB.label}
+                      </span>
                     </span>
                   </div>
                 </div>

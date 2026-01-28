@@ -680,7 +680,7 @@ export const archiveHeadline = mutation({
 });
 
 // Unarchive a headline
-export const unarchiveHeadline = mutation({
+export const activateHeadline = mutation({
   args: { headlineId: v.id("headlines") },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.headlineId, { isActive: true });

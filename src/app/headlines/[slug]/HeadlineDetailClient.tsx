@@ -358,12 +358,18 @@ export function HeadlineDetailClient({ slug, preloadedHeadline }: HeadlineDetail
                 <span className="text-slate-300">|</span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                  <span className="text-blue-700 font-medium">{headline.sideA.label}</span>
+                  <span className="text-blue-700 font-medium">
+                    {counts && <span className="mr-1">{counts.sideA}</span>}
+                    {headline.sideA.label}
+                  </span>
                 </span>
                 <span className="text-slate-400">vs</span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                  <span className="text-red-700 font-medium">{headline.sideB.label}</span>
+                  <span className="text-red-700 font-medium">
+                    {counts && <span className="mr-1">{counts.sideB}</span>}
+                    {headline.sideB.label}
+                  </span>
                 </span>
               </div>
 

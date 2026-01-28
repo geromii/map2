@@ -1131,7 +1131,8 @@ export const processHeadlineBatches = action({
         headlineId: args.headlineId,
       }).catch((err: Error) => console.error("Failed to update embedded scores:", err));
 
-      // Mark job complete
+      // Mark job complete (headline remains inactive until admin manually activates)
+
       await ctx.runMutation(issuesApi.updateJobStatus, {
         jobId: args.jobId,
         status: "completed",
