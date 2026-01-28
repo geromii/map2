@@ -22,7 +22,7 @@ function scoreToColor(score: number): string {
   const intensity = Math.abs(s);
 
   if (s >= 0) {
-    const saturation = 90 * intensity;
+    const saturation = 90 * intensity ** 0.7;
     const lightness = 92 - 47 * intensity;
     return `hsl(217, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
   } else {

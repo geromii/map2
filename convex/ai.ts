@@ -1456,7 +1456,7 @@ FORMATTING RULES:
 - NEVER use "Side A" or "Side B" in your reasoning
 - Use natural language to describe positions. For example, say "leading voice against annexation" rather than "leading Anti-Annexation voice". Describe the stance in plain English rather than inserting stance labels awkwardly.
 - Write in a natural, human tone - like a knowledgeable analyst explaining to a colleague, not a formal report. Vary sentence structure, avoid repetitive phrasing, and don't overuse words like "significant", "notable", "robust", or "multifaceted".
-- Provide detailed reasoning of 3-5 sentences with a paragraph break
+- Provide detailed reasoning of 4-6 sentences with a paragraph break
 - First paragraph (two or three sentences): Explain the country's official position (if known) or historical stance on similar issues
 - Second paragraph (one or two sentences): Analyze the geopolitical factors, alliances, and interests that inform their position
 - If you believe their private position is different than their public position, or if they may refrain from a statement due to geopolitical reasons, say so and clearly justify why

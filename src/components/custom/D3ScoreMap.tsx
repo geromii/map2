@@ -38,13 +38,15 @@ function scoreToColor(score: number): string {
   const intensity = Math.abs(s);
 
   // Blue for positive (Side A), Red for negative (Side B)
+  // Red is perceptually more visible at low saturation, so we use a power
+  // curve on red saturation to keep near-zero scores looking equally neutral.
   if (s >= 0) {
-    // Blue tones - saturation scales from 0 to 90
-    const saturation = 90 * intensity;
+    // Blue tones - boost saturation at low intensities to match red's perceptual visibility
+    const saturation = 90 * intensity ** 0.7;
     const lightness = 92 - 47 * intensity;
     return `hsl(217, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
   } else {
-    // Red tones - saturation scales from 0 to 90
+    // Red tones
     const saturation = 90 * intensity;
     const lightness = 92 - 45 * intensity;
     return `hsl(4, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
