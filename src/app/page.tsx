@@ -2,6 +2,10 @@ import React from "react";
 import Link from "next/link";
 import { Globe, Swords, MapPin, Users, BarChart3, ArrowRight } from "lucide-react";
 import { HomeFeaturedHeadlines, HomeNavigationCards } from "./HomeClient";
+import { preloadQuery } from "convex/nextjs";
+import { api } from "../../convex/_generated/api";
+
+export const revalidate = 60;
 
 export const metadata = {
   title: "Mapdis - Interactive Global Relations & Conflict Map",
@@ -31,8 +35,11 @@ export const metadata = {
   },
 };
 
-export default function LandingPage() {
+export default async function LandingPage() {
   const scenariosEnabled = process.env.NEXT_PUBLIC_SCENARIOS_ENABLED === "true";
+  const preloadedFeatured = scenariosEnabled
+    ? await preloadQuery(api.headlines.getFeaturedHeadlines)
+    : null;
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
@@ -51,7 +58,7 @@ export default function LandingPage() {
                 <h2 className="text-xl font-semibold text-[hsl(222.2,47.4%,11.2%)] mb-4 text-center">
                   Featured Headlines
                 </h2>
-                <HomeFeaturedHeadlines />
+                <HomeFeaturedHeadlines preloadedFeatured={preloadedFeatured!} />
               </div>
             )}
 

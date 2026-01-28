@@ -1,28 +1,14 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { usePreloadedQuery, Preloaded } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Id } from "../../convex/_generated/dataModel";
 import Image from "next/image";
 import Link from "next/link";
 import { Newspaper, Sparkles, ArrowRight } from "lucide-react";
 
-interface Headline {
-  _id: Id<"headlines">;
-  title: string;
-  slug?: string;
-  description: string;
-  primaryActor?: string;
-  sideA: { label: string; description: string };
-  sideB: { label: string; description: string };
-  generatedAt: number;
-  imageId?: Id<"_storage">;
-}
+type FeaturedHeadline = (typeof api.headlines.getFeaturedHeadlines)["_returnType"][number];
 
-function FeaturedHeadlineCard({ headline }: { headline: Headline }) {
-  const imageUrl = useQuery(api.headlines.getHeadlineImageUrl, { headlineId: headline._id });
-  const counts = useQuery(api.headlines.getHeadlineCounts, { headlineId: headline._id });
-
+function FeaturedHeadlineCard({ headline }: { headline: FeaturedHeadline }) {
   const href = headline.slug ? `/headlines/${headline.slug}` : `/headlines`;
 
   return (
@@ -31,11 +17,12 @@ function FeaturedHeadlineCard({ headline }: { headline: Headline }) {
       className="group w-full text-left rounded-xl border-2 bg-white shadow-sm transition-all hover:shadow-lg flex flex-col border-slate-200 hover:border-[hsl(48,96%,53%)] overflow-hidden"
     >
       <div className="relative w-full aspect-video bg-slate-200">
-        {imageUrl && (
+        {headline.imageUrl && (
           <Image
-            src={imageUrl}
+            src={headline.imageUrl}
             alt={headline.title}
             fill
+            priority
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 400px"
           />
@@ -55,14 +42,14 @@ function FeaturedHeadlineCard({ headline }: { headline: Headline }) {
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-blue-500" />
             <span className="text-blue-700 font-medium">
-              {counts ? counts.sideA : "–"} {headline.sideA.label}
+              {headline.counts ? headline.counts.sideA : "–"} {headline.sideA.label}
             </span>
           </span>
           <span className="text-slate-400">vs</span>
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-red-500" />
             <span className="text-red-700 font-medium">
-              {counts ? counts.sideB : "–"} {headline.sideB.label}
+              {headline.counts ? headline.counts.sideB : "–"} {headline.sideB.label}
             </span>
           </span>
         </div>
@@ -105,38 +92,17 @@ function NavigationCard({
   );
 }
 
-export function HomeFeaturedHeadlines() {
-  const scenariosEnabled = process.env.NEXT_PUBLIC_SCENARIOS_ENABLED === "true";
-  const featuredHeadlines = useQuery(
-    api.headlines.getFeaturedHeadlines,
-    scenariosEnabled ? {} : "skip"
-  );
-
-  if (!scenariosEnabled) {
-    return null;
-  }
-
-  if (featuredHeadlines === undefined) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {[0, 1].map((i) => (
-          <div key={i} className="rounded-xl border-2 border-slate-200 bg-white overflow-hidden">
-            <div className="aspect-video bg-slate-200 animate-pulse" />
-            <div className="p-4 space-y-2">
-              <div className="h-5 bg-slate-200 rounded animate-pulse w-3/4" />
-              <div className="h-4 bg-slate-100 rounded animate-pulse" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+export function HomeFeaturedHeadlines({
+  preloadedFeatured,
+}: {
+  preloadedFeatured: Preloaded<typeof api.headlines.getFeaturedHeadlines>;
+}) {
+  const featuredHeadlines = usePreloadedQuery(preloadedFeatured);
 
   if (featuredHeadlines.length === 0) {
     return null;
   }
 
-  // Show up to 2 featured headlines
   const headlines = featuredHeadlines.slice(0, 2);
 
   return (

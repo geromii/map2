@@ -34,7 +34,7 @@ function useInViewport() {
   return { ref, isVisible };
 }
 
-interface Headline {
+interface HeadlineWithInline {
   _id: Id<"headlines">;
   title: string;
   slug?: string;
@@ -43,32 +43,19 @@ interface Headline {
   sideA: { label: string; description: string };
   sideB: { label: string; description: string };
   generatedAt: number;
-  imageId?: Id<"_storage">;
-  // Embedded scores for bandwidth optimization
+  imageUrl: string | null;
+  counts: { sideA: number; sideB: number; neutral: number } | null;
   scoreCounts?: { a: number; b: number; n: number };
-  mapScores?: Array<{ c: string; s: number; r?: string }>; // r = reasoning preview
+  mapScores?: Array<{ c: string; s: number; r?: string }>;
 }
 
 // Featured headline card - large with prominent image
 function FeaturedHeadlineCard({
   headline,
 }: {
-  headline: Headline;
+  headline: HeadlineWithInline;
 }) {
   const { ref, isVisible } = useInViewport();
-
-  // Fetch image URL (still needed as it's a storage URL)
-  const imageUrl = useQuery(api.headlines.getHeadlineImageUrl, { headlineId: headline._id });
-
-  // Use embedded scoreCounts if available (bandwidth optimized)
-  // Fall back to query only for unmigrated data
-  const countsQuery = useQuery(
-    api.headlines.getHeadlineCounts,
-    headline.scoreCounts ? "skip" : { headlineId: headline._id }
-  );
-  const counts = headline.scoreCounts
-    ? { sideA: headline.scoreCounts.a, sideB: headline.scoreCounts.b, neutral: headline.scoreCounts.n }
-    : countsQuery;
 
   // Prefetch detail page data when card becomes visible (for instant navigation)
   useQuery(
@@ -86,11 +73,12 @@ function FeaturedHeadlineCard({
     >
       {/* Image area - 16:9 aspect ratio with placeholder */}
       <div className="relative w-full aspect-video bg-slate-200">
-        {imageUrl && (
+        {headline.imageUrl && (
           <Image
-            src={imageUrl}
+            src={headline.imageUrl}
             alt={headline.title}
             fill
+            priority
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
           />
@@ -110,14 +98,14 @@ function FeaturedHeadlineCard({
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
             <span className="text-sm text-blue-700 font-medium">
-              {counts ? counts.sideA : "–"} {headline.sideA.label}
+              {headline.counts ? headline.counts.sideA : "–"} {headline.sideA.label}
             </span>
           </span>
           <span className="text-slate-400 text-sm">vs</span>
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
             <span className="text-sm text-red-700 font-medium">
-              {counts ? counts.sideB : "–"} {headline.sideB.label}
+              {headline.counts ? headline.counts.sideB : "–"} {headline.sideB.label}
             </span>
           </span>
         </div>
@@ -130,22 +118,9 @@ function FeaturedHeadlineCard({
 function SecondaryHeadlineCard({
   headline,
 }: {
-  headline: Headline;
+  headline: HeadlineWithInline;
 }) {
   const { ref, isVisible } = useInViewport();
-
-  // Fetch image URL (still needed as it's a storage URL)
-  const imageUrl = useQuery(api.headlines.getHeadlineImageUrl, { headlineId: headline._id });
-
-  // Use embedded scoreCounts if available (bandwidth optimized)
-  // Fall back to query only for unmigrated data
-  const countsQuery = useQuery(
-    api.headlines.getHeadlineCounts,
-    headline.scoreCounts ? "skip" : { headlineId: headline._id }
-  );
-  const counts = headline.scoreCounts
-    ? { sideA: headline.scoreCounts.a, sideB: headline.scoreCounts.b, neutral: headline.scoreCounts.n }
-    : countsQuery;
 
   // Prefetch detail page data when card becomes visible (for instant navigation)
   useQuery(
@@ -163,9 +138,9 @@ function SecondaryHeadlineCard({
     >
       {/* Square thumbnail with placeholder */}
       <div className="relative w-24 h-24 flex-shrink-0 bg-slate-200">
-        {imageUrl && (
+        {headline.imageUrl && (
           <Image
-            src={imageUrl}
+            src={headline.imageUrl}
             alt={headline.title}
             fill
             className="object-cover"
@@ -187,14 +162,14 @@ function SecondaryHeadlineCard({
           <span className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
             <span className="text-blue-600 font-medium truncate">
-              {counts ? counts.sideA : "–"} {headline.sideA.label}
+              {headline.counts ? headline.counts.sideA : "–"} {headline.sideA.label}
             </span>
           </span>
           <span className="text-slate-400">vs</span>
           <span className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
             <span className="text-red-600 font-medium truncate">
-              {counts ? counts.sideB : "–"} {headline.sideB.label}
+              {headline.counts ? headline.counts.sideB : "–"} {headline.sideB.label}
             </span>
           </span>
         </div>

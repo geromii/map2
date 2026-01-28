@@ -27,7 +27,17 @@ export const getActiveHeadlines = query({
       .query("headlines")
       .withIndex("by_active", (q) => q.eq("isActive", true))
       .collect();
-    return headlines.filter((h) => !h.isFeatured);
+    const filtered = headlines.filter((h) => !h.isFeatured);
+    // Return image URLs and counts inline to avoid cascading client queries
+    return Promise.all(
+      filtered.map(async (h) => ({
+        ...h,
+        imageUrl: h.imageId ? await ctx.storage.getUrl(h.imageId) : null,
+        counts: h.scoreCounts
+          ? { sideA: h.scoreCounts.a, sideB: h.scoreCounts.b, neutral: h.scoreCounts.n }
+          : null,
+      }))
+    );
   },
 });
 
@@ -39,9 +49,19 @@ export const getFeaturedHeadlines = query({
       .query("headlines")
       .withIndex("by_featured", (q) => q.eq("isFeatured", true))
       .collect();
-    return headlines
+    const sorted = headlines
       .filter((h) => h.isActive)
       .sort((a, b) => (b.featuredAt ?? 0) - (a.featuredAt ?? 0));
+    // Return image URLs and counts inline to avoid cascading client queries
+    return Promise.all(
+      sorted.map(async (h) => ({
+        ...h,
+        imageUrl: h.imageId ? await ctx.storage.getUrl(h.imageId) : null,
+        counts: h.scoreCounts
+          ? { sideA: h.scoreCounts.a, sideB: h.scoreCounts.b, neutral: h.scoreCounts.n }
+          : null,
+      }))
+    );
   },
 });
 
