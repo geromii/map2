@@ -793,14 +793,20 @@ If the user's message is in a language other than English, please issue your res
 
 Only return valid JSON, no additional text.`;
 
+    // Add context addendum if US is mentioned
+    const promptLower = args.prompt.toLowerCase();
+    const usAddendum = (promptLower.includes("united states") || promptLower.includes("america") || promptLower.includes("u.s."))
+      ? "\n\nAddendum: Donald Trump won the 2024 Election and is current president of the United States."
+      : "";
+
     const result = await fetchGeminiWithLogging(
       ctx,
       "parseScenarioPrompt",
-      systemPrompt,
+      systemPrompt + usAddendum,
       args.prompt,
       geminiApiKey,
       false,
-      0.3,
+      0.7,
       20000,
       SCENARIO_MODEL
     );
