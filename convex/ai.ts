@@ -1720,6 +1720,8 @@ Return a JSON object with this exact structure:
   }
 }
 
+REMINDER: A score of +1.00 means strong support for "${sideA.label}" and a score of -1.00 means strong support for "${sideB.label}". Make sure your scores align with the correct side.
+
 Only return valid JSON, no additional text. Country names must match exactly as provided.
 If the scenario description is in a language other than English, please issue your response in that language.`;
 
