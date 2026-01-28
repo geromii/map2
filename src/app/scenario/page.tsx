@@ -96,7 +96,7 @@ export default function ScenarioPage() {
   }, [searchTerm]);
 
   // Convex queries, mutations, and actions
-  const parsePrompt = useAction(api.ai.parsePromptToSides);
+  const parsePrompt = useAction(api.ai.parseScenarioPrompt);
   const generateFunFact = useAction(api.ai.generateFunFact);
   const initializeScenario = useMutation(api.issues.initializeScenario);
   const processScenarioBatches = useAction(api.ai.processScenarioBatches);

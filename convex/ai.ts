@@ -524,6 +524,7 @@ const modelChoiceValidator = v.optional(v.union(
 ));
 
 // Parse prompt into Side A / Side B structure
+// Headlines: Parse prompt into Side A / Side B structure (used by /admin/headlines)
 export const parsePromptToSides = action({
   args: {
     prompt: v.string(),
@@ -662,7 +663,6 @@ Only return valid JSON, no additional text.`;
       }
       if (lastError) throw lastError;
     } else {
-      // Use Gemini directly for non-grounded requests (custom scenarios)
       const geminiApiKey = process.env.GEMINI_API_KEY;
       if (!geminiApiKey) {
         throw new Error("GEMINI_API_KEY environment variable not set");
@@ -684,26 +684,141 @@ Only return valid JSON, no additional text.`;
 
     const parsed = JSON.parse(content);
 
-    // If AI returned an error, pass it through
     if (parsed.error) {
       return parsed;
     }
 
-    // Validate and sanitize the response structure
     if (!parsed.title || !parsed.sideA || !parsed.sideB) {
       throw new Error("AI returned incomplete response - missing required fields");
     }
 
-    // Sanitize strings (trim whitespace, remove control characters)
     const sanitize = (s: string) => s?.trim().replace(/[\x00-\x1F\x7F]/g, '') || '';
-
-    // Sanitize slug (lowercase, only alphanumeric and hyphens)
     const sanitizeSlug = (s: string) =>
       s?.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || '';
 
     return {
       title: sanitize(parsed.title),
       slug: sanitizeSlug(parsed.slug || parsed.title),
+      description: sanitize(parsed.description || ''),
+      primaryActor: parsed.primaryActor ? sanitize(parsed.primaryActor) : undefined,
+      sideA: {
+        label: sanitize(parsed.sideA.label || 'Supports'),
+        description: sanitize(parsed.sideA.description || ''),
+      },
+      sideB: {
+        label: sanitize(parsed.sideB.label || 'Opposes'),
+        description: sanitize(parsed.sideB.description || ''),
+      },
+    };
+  },
+});
+
+// Scenarios: Parse prompt into Side A / Side B structure (used by /scenario)
+// Differences from headlines version:
+// - No slug field (scenarios use random slugs)
+// - War/conflict instructions (Pro-[SideA] vs Pro-[SideB] instead of Pro/Anti-War)
+// - Always uses Gemini directly (no web grounding, no model choice)
+export const parseScenarioPrompt = action({
+  args: {
+    prompt: v.string(),
+  },
+  handler: async (ctx, args): Promise<{
+    title: string;
+    description: string;
+    primaryActor?: string;
+    sideA: { label: string; description: string };
+    sideB: { label: string; description: string };
+  } | { error: string }> => {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      throw new Error("GEMINI_API_KEY environment variable not set");
+    }
+
+    const systemPrompt = `You are an expert at analyzing geopolitical scenarios. Given a user prompt, parse it into a structured format with two opposing sides.
+
+Try your best to interpret the prompt as a geopolitical scenario. Be creative - most topics can be framed geopolitically (technology, climate, trade, cultural issues, etc.).
+
+Return a JSON object with:
+- title: A concise title for the issue (max 100 chars)
+- description: A brief description of the overall scenario (1-2 sentences)
+- primaryActor: The entity pushing for or driving this scenario (Side A only). This is who would "win" or "succeed" if the scenario comes to pass. Can be one or multiple countries, organizations, movements, or groups. If multiple, separate with " and " (e.g., "United States and United Kingdom"). This should ONLY represent one side of the issue - the proponents, not both sides.
+- sideA: The side that supports/approves/is in favor (object with "label" and "description")
+- sideB: The side that opposes/disapproves/is against (object with "label" and "description")
+
+IMPORTANT: The "description" for each side should describe the POSITION itself, NOT predict which countries or actors would take that position. That prediction is done separately.
+
+For example, if the prompt is "US annexation of Greenland":
+{
+  "title": "US Annexation of Greenland",
+  "description": "The potential acquisition of Greenland by the United States.",
+  "primaryActor": "United States",
+  "sideA": { "label": "Pro-Annexation", "description": "Supports US acquisition of Greenland" },
+  "sideB": { "label": "Anti-Annexation", "description": "Opposes US acquisition of Greenland" }
+}
+
+For "Quebec independence":
+{
+  "title": "Quebec Independence",
+  "description": "Quebec separates from Canada to become an independent nation.",
+  "primaryActor": "Quebec Separatists",
+  "sideA": { "label": "Pro-Independence", "description": "Supports Quebec separating from Canada" },
+  "sideB": { "label": "Anti-Independence", "description": "Opposes Quebec separating from Canada" }
+}
+
+WAR / CONFLICT SCENARIOS:
+When the user describes a war or military conflict between two parties, do NOT use "Pro-War" / "Anti-War" as side labels. Instead, frame the sides as support for each belligerent. The primaryActor should be the aggressor. The description should note who the aggressor is.
+
+For "Russia invades Ukraine":
+{
+  "title": "Russian Invasion of Ukraine",
+  "description": "Russia, as the aggressor, launches a full-scale military invasion of Ukraine.",
+  "primaryActor": "Russia",
+  "sideA": { "label": "Pro-Russia", "description": "Supports Russia's military campaign in Ukraine" },
+  "sideB": { "label": "Pro-Ukraine", "description": "Supports Ukraine's sovereignty and defense against Russia" }
+}
+
+For "China invades Taiwan":
+{
+  "title": "Chinese Invasion of Taiwan",
+  "description": "China, as the aggressor, launches a military operation to annex Taiwan.",
+  "primaryActor": "China",
+  "sideA": { "label": "Pro-China", "description": "Supports Chinese reunification with Taiwan by force" },
+  "sideB": { "label": "Pro-Taiwan", "description": "Supports Taiwanese independence and defense against China" }
+}
+
+If the prompt is truly unparseable (gibberish, completely unrelated to world affairs like "make me a sandwich", or too vague to interpret), return:
+{ "error": "Brief explanation of why this can't be parsed as a geopolitical scenario" }
+
+If the user's message is in a language other than English, please issue your response in that language.
+
+Only return valid JSON, no additional text.`;
+
+    const result = await fetchGeminiWithLogging(
+      ctx,
+      "parseScenarioPrompt",
+      systemPrompt,
+      args.prompt,
+      geminiApiKey,
+      false,
+      0.3,
+      20000,
+      SCENARIO_MODEL
+    );
+
+    const parsed = JSON.parse(result.content);
+
+    if (parsed.error) {
+      return parsed;
+    }
+
+    if (!parsed.title || !parsed.sideA || !parsed.sideB) {
+      throw new Error("AI returned incomplete response - missing required fields");
+    }
+
+    const sanitize = (s: string) => s?.trim().replace(/[\x00-\x1F\x7F]/g, '') || '';
+
+    return {
+      title: sanitize(parsed.title),
       description: sanitize(parsed.description || ''),
       primaryActor: parsed.primaryActor ? sanitize(parsed.primaryActor) : undefined,
       sideA: {
@@ -1588,18 +1703,13 @@ RATING SCALE (use ONLY these values: -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75,
 
 FORMATTING RULES:
 - NEVER use "Side A" or "Side B" in your reasoning
-- Use natural language to describe positions. For example, say "leading voice against annexation" rather than "leading Anti-Annexation voice". Describe the stance in plain English rather than inserting stance labels awkwardly.
-- Write in a natural, human tone - like a knowledgeable analyst explaining to a colleague, not a formal report. Vary sentence structure, avoid repetitive phrasing, and don't overuse words like "significant", "notable", "robust", or "multifaceted".
-- Provide detailed reasoning of 4-6 sentences with a paragraph break
-- First paragraph (two or three sentences): Explain the country's official position (if known) or historical stance on similar issues
-- Second paragraph (one or two sentences): Analyze the geopolitical factors, alliances, and interests that inform their position
-- If you believe their private position is different than their public position, or if they may refrain from a statement due to geopolitical reasons, say so and clearly justify why
-- Public statements should take priority over their expected private stance in the scoring, but do consider expected private stances as a factor
+- Use natural language to describe positions
+- Provide reasoning in 1-2 concise sentences only. Be brief and direct.
 
 Return a JSON object with this exact structure:
 {
   "scores": {
-    "CountryName": { "score": 0.5, "reasoning": "First paragraph about position...\\n\\nSecond paragraph about factors..." },
+    "CountryName": { "score": 0.5, "reasoning": "Brief explanation." },
     ...
   }
 }
