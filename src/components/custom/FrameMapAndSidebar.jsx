@@ -74,16 +74,10 @@ export default function MapFrame({
           </div>
         </div>
 
-        {/* Country Summary Panel - Below Map, Fixed Height */}
-        {pageMode === "single" && (
-          <div className="h-[120px] border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            {phase2Countries.length > 0 ? (
-              <CountrySummaryPanel />
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm italic">
-                Select a country to see its geopolitical profile
-              </div>
-            )}
+        {/* Country Summary Panel - Below Map */}
+        {pageMode === "single" && phase2Countries.length > 0 && (
+          <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <CountrySummaryPanel />
           </div>
         )}
 
