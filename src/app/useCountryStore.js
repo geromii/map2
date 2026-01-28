@@ -49,7 +49,7 @@ const getColorFrompreferenceScore = (number, phase, mapMode) => {
 
 
   number = Math.max(-1, Math.min(number, 1));
-  let preferenceScore = Math.abs(number) ** 1.4; // turns the preferenceScore into a more exponential curve
+  let preferenceScore = Math.abs(number) ** 1.3; // turns the preferenceScore into a more exponential curve
   let hue = number >= 0 ? 240 : 0;
   let saturation = 100 * preferenceScore;
   let lightness = 78 - 30 * preferenceScore;
