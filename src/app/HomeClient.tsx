@@ -106,7 +106,15 @@ function NavigationCard({
 }
 
 export function HomeFeaturedHeadlines() {
-  const featuredHeadlines = useQuery(api.headlines.getFeaturedHeadlines);
+  const scenariosEnabled = process.env.NEXT_PUBLIC_SCENARIOS_ENABLED === "true";
+  const featuredHeadlines = useQuery(
+    api.headlines.getFeaturedHeadlines,
+    scenariosEnabled ? {} : "skip"
+  );
+
+  if (!scenariosEnabled) {
+    return null;
+  }
 
   if (featuredHeadlines === undefined) {
     return (
@@ -141,6 +149,12 @@ export function HomeFeaturedHeadlines() {
 }
 
 export function HomeNavigationCards() {
+  const scenariosEnabled = process.env.NEXT_PUBLIC_SCENARIOS_ENABLED === "true";
+
+  if (!scenariosEnabled) {
+    return null;
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <NavigationCard

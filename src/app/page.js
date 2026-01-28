@@ -32,6 +32,8 @@ export const metadata = {
 };
 
 export default function LandingPage() {
+  const scenariosEnabled = process.env.NEXT_PUBLIC_SCENARIOS_ENABLED === "true";
+
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
       {/* Background gradient orbs */}
@@ -44,12 +46,14 @@ export default function LandingPage() {
         <div className="flex-1 flex flex-col items-center justify-center px-6 pt-20 pb-8">
           <div className="max-w-5xl w-full">
             {/* Featured Headlines Section */}
-            <div className="mb-12">
-              <h2 className="text-xl font-semibold text-[hsl(222.2,47.4%,11.2%)] mb-4 text-center">
-                Featured Headlines
-              </h2>
-              <HomeFeaturedHeadlines />
-            </div>
+            {scenariosEnabled && (
+              <div className="mb-12">
+                <h2 className="text-xl font-semibold text-[hsl(222.2,47.4%,11.2%)] mb-4 text-center">
+                  Featured Headlines
+                </h2>
+                <HomeFeaturedHeadlines />
+              </div>
+            )}
 
             {/* Mode Cards */}
             <h2 className="text-xl font-semibold text-[hsl(222.2,47.4%,11.2%)] mb-4 text-center">
@@ -112,9 +116,11 @@ export default function LandingPage() {
             </div>
 
             {/* Navigation Cards - Headlines & Scenarios */}
-            <div className="mb-12">
-              <HomeNavigationCards />
-            </div>
+            {scenariosEnabled && (
+              <div className="mb-12">
+                <HomeNavigationCards />
+              </div>
+            )}
 
             {/* Feature highlights */}
             <div className="grid grid-cols-3 gap-4 lg:gap-8 max-w-3xl mx-auto">
@@ -147,8 +153,12 @@ export default function LandingPage() {
             <div className="flex items-center gap-6">
               <Link href="/diplomacy" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Diplomacy</Link>
               <Link href="/conflict" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Conflict</Link>
-              <Link href="/headlines" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Headlines</Link>
-              <Link href="/scenario" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Scenarios</Link>
+              {scenariosEnabled && (
+                <>
+                  <Link href="/headlines" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Headlines</Link>
+                  <Link href="/scenario" className="hover:text-[hsl(222.2,47.4%,11.2%)] transition-colors">Scenarios</Link>
+                </>
+              )}
             </div>
           </div>
         </footer>
