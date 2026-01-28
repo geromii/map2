@@ -52,6 +52,7 @@ WRITING STYLE - THIS IS CRITICAL:
 - Do not use capital cities to reference countries, instead use the name of that country (!!!)
 - Avoid using embdashes
 - Talk about recent developments. What has changed over the last few years? Or maybe, what endures, and what is surprising? Focus on the interesting. 
+- Do not start your summary with "While"
 
 CONTENT TO COVER FOR EACH:
 1. What are this country's top 2-3 geopolitical priorities? (security, trade, regional influence, etc.)
@@ -64,7 +65,7 @@ Return a JSON object with country names as keys:
   "CountryName1": {
     "summary": "150-200 word summary...",
     "keyInterests": ["Interest one here", "Interest two here", "Interest three here"],
-    "alignments": "One sentence description (15-25 words). Use the country name but don't start with it."
+    "alignments": "Punchy, intriguing summary (around 25 words)."
   },
   "CountryName2": {
     "summary": "...",
@@ -75,8 +76,7 @@ Return a JSON object with country names as keys:
 
 IMPORTANT:
 - Each keyInterest should be around 4-6 words. If a specific country matters significantly, mention them.
-- For alignments: Write naturally, avoid buzzwords, don't use 'likely'. Example: "Caught between its historical ties to France and a burgeoning relationship with Russia, Mali's allegiances are shifting amid a search for security guarantees."
-- VARY your language across the countries in this batch - don't repeat phrases or structures.`;
+- For alignments: Be punchy and slightly intriguing while retaining a professional tone (around 25 words). Write at a grade 10 level. Be objective. What we want is a readable, quick to understand summary that we can display as a standalone introduction. It should be understandable, and not confusing, for general educated audiences on its own. It's fine to introduce new concepts the reader may not be familiar with, but properly introduce them, not just a drive-by two words. Focus on readability and the most important one or two concepts. Don't be excessively dense. Avoid buzzwords, don't use 'likely' or 'shifting'. Do not use capital cities in place of country names. Example: "Non-allied, not neutral: China plays partners off each other, leans toward Russia when it boxes out the West, and builds power by locking in influence across the Global South."`;
 
 async function generateBatchSummaries(
   apiKey: string,

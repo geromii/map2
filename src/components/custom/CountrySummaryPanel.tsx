@@ -43,7 +43,7 @@ export function CountrySummaryPanel({ countryName: propCountryName }: CountrySum
       <div className="w-full h-full flex items-center">
         <div className="max-w-4xl mx-auto px-6 py-6 sm:px-10 sm:py-8 flex items-start gap-6 w-full">
           {/* Alignments - short sentence */}
-          <p className="text-base sm:text-lg md:text-xl text-slate-700 dark:text-slate-300 italic leading-relaxed flex-1 font-serif">
+          <p className="text-sm sm:text-base md:text-lg text-slate-700 dark:text-slate-300 leading-relaxed flex-1">
             {summary.alignments}
           </p>
 
@@ -81,32 +81,43 @@ export function CountrySummaryPanel({ countryName: propCountryName }: CountrySum
             </div>
 
             {/* Content */}
-            <div className="p-4 sm:p-6">
-              {/* Alignments */}
-              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 italic mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-4 sm:p-6 space-y-5">
+              {/* Alignments - one line summary */}
+              <p
+                className="text-base sm:text-lg text-gray-900 dark:text-gray-100 font-medium"
+                style={{ lineHeight: 1.75 }}
+              >
                 {summary.alignments}
               </p>
 
-              {/* Full Summary */}
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed mb-5">
-                {summary.summary}
-              </p>
-
-              {/* Key Interests */}
-              <div>
-                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+              {/* Key Interests - moved to top */}
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-3">
                   Key Interests
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {summary.keyInterests.map((interest, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary dark:bg-primary/20"
+                      className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-600 shadow-sm"
                     >
                       {interest}
                     </span>
                   ))}
                 </div>
+              </div>
+
+              {/* Full Summary */}
+              <div className="pt-2">
+                <h3 className="text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-3">
+                  Overview
+                </h3>
+                <p
+                  className="text-sm sm:text-base text-gray-900 dark:text-gray-100"
+                  style={{ lineHeight: 1.75 }}
+                >
+                  {summary.summary}
+                </p>
               </div>
             </div>
           </div>
