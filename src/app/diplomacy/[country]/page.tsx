@@ -1,6 +1,17 @@
 import { Metadata } from "next";
 import { slugToCountry } from "@/utils/countrySlug";
 import { DiplomacyClient } from "./DiplomacyClient";
+import summaries from "@/data/country-summaries/summaries.json";
+
+interface CountrySummary {
+  country: string;
+  summary: string;
+  keyInterests: string[];
+  alignments: string;
+  generatedAt: string;
+}
+
+const summariesData = summaries as Record<string, CountrySummary>;
 
 interface PageProps {
   params: Promise<{ country: string }>;
@@ -17,15 +28,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const countrySummary = summariesData[countryName];
+  const description = countrySummary?.alignments
+    || `Explore ${countryName}'s diplomatic relationships, alliances, and geopolitical position on the interactive world map.`;
+
   return {
     title: `${countryName} - Global Relations Map | Mapdis`,
-    description: `Explore ${countryName}'s diplomatic relationships, alliances, and geopolitical position on the interactive world map.`,
+    description,
     alternates: {
       canonical: `https://www.mapdis.com/diplomacy/${slug}`,
     },
     openGraph: {
       title: `${countryName} - Global Relations Map`,
-      description: `Explore ${countryName}'s diplomatic relationships and geopolitical position.`,
+      description,
       url: `https://www.mapdis.com/diplomacy/${slug}`,
       siteName: "Mapdis",
       images: [{
@@ -39,7 +54,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     twitter: {
       card: "summary_large_image",
       title: `${countryName} - Global Relations Map | Mapdis`,
-      description: `Explore ${countryName}'s diplomatic relationships and geopolitical position.`,
+      description,
       images: [`https://www.mapdis.com/og/diplomacy/${slug}.jpg`],
     },
   };

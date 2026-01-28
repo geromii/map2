@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate-og": "npx tsx scripts/generate-og-images.ts"
+    "generate-og": "npx tsx scripts/generate-og-images.ts",
+    "generate-summaries": "npx tsx scripts/generate-country-summaries.ts",
+    "update-summaries": "npx tsx scripts/update-country-summaries.ts"
   },
   "dependencies": {
     "@auth/core": "^0.37.0",
@@ -40,6 +42,7 @@
     "lucide-react": "^0.542.0",
     "next": "^16.0.7",
     "next-seo": "^6.5.0",
+    "node-fetch": "^3.3.2",
     "openai": "^4.47.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -60,6 +63,7 @@
     "@types/react": "^18.2.79",
     "@types/topojson-client": "^3.1.5",
     "autoprefixer": "^10",
+    "dotenv": "^17.2.3",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.0.7",
     "playwright": "^1.58.0",

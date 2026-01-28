@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import useCountryStore from "../../app/useCountryStore";
 import useEuCountries from "../../utils/eu";
 import DemographicsSection from "./FrameChildren/DemographicsSection";
+import { CountrySummaryPanel } from "./CountrySummaryPanel";
 
 export default function MapFrame({
   LeftSidebar,
@@ -56,7 +57,7 @@ export default function MapFrame({
         {/* Map Content */}
         <div className="map relative w-full">
           {/* NoCountrySelected Indicator - positioned over map */}
-          <div 
+          <div
             data-display={((phase2Countries.length > 0 || phase3Countries.length > 0) && (pageMode === "single" ? phase2Countries.length > 0 || phase3Countries.length > 0 : phase2Countries.length > 0 && phase3Countries.length > 0))}
             data-pagemode={pageMode}
             className="absolute top-0 -translate-y-2 left-1/2 transform -translate-x-1/2 data-[display=true]:opacity-0 data-[display=true]:translate-y-4 transition-all duration-500 data-[pagemode=single]:duration-500 data-[pagemode=multi]:duration-500 z-30 text-xs sm:text-sm lg:text-base"
@@ -67,11 +68,24 @@ export default function MapFrame({
               phase3Exists={phase3Countries.length > 0}
             />
           </div>
-          
+
           <div className="flex flex-col items-center bg-transparent md:scale-[1.00] w-full">
             <MapDiv mapMode={pageMode} />
           </div>
         </div>
+
+        {/* Country Summary Panel - Below Map, Fixed Height */}
+        {pageMode === "single" && (
+          <div className="h-[120px] border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            {phase2Countries.length > 0 ? (
+              <CountrySummaryPanel />
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm italic">
+                Select a country to see its geopolitical profile
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Country Name Display - Below Map */}
         {/* <CountryNameDisplay 
