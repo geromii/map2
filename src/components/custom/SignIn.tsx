@@ -68,7 +68,7 @@ function PasswordInput({
   );
 }
 
-type Flow = "signIn" | "signUp" | "reset" | "reset-verification";
+type Flow = "signIn" | "signUp" | "reset" | "reset-verification" | "email-verification";
 
 export function SignIn() {
   const { signIn } = useAuthActions();
@@ -77,6 +77,8 @@ export function SignIn() {
   const [suggestGoogle, setSuggestGoogle] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [verifyEmail, setVerifyEmail] = useState("");
+  const [resent, setResent] = useState(false);
 
   const parseError = (message: string): { text: string; suggestGoogle: boolean } => {
     const lowerMessage = message.toLowerCase();
@@ -142,10 +144,13 @@ export function SignIn() {
     }
 
     try {
-      await signIn("password", formData);
+      const result = await signIn("password", formData);
       if (flow === "reset") {
         setResetEmail(formData.get("email") as string);
         setFlow("reset-verification");
+      } else if (result && typeof result === "object" && "signingIn" in result && !result.signingIn) {
+        setVerifyEmail(formData.get("email") as string);
+        setFlow("email-verification");
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Authentication failed";
@@ -173,6 +178,71 @@ export function SignIn() {
   const inputClass = "h-9 rounded-md border-gray-200 bg-gray-50 focus:bg-white focus:border-[hsl(48,96%,53%)] focus:ring-1 focus:ring-[hsl(48,96%,53%)] transition-colors";
   const primaryBtnClass = "w-full h-9 rounded-md bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors";
   const googleBtnClass = "flex items-center w-full h-9 bg-[#4285F4] rounded text-sm font-medium text-white hover:bg-[#3b78e7] transition-all overflow-hidden";
+
+  // Email Verification: Enter Code
+  if (flow === "email-verification") {
+    return (
+      <div className={cardClass}>
+        <div className="text-center mb-6">
+          <h1 className={headingClass}>Verify your email</h1>
+          <p className={subheadingClass}>
+            We sent a code to {verifyEmail}.{" "}
+            <span className={resent ? "font-semibold text-yellow-600" : ""}>
+              Make sure to check your spam folder.
+            </span>
+          </p>
+        </div>
+
+        <form onSubmit={handlePasswordSubmit} className="space-y-4">
+          <input type="hidden" name="email" value={verifyEmail} />
+
+          <div className="space-y-1.5">
+            <Label htmlFor="code" className="text-sm font-medium text-gray-700">
+              Verification code
+            </Label>
+            <Input
+              id="code"
+              name="code"
+              type="text"
+              placeholder="123456"
+              required
+              className={`${inputClass} text-center tracking-widest`}
+            />
+          </div>
+
+          {error && <p className="text-sm text-red-500">{error}</p>}
+
+          <Button type="submit" disabled={loading} className={primaryBtnClass}>
+            {loading ? "Verifying..." : "Verify email"}
+          </Button>
+        </form>
+
+        <p className="text-center text-sm text-gray-500 mt-6">
+          <button
+            type="button"
+            className="text-[hsl(222.2,47.4%,11.2%)] hover:text-[hsl(222.2,47.4%,25%)] underline underline-offset-2 font-medium"
+            onClick={async () => {
+              setError(null);
+              setLoading(true);
+              try {
+                const formData = new FormData();
+                formData.set("flow", "signUp");
+                formData.set("email", verifyEmail);
+                await signIn("password", formData);
+                setResent(true);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : "Failed to resend code");
+              } finally {
+                setLoading(false);
+              }
+            }}
+          >
+            Didn&apos;t receive a code? Try again
+          </button>
+        </p>
+      </div>
+    );
+  }
 
   // Password Reset: Request Code
   if (flow === "reset") {
