@@ -44,64 +44,60 @@ export const deleteUserData = internalMutation({
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .collect();
 
-    for (const issue of issues) {
-      // Delete associated country scores
-      const scores = await ctx.db
-        .query("countryScores")
-        .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
-        .collect();
-      for (const score of scores) {
-        await ctx.db.delete(score._id);
-      }
+    // Gather all related data for each issue in parallel
+    const issueRelatedData = await Promise.all(
+      issues.map(async (issue) => {
+        const [scores, jobs] = await Promise.all([
+          ctx.db
+            .query("countryScores")
+            .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+            .collect(),
+          ctx.db
+            .query("generationJobs")
+            .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+            .collect(),
+        ]);
+        return { issue, scores, jobs };
+      })
+    );
 
-      // Delete associated generation jobs
-      const jobs = await ctx.db
-        .query("generationJobs")
-        .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
-        .collect();
-      for (const job of jobs) {
-        await ctx.db.delete(job._id);
-      }
+    // Delete all issue-related records in parallel
+    await Promise.all(
+      issueRelatedData.flatMap(({ issue, scores, jobs }) => [
+        ...scores.map((s) => ctx.db.delete(s._id)),
+        ...jobs.map((j) => ctx.db.delete(j._id)),
+        ctx.db.delete(issue._id),
+      ])
+    );
 
-      // Delete the issue itself
-      await ctx.db.delete(issue._id);
-    }
+    // Gather remaining user data in parallel
+    const [subscription, feedbackResponses, authAccounts, authSessions] =
+      await Promise.all([
+        ctx.db
+          .query("subscriptions")
+          .withIndex("by_user", (q) => q.eq("userId", args.userId))
+          .first(),
+        ctx.db
+          .query("feedbackResponses")
+          .withIndex("by_user", (q) => q.eq("userId", args.userId))
+          .collect(),
+        ctx.db
+          .query("authAccounts")
+          .withIndex("userIdAndProvider", (q) => q.eq("userId", args.userId))
+          .collect(),
+        ctx.db
+          .query("authSessions")
+          .withIndex("userId", (q) => q.eq("userId", args.userId))
+          .collect(),
+      ]);
 
-    // Delete user's subscription record
-    const subscription = await ctx.db
-      .query("subscriptions")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .first();
-    if (subscription) {
-      await ctx.db.delete(subscription._id);
-    }
-
-    // Delete user's feedback responses
-    const feedbackResponses = await ctx.db
-      .query("feedbackResponses")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .collect();
-    for (const feedback of feedbackResponses) {
-      await ctx.db.delete(feedback._id);
-    }
-
-    // Delete auth accounts
-    const authAccounts = await ctx.db
-      .query("authAccounts")
-      .withIndex("userIdAndProvider", (q) => q.eq("userId", args.userId))
-      .collect();
-    for (const account of authAccounts) {
-      await ctx.db.delete(account._id);
-    }
-
-    // Delete auth sessions
-    const authSessions = await ctx.db
-      .query("authSessions")
-      .withIndex("userId", (q) => q.eq("userId", args.userId))
-      .collect();
-    for (const session of authSessions) {
-      await ctx.db.delete(session._id);
-    }
+    // Delete all user records in parallel
+    await Promise.all([
+      ...(subscription ? [ctx.db.delete(subscription._id)] : []),
+      ...feedbackResponses.map((f) => ctx.db.delete(f._id)),
+      ...authAccounts.map((a) => ctx.db.delete(a._id)),
+      ...authSessions.map((s) => ctx.db.delete(s._id)),
+    ]);
 
     // Finally, delete the user record
     await ctx.db.delete(args.userId);

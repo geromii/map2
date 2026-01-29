@@ -620,19 +620,19 @@ export const saveHeadlineScores = mutation({
       .withIndex("by_headline", (q) => q.eq("headlineId", args.headlineId))
       .collect();
 
-    for (const score of existing) {
-      await ctx.db.delete(score._id);
-    }
+    await Promise.all(existing.map((score) => ctx.db.delete(score._id)));
 
     // Insert new scores
-    for (const score of args.scores) {
-      await ctx.db.insert("headlineScores", {
-        headlineId: args.headlineId,
-        countryName: score.countryName,
-        score: Math.max(-1, Math.min(1, score.score)),
-        reasoning: score.reasoning,
-      });
-    }
+    await Promise.all(
+      args.scores.map((score) =>
+        ctx.db.insert("headlineScores", {
+          headlineId: args.headlineId,
+          countryName: score.countryName,
+          score: Math.max(-1, Math.min(1, score.score)),
+          reasoning: score.reasoning,
+        })
+      )
+    );
 
     return { savedCount: args.scores.length };
   },
@@ -651,14 +651,16 @@ export const upsertBatchScores = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    for (const score of args.scores) {
-      await ctx.db.insert("headlineScores", {
-        headlineId: args.headlineId,
-        countryName: score.countryName,
-        score: Math.max(-1, Math.min(1, score.score)),
-        reasoning: score.reasoning,
-      });
-    }
+    await Promise.all(
+      args.scores.map((score) =>
+        ctx.db.insert("headlineScores", {
+          headlineId: args.headlineId,
+          countryName: score.countryName,
+          score: Math.max(-1, Math.min(1, score.score)),
+          reasoning: score.reasoning,
+        })
+      )
+    );
     return { insertedCount: args.scores.length };
   },
 });

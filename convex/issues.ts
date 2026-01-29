@@ -477,19 +477,19 @@ export const saveCountryScores = mutation({
       .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
       .collect();
 
-    for (const score of existingScores) {
-      await ctx.db.delete(score._id);
-    }
+    await Promise.all(existingScores.map((score) => ctx.db.delete(score._id)));
 
     // Insert new scores
-    for (const score of args.scores) {
-      await ctx.db.insert("countryScores", {
-        issueId: args.issueId,
-        countryName: score.countryName,
-        score: Math.max(-1, Math.min(1, score.score)), // Clamp to [-1, 1]
-        reasoning: score.reasoning,
-      });
-    }
+    await Promise.all(
+      args.scores.map((score) =>
+        ctx.db.insert("countryScores", {
+          issueId: args.issueId,
+          countryName: score.countryName,
+          score: Math.max(-1, Math.min(1, score.score)), // Clamp to [-1, 1]
+          reasoning: score.reasoning,
+        })
+      )
+    );
 
     return { savedCount: args.scores.length };
   },
@@ -509,14 +509,16 @@ export const upsertBatchScores = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    for (const newScore of args.scores) {
-      await ctx.db.insert("countryScores", {
-        issueId: args.issueId,
-        countryName: newScore.countryName,
-        score: Math.max(-1, Math.min(1, newScore.score)),
-        reasoning: newScore.reasoning,
-      });
-    }
+    await Promise.all(
+      args.scores.map((newScore) =>
+        ctx.db.insert("countryScores", {
+          issueId: args.issueId,
+          countryName: newScore.countryName,
+          score: Math.max(-1, Math.min(1, newScore.score)),
+          reasoning: newScore.reasoning,
+        })
+      )
+    );
 
     return { insertedCount: args.scores.length };
   },
@@ -829,26 +831,24 @@ export const deleteScenario = mutation({
       throw new Error("You can only delete your own scenarios");
     }
 
-    // Delete all country scores for this issue
-    const scores = await ctx.db
-      .query("countryScores")
-      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
-      .collect();
-    for (const score of scores) {
-      await ctx.db.delete(score._id);
-    }
+    // Fetch all related data in parallel
+    const [scores, jobs] = await Promise.all([
+      ctx.db
+        .query("countryScores")
+        .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+        .collect(),
+      ctx.db
+        .query("generationJobs")
+        .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+        .collect(),
+    ]);
 
-    // Delete all generation jobs for this issue
-    const jobs = await ctx.db
-      .query("generationJobs")
-      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
-      .collect();
-    for (const job of jobs) {
-      await ctx.db.delete(job._id);
-    }
-
-    // Delete the issue itself
-    await ctx.db.delete(args.issueId);
+    // Delete all related records and the issue in parallel
+    await Promise.all([
+      ...scores.map((s) => ctx.db.delete(s._id)),
+      ...jobs.map((j) => ctx.db.delete(j._id)),
+      ctx.db.delete(args.issueId),
+    ]);
 
     return { success: true };
   },
