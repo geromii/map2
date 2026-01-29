@@ -76,6 +76,15 @@ export const deleteUserData = internalMutation({
       await ctx.db.delete(subscription._id);
     }
 
+    // Delete user's feedback responses
+    const feedbackResponses = await ctx.db
+      .query("feedbackResponses")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+    for (const feedback of feedbackResponses) {
+      await ctx.db.delete(feedback._id);
+    }
+
     // Delete auth accounts
     const authAccounts = await ctx.db
       .query("authAccounts")

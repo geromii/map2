@@ -195,6 +195,19 @@ const schema = defineSchema({
   }).index("by_session", ["sessionId"]),
 
   // ============================================
+  // FEEDBACK
+  // ============================================
+  feedbackResponses: defineTable({
+    userId: v.optional(v.id("users")),
+    formVersion: v.string(),
+    responses: v.any(),
+    userAgent: v.optional(v.string()),
+    page: v.optional(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_version", ["formVersion"]),
+
+  // ============================================
   // SUBSCRIPTIONS (Stripe billing)
   // ============================================
   subscriptions: defineTable({
