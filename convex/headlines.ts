@@ -64,7 +64,7 @@ export const getActiveHeadlines = query({
     const headlines = await ctx.db
       .query("headlines")
       .withIndex("by_active", (q) => q.eq("isActive", true))
-      .collect();
+      .take(200);
     const filtered = headlines.filter((h) => !h.isFeatured);
     // Return image URLs and counts inline to avoid cascading client queries
     return Promise.all(
@@ -110,7 +110,7 @@ export const getArchivedHeadlines = query({
     return await ctx.db
       .query("headlines")
       .withIndex("by_active", (q) => q.eq("isActive", false))
-      .collect();
+      .take(500);
   },
 });
 
@@ -118,7 +118,7 @@ export const getArchivedHeadlines = query({
 export const getAllHeadlines = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("headlines").collect();
+    return await ctx.db.query("headlines").take(500);
   },
 });
 
@@ -203,8 +203,9 @@ export const getCountryFullReasoning = query({
   handler: async (ctx, args) => {
     const score = await ctx.db
       .query("headlineScores")
-      .withIndex("by_headline", (q) => q.eq("headlineId", args.headlineId))
-      .filter((q) => q.eq(q.field("countryName"), args.countryName))
+      .withIndex("by_headline_country", (q) =>
+        q.eq("headlineId", args.headlineId).eq("countryName", args.countryName)
+      )
       .first();
 
     return score?.reasoning ?? null;
@@ -419,17 +420,21 @@ export const saveDraft = mutation({
     }
 
     // Delete old drafts (keep only last 20)
-    const oldDrafts = await ctx.db
+    // Count by fetching 21 newest — if we get 21, delete the oldest ones
+    const newestDrafts = await ctx.db
       .query("draftHeadlines")
       .withIndex("by_created")
-      .order("asc")
-      .collect();
+      .order("desc")
+      .take(21);
 
-    if (oldDrafts.length >= 20) {
-      const toDelete = oldDrafts.slice(0, oldDrafts.length - 19);
-      for (const draft of toDelete) {
-        await ctx.db.delete(draft._id);
-      }
+    if (newestDrafts.length >= 20) {
+      // Fetch oldest drafts to delete (everything beyond the 19 we want to keep)
+      const oldDrafts = await ctx.db
+        .query("draftHeadlines")
+        .withIndex("by_created")
+        .order("asc")
+        .take(newestDrafts.length - 19);
+      await Promise.all(oldDrafts.map((draft) => ctx.db.delete(draft._id)));
     }
 
     return await ctx.db.insert("draftHeadlines", {
@@ -894,7 +899,7 @@ export const migrateHeadlineScores = mutation({
 export const getHeadlinesNeedingMigration = query({
   args: {},
   handler: async (ctx) => {
-    const headlines = await ctx.db.query("headlines").collect();
+    const headlines = await ctx.db.query("headlines").take(500);
     return headlines
       .filter((h) => !h.mapScores || h.mapScores.length === 0)
       .map((h) => ({ _id: h._id, title: h.title }));

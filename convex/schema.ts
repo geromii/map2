@@ -61,7 +61,9 @@ const schema = defineSchema({
     countryName: v.string(),
     score: v.float64(), // -1 to 1
     reasoning: v.optional(v.string()),
-  }).index("by_headline", ["headlineId"]),
+  })
+    .index("by_headline", ["headlineId"])
+    .index("by_headline_country", ["headlineId", "countryName"]),
 
   // Draft headlines (auto-saved parsed prompts for admin recovery)
   draftHeadlines: defineTable({
@@ -127,7 +129,9 @@ const schema = defineSchema({
     countryName: v.string(),
     score: v.float64(), // -1 to 1
     reasoning: v.optional(v.string()),
-  }).index("by_issue", ["issueId"]),
+  })
+    .index("by_issue", ["issueId"])
+    .index("by_issue_country", ["issueId", "countryName"]),
 
   // Job tracking (for both headlines and issues)
   generationJobs: defineTable({
@@ -177,7 +181,8 @@ const schema = defineSchema({
     generatedAt: v.number(),
   })
     .index("by_user", ["userId"])
-    .index("by_user_date", ["userId", "generatedAt"]),
+    .index("by_user_date", ["userId", "generatedAt"])
+    .index("by_date", ["generatedAt"]),
 
   // ============================================
   // ANALYTICS

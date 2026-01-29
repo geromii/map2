@@ -45,7 +45,7 @@ export const getActiveIssues = query({
     const issues = await ctx.db
       .query("issues")
       .withIndex("by_active", (q) => q.eq("isActive", true))
-      .collect();
+      .take(200);
     // Filter out featured issues (those go in getFeaturedIssues)
     return issues.filter((issue) => !issue.isFeatured);
   },
@@ -73,7 +73,7 @@ export const getArchivedIssues = query({
     const issues = await ctx.db
       .query("issues")
       .withIndex("by_active", (q) => q.eq("isActive", false))
-      .collect();
+      .take(500);
     return issues.filter((issue) => issue.source === "daily");
   },
 });
@@ -82,8 +82,10 @@ export const getArchivedIssues = query({
 export const getAllDailyIssues = query({
   args: {},
   handler: async (ctx) => {
-    const allIssues = await ctx.db.query("issues").collect();
-    return allIssues.filter((issue) => issue.source === "daily");
+    return await ctx.db
+      .query("issues")
+      .withIndex("by_source", (q) => q.eq("source", "daily"))
+      .take(500);
   },
 });
 
@@ -96,8 +98,9 @@ export const getCountryFullReasoning = query({
   handler: async (ctx, args) => {
     const score = await ctx.db
       .query("countryScores")
-      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
-      .filter((q) => q.eq(q.field("countryName"), args.countryName))
+      .withIndex("by_issue_country", (q) =>
+        q.eq("issueId", args.issueId).eq("countryName", args.countryName)
+      )
       .first();
 
     return score?.reasoning ?? null;
@@ -328,14 +331,14 @@ export const cleanupOldGenerations = mutation({
   handler: async (ctx) => {
     const cutoff = Date.now() - RATE_LIMIT_WINDOW_MS;
 
-    // Get all old records
-    const allGenerations = await ctx.db.query("scenarioGenerations").collect();
-    const oldRecords = allGenerations.filter((g) => g.generatedAt < cutoff);
+    // Get old records using date index (avoids full table scan)
+    const oldRecords = await ctx.db
+      .query("scenarioGenerations")
+      .withIndex("by_date", (q) => q.lt("generatedAt", cutoff))
+      .take(500);
 
     // Delete them
-    for (const record of oldRecords) {
-      await ctx.db.delete(record._id);
-    }
+    await Promise.all(oldRecords.map((record) => ctx.db.delete(record._id)));
 
     return { deleted: oldRecords.length };
   },
@@ -716,13 +719,13 @@ export const initializeScenario = mutation({
       const now = Date.now();
       const windowStart = now - RATE_LIMIT_WINDOW_MS;
 
-      // Get user's recent generations
+      // Get user's recent generations (only need limit + 1 to check)
       const generations = await ctx.db
         .query("scenarioGenerations")
-        .withIndex("by_user", (q) => q.eq("userId", authUserId))
-        .collect();
+        .withIndex("by_user_date", (q) => q.eq("userId", authUserId).gte("generatedAt", windowStart))
+        .take(GENERATION_LIMIT + 1);
 
-      const recentCount = generations.filter((g) => g.generatedAt >= windowStart).length;
+      const recentCount = generations.length;
 
       if (recentCount >= GENERATION_LIMIT) {
         throw new Error(`Rate limit reached. You can generate ${GENERATION_LIMIT} scenarios every 16 hours. Please try again later.`);
@@ -1057,7 +1060,7 @@ export const migrateIssueScores = mutation({
 export const getIssuesNeedingMigration = query({
   args: {},
   handler: async (ctx) => {
-    const issues = await ctx.db.query("issues").collect();
+    const issues = await ctx.db.query("issues").take(500);
     return issues
       .filter((i) => !i.mapScores || i.mapScores.length === 0)
       .map((i) => ({ _id: i._id, title: i.title }));
@@ -1068,7 +1071,7 @@ export const getIssuesNeedingMigration = query({
 export const getIssuesNeedingSlugs = query({
   args: {},
   handler: async (ctx) => {
-    const issues = await ctx.db.query("issues").collect();
+    const issues = await ctx.db.query("issues").take(500);
     return issues
       .filter((i) => !i.slug)
       .map((i) => ({ _id: i._id, title: i.title }));
