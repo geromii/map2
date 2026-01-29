@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useAction, useQuery, useMutation } from "convex/react";
+import { useCachedQuery } from "@/hooks/useCachedQuery";
 import { api } from "../../../convex/_generated/api";
 import { D3ScoreMap, ScoreLegend, CountryTooltip } from "@/components/custom/D3ScoreMap";
 import { CountryDetailModal } from "@/components/custom/CountryDetailModal";
@@ -100,7 +101,7 @@ export default function ScenarioPage() {
   const generateFunFact = useAction(api.ai.generateFunFact);
   const initializeScenario = useMutation(api.issues.initializeScenario);
   const processScenarioBatches = useAction(api.ai.processScenarioBatches);
-  const getActiveMapVersion = useQuery(api.issues.getActiveMapVersion);
+  const getActiveMapVersion = useCachedQuery(api.issues.getActiveMapVersion, {});
   const userId = useQuery(api.issues.getCurrentUserId);
   const generationUsage = useQuery(api.issues.getUserGenerationUsage);
   const scenariosData = useQuery(api.issues.getUserScenariosPaginated, {
@@ -119,8 +120,8 @@ export default function ScenarioPage() {
     jobId ? { jobId } : "skip"
   );
 
-  // Poll scores only when viewing results (not during generation - saves bandwidth)
-  const issueScoresQuery = useQuery(
+  // Fetch scores when viewing results (cached, no subscription)
+  const issueScoresQuery = useCachedQuery(
     api.issues.getIssueScores,
     currentIssue && step === "results" ? { issueId: currentIssue.id } : "skip"
   );

@@ -3,7 +3,8 @@ import { api } from "../../../../convex/_generated/api";
 import { ScenarioDetailClient } from "./ScenarioDetailClient";
 import type { Metadata } from "next";
 
-export const revalidate = 300;
+// Revalidate every 6 hours - scenarios never change after creation
+export const revalidate = 21600;
 
 interface PageProps {
   params: Promise<{ slug: string }>;

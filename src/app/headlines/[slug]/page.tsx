@@ -3,8 +3,8 @@ import { api } from "../../../../convex/_generated/api";
 import { HeadlineDetailClient } from "./HeadlineDetailClient";
 import type { Metadata } from "next";
 
-// Revalidate every 5 minutes - headlines rarely change after creation
-export const revalidate = 300;
+// Revalidate every 6 hours - headlines never change after creation
+export const revalidate = 21600;
 
 interface PageProps {
   params: Promise<{ slug: string }>;

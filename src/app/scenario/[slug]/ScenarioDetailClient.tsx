@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { useQuery, usePreloadedQuery, Preloaded } from "convex/react";
+import { usePreloadedQuery, Preloaded } from "convex/react";
+import { useCachedQuery } from "@/hooks/useCachedQuery";
 import Link from "next/link";
 import { api } from "../../../../convex/_generated/api";
 import { D3ScoreMap, ScoreLegend, CountryTooltip } from "@/components/custom/D3ScoreMap";
@@ -28,7 +29,7 @@ interface ScenarioDetailClientProps {
 
 export function ScenarioDetailClient({ slug, preloadedIssue }: ScenarioDetailClientProps) {
   const preloadedData = preloadedIssue ? usePreloadedQuery(preloadedIssue) : undefined;
-  const queryData = useQuery(
+  const queryData = useCachedQuery(
     api.issues.getIssueBySlug,
     preloadedIssue ? "skip" : { slug }
   );
@@ -42,7 +43,7 @@ export function ScenarioDetailClient({ slug, preloadedIssue }: ScenarioDetailCli
   const hasEmbeddedScores = issue?.mapScores && issue.mapScores.length > 0;
 
   // Fallback: query scores table
-  const fallbackScores = useQuery(
+  const fallbackScores = useCachedQuery(
     api.issues.getIssueScores,
     issue?._id && !hasEmbeddedScores ? { issueId: issue._id } : "skip"
   );

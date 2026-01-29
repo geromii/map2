@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useQuery } from "convex/react";
+import { useCachedQuery } from "@/hooks/useCachedQuery";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import { X } from "lucide-react";
@@ -44,11 +44,11 @@ export function CountryDetailModal({
   issueId,
 }: CountryDetailModalProps) {
   // Fetch full reasoning on-demand when headlineId or issueId is provided
-  const headlineReasoning = useQuery(
+  const headlineReasoning = useCachedQuery(
     api.headlines.getCountryFullReasoning,
     headlineId ? { headlineId, countryName: country } : "skip"
   );
-  const issueReasoning = useQuery(
+  const issueReasoning = useCachedQuery(
     api.issues.getCountryFullReasoning,
     issueId ? { issueId, countryName: country } : "skip"
   );

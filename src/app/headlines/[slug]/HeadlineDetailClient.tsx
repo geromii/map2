@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { useQuery, usePreloadedQuery, Preloaded } from "convex/react";
+import { usePreloadedQuery, Preloaded } from "convex/react";
+import { useCachedQuery } from "@/hooks/useCachedQuery";
 import Link from "next/link";
 import { api } from "../../../../convex/_generated/api";
 import { D3ScoreMap, ScoreLegend, CountryTooltip } from "@/components/custom/D3ScoreMap";
@@ -30,7 +31,7 @@ interface HeadlineDetailClientProps {
 export function HeadlineDetailClient({ slug, preloadedHeadline }: HeadlineDetailClientProps) {
   // Use preloaded data if available (instant), otherwise fetch client-side
   const preloadedData = preloadedHeadline ? usePreloadedQuery(preloadedHeadline) : undefined;
-  const queryData = useQuery(
+  const queryData = useCachedQuery(
     api.headlines.getHeadlineBySlug,
     preloadedHeadline ? "skip" : { slug }
   );
@@ -51,26 +52,26 @@ export function HeadlineDetailClient({ slug, preloadedHeadline }: HeadlineDetail
   // Use embedded mapScores if available (bandwidth optimized - 1 doc read)
   // Includes reasoning preview for hover tooltips
   const hasEmbeddedScores = headline?.mapScores && headline.mapScores.length > 0;
-  const mapScoresQuery = useQuery(
+  const mapScoresQuery = useCachedQuery(
     api.headlines.getHeadlineScoresForMap,
     headline?._id && !hasEmbeddedScores ? { headlineId: headline._id } : "skip"
   );
 
   // Fetch full scores with reasoning only when user clicks for detail
   // (reasoning preview is embedded in mapScores for hover)
-  const fullScoresQuery = useQuery(
+  const fullScoresQuery = useCachedQuery(
     api.headlines.getHeadlineScores,
     headline?._id && !hasEmbeddedScores ? { headlineId: headline._id } : "skip"
   );
 
   // Fetch image URL
-  const headlineImageUrl = useQuery(
+  const headlineImageUrl = useCachedQuery(
     api.headlines.getHeadlineImageUrl,
     headline?._id ? { headlineId: headline._id } : "skip"
   );
 
   // Use embedded scoreCounts if available (bandwidth optimized)
-  const countsQuery = useQuery(
+  const countsQuery = useCachedQuery(
     api.headlines.getHeadlineCounts,
     headline?._id && !headline?.scoreCounts ? { headlineId: headline._id } : "skip"
   );

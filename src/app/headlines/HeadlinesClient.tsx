@@ -1,8 +1,9 @@
 "use client";
 
-import { usePreloadedQuery, useQuery } from "convex/react";
+import { usePreloadedQuery } from "convex/react";
 import { Preloaded } from "convex/react";
 import { useRef, useState, useEffect } from "react";
+import { useCachedQuery } from "@/hooks/useCachedQuery";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import Image from "next/image";
@@ -57,8 +58,8 @@ function FeaturedHeadlineCard({
 }) {
   const { ref, isVisible } = useInViewport();
 
-  // Prefetch detail page data when card becomes visible (for instant navigation)
-  useQuery(
+  // Prefetch detail page data when card becomes visible (cached, no subscription)
+  useCachedQuery(
     api.headlines.getHeadlineBySlug,
     isVisible && headline.slug ? { slug: headline.slug } : "skip"
   );
@@ -122,8 +123,8 @@ function SecondaryHeadlineCard({
 }) {
   const { ref, isVisible } = useInViewport();
 
-  // Prefetch detail page data when card becomes visible (for instant navigation)
-  useQuery(
+  // Prefetch detail page data when card becomes visible (cached, no subscription)
+  useCachedQuery(
     api.headlines.getHeadlineBySlug,
     isVisible && headline.slug ? { slug: headline.slug } : "skip"
   );

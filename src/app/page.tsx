@@ -5,7 +5,8 @@ import { HomeFeaturedHeadlines, HomeNavigationCards } from "./HomeClient";
 import { preloadQuery } from "convex/nextjs";
 import { api } from "../../convex/_generated/api";
 
-export const revalidate = 60;
+// Revalidate every 6 hours
+export const revalidate = 21600;
 
 export const metadata = {
   title: "Mapdis - Interactive Global Relations & Conflict Map",
