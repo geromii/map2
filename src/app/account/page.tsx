@@ -7,6 +7,7 @@ import { SubscriptionCard } from "@/components/custom/SubscriptionCard";
 import { LinkedAccountsCard } from "@/components/custom/LinkedAccountsCard";
 import { ChangePasswordCard } from "@/components/custom/ChangePasswordCard";
 import { DangerZoneCard } from "@/components/custom/DangerZoneCard";
+import { EmailPreferencesCard } from "@/components/custom/EmailPreferencesCard";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
@@ -72,6 +73,9 @@ function AccountPageContent() {
               {linkedAccounts && (
                 <LinkedAccountsCard accounts={linkedAccounts} />
               )}
+
+              {/* Email Preferences */}
+              <EmailPreferencesCard />
 
               {/* Change Password (only for password accounts) */}
               {linkedAccounts &&

@@ -20,6 +20,7 @@ import type * as stripe from "../stripe.js";
 import type * as stripeActions from "../stripeActions.js";
 import type * as stripeWebhook from "../stripeWebhook.js";
 import type * as subscriptions from "../subscriptions.js";
+import type * as userPreferences from "../userPreferences.js";
 import type * as users from "../users.js";
 
 import type {
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   stripeActions: typeof stripeActions;
   stripeWebhook: typeof stripeWebhook;
   subscriptions: typeof subscriptions;
+  userPreferences: typeof userPreferences;
   users: typeof users;
 }>;
 

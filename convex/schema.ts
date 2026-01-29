@@ -200,6 +200,15 @@ const schema = defineSchema({
   }).index("by_session", ["sessionId"]),
 
   // ============================================
+  // USER PREFERENCES
+  // ============================================
+  userPreferences: defineTable({
+    userId: v.id("users"),
+    emailOptIn: v.optional(v.boolean()),
+    emailOptInShown: v.optional(v.boolean()),
+  }).index("by_user", ["userId"]),
+
+  // ============================================
   // FEEDBACK
   // ============================================
   feedbackResponses: defineTable({

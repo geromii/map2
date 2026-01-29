@@ -6,6 +6,7 @@ import MenuBar from "@/components/custom/menubar";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import Script from "next/script";
 import ConvexClientProvider from "./ConvexClientProvider";
+import { EmailOptInDialog } from "@/components/custom/EmailOptInDialog";
 
 // Import the Inter font (default)
 const fontSans = FontSans({
@@ -76,6 +77,7 @@ export default function RootLayout({ children }) {
       >
         <ConvexClientProvider>
           <MenuBar />
+          <EmailOptInDialog />
 
           <main className="flex-1 flex flex-col">
             {children}
