@@ -1542,15 +1542,17 @@ Consider these factors when rating:
 - Domestic political considerations
 
 RATING SCALE (use ONLY these values: -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1):
--  1.0  = Extremely supportive
--  0.75 = Strongly supportive
--  0.5  = Supportive
--  0.25 = Slightly supportive
+-  1.0  = Extremely supports ${sideA.label}
+-  0.75 = Strongly supports ${sideA.label}
+-  0.5  = Supports ${sideA.label}
+-  0.25 = Slightly supports ${sideA.label}
 -  0    = Neutral / No clear position
-- -0.25 = Slightly opposed
-- -0.5  = Opposed
-- -0.75 = Strongly opposed
-- -1.0  = Extremely opposed
+- -0.25 = Slightly supports ${sideB.label}
+- -0.5  = Supports ${sideB.label}
+- -0.75 = Strongly supports ${sideB.label}
+- -1.0  = Extremely supports ${sideB.label}
+
+IMPORTANT: Countries that are direct parties to the conflict must be scored based on which SIDE they support in the scoring framework above, not based on self-interest. For example, if positive scores mean "${sideA.label}", then a country on the opposing side should receive a strongly NEGATIVE score even if that country is defending itself.
 
 FORMATTING RULES:
 - NEVER use "Side A" or "Side B" in your reasoning
@@ -1569,6 +1571,8 @@ Return a JSON object with this exact structure:
     ...
   }
 }
+
+REMINDER: A score of +1.00 means strong support for "${sideA.label}" and a score of -1.00 means strong support for "${sideB.label}". Make sure your scores align with the correct side.
 
 Only return valid JSON, no additional text. Country names must match exactly as provided.
 If the scenario description is in a language other than English, please issue your response in that language.`;
@@ -1697,15 +1701,17 @@ Consider these factors when rating:
 - Domestic political considerations
 
 RATING SCALE (use ONLY these values: -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1):
--  1.0  = Extremely supportive
--  0.75 = Strongly supportive
--  0.5  = Supportive
--  0.25 = Slightly supportive
+-  1.0  = Extremely supports ${sideA.label}
+-  0.75 = Strongly supports ${sideA.label}
+-  0.5  = Supports ${sideA.label}
+-  0.25 = Slightly supports ${sideA.label}
 -  0    = Neutral / No clear position
-- -0.25 = Slightly opposed
-- -0.5  = Opposed
-- -0.75 = Strongly opposed
-- -1.0  = Extremely opposed
+- -0.25 = Slightly supports ${sideB.label}
+- -0.5  = Supports ${sideB.label}
+- -0.75 = Strongly supports ${sideB.label}
+- -1.0  = Extremely supports ${sideB.label}
+
+IMPORTANT: Countries that are direct parties to the conflict must be scored based on which SIDE they support in the scoring framework above, not based on self-interest. For example, if positive scores mean "${sideA.label}", then a country on the opposing side should receive a strongly NEGATIVE score even if that country is defending itself.
 
 FORMATTING RULES:
 - NEVER use "Side A" or "Side B" in your reasoning
