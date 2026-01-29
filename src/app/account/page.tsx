@@ -5,6 +5,7 @@ import { api } from "../../../convex/_generated/api";
 import { RequireAuth } from "@/components/custom/RequireAuth";
 import { SubscriptionCard } from "@/components/custom/SubscriptionCard";
 import { LinkedAccountsCard } from "@/components/custom/LinkedAccountsCard";
+import { ChangePasswordCard } from "@/components/custom/ChangePasswordCard";
 import { DangerZoneCard } from "@/components/custom/DangerZoneCard";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -71,6 +72,13 @@ function AccountPageContent() {
               {linkedAccounts && (
                 <LinkedAccountsCard accounts={linkedAccounts} />
               )}
+
+              {/* Change Password (only for password accounts) */}
+              {linkedAccounts &&
+                userEmail &&
+                linkedAccounts.some((a) => a.provider === "password") && (
+                  <ChangePasswordCard email={userEmail} />
+                )}
 
               {/* Danger Zone */}
               <DangerZoneCard />
